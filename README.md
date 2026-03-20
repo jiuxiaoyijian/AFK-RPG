@@ -94,9 +94,9 @@ ComfyUI+LoRA/            美术资源生成与 LoRA 工作流维护资料
 
 - `.github/workflows/deploy-pages.yml`
 
-如果 Pages 已成功启用，线上地址会更新在这里：
+当前线上地址：
 
-- `待部署完成后补充`
+- [https://jiuxiaoyijian.github.io/AFK-RPG/](https://jiuxiaoyijian.github.io/AFK-RPG/)
 
 ## 当前阶段的缺口
 
