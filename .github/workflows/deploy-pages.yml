@@ -35,6 +35,7 @@ jobs:
         uses: chickensoft-games/setup-godot@v2
         with:
           version: 4.6.1-stable
+          use-dotnet: false
           include-templates: true
 
       - name: Export Web Build
