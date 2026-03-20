@@ -1,0 +1,84 @@
+[gd_scene load_steps=13 format=3 uid="uid://desktop_idle_root"]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/systems/combat_system.gd" id="2_combat"]
+[ext_resource type="Script" path="res://scripts/systems/loot_system.gd" id="3_loot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="4_inventory"]
+[ext_resource type="PackedScene" path="res://scenes/ui/offline_report_popup.tscn" id="5_offline_popup"]
+[ext_resource type="PackedScene" path="res://scenes/ui/research_panel.tscn" id="6_research"]
+[ext_resource type="Script" path="res://scripts/systems/equipment_generator_system.gd" id="7_equipment_generator"]
+[ext_resource type="PackedScene" path="res://scenes/ui/codex_panel.tscn" id="8_codex"]
+[ext_resource type="PackedScene" path="res://scenes/ui/drop_stats_panel.tscn" id="9_drop_stats"]
+[ext_resource type="PackedScene" path="res://scenes/ui/main_nav_bar.tscn" id="10_nav"]
+[ext_resource type="Script" path="res://scripts/ui/ui_overlay_manager.gd" id="11_ui_manager"]
+[ext_resource type="PackedScene" path="res://scenes/ui/gm_panel.tscn" id="12_gm"]
+
+[node name="GameRoot" type="Node2D"]
+
+[node name="WorldLayer" type="Node2D" parent="."]
+
+[node name="Background" type="Polygon2D" parent="WorldLayer"]
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+color = Color(0.1, 0.11, 0.16, 1)
+
+[node name="BackgroundArt" type="Sprite2D" parent="WorldLayer"]
+position = Vector2(0, 0)
+scale = Vector2(1.25, 1.25)
+centered = false
+modulate = Color(1, 1, 1, 0.72)
+
+[node name="Ground" type="Polygon2D" parent="WorldLayer"]
+polygon = PackedVector2Array(0, 560, 1280, 560, 1280, 720, 0, 720)
+color = Color(0.16, 0.18, 0.24, 1)
+
+[node name="CombatRunner" type="Node2D" parent="WorldLayer"]
+
+[node name="PlayerSpawn" type="Marker2D" parent="WorldLayer/CombatRunner"]
+position = Vector2(640, 520)
+
+[node name="EnemyContainer" type="Node2D" parent="WorldLayer/CombatRunner"]
+
+[node name="LootContainer" type="Node2D" parent="WorldLayer/CombatRunner"]
+z_index = 20
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+script = ExtResource("11_ui_manager")
+
+[node name="HUD" parent="UILayer" instance=ExtResource("1_hud")]
+
+[node name="CollectEffects" type="Node2D" parent="UILayer"]
+
+[node name="UIDimmer" type="ColorRect" parent="UILayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+visible = false
+
+[node name="InventoryPanel" parent="UILayer" instance=ExtResource("4_inventory")]
+
+[node name="OfflineReportPopup" parent="UILayer" instance=ExtResource("5_offline_popup")]
+
+[node name="ResearchPanel" parent="UILayer" instance=ExtResource("6_research")]
+
+[node name="CodexPanel" parent="UILayer" instance=ExtResource("8_codex")]
+
+[node name="DropStatsPanel" parent="UILayer" instance=ExtResource("9_drop_stats")]
+
+[node name="MainNavBar" parent="UILayer" instance=ExtResource("10_nav")]
+
+[node name="GMPanel" parent="UILayer" instance=ExtResource("12_gm")]
+
+[node name="Systems" type="Node" parent="."]
+
+[node name="CombatSystem" type="Node" parent="Systems"]
+script = ExtResource("2_combat")
+
+[node name="LootSystem" type="Node" parent="Systems"]
+script = ExtResource("3_loot")
+
+[node name="EquipmentGeneratorSystem" type="Node" parent="Systems"]
+script = ExtResource("7_equipment_generator")

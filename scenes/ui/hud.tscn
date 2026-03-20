@@ -1,0 +1,379 @@
+[gd_scene load_steps=2 format=3 uid="uid://desktop_idle_hud"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="1_hud"]
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hud")
+
+[node name="TopBar" type="Panel" parent="."]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 1268.0
+offset_bottom = 56.0
+
+[node name="ResourceLabel" type="Label" parent="TopBar" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 10.0
+offset_right = 860.0
+offset_bottom = 30.0
+text = "金币 0"
+
+[node name="RunLabel" type="Label" parent="TopBar" unique_name_in_owner="true"]
+offset_left = 866.0
+offset_top = 10.0
+offset_right = 1230.0
+offset_bottom = 30.0
+horizontal_alignment = 2
+text = "击杀 0 | 清图 0"
+
+[node name="BattleCard" type="Panel" parent="."]
+offset_left = 16.0
+offset_top = 72.0
+offset_right = 388.0
+offset_bottom = 238.0
+
+[node name="NodeLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 12.0
+offset_right = 232.0
+offset_bottom = 30.0
+text = "当前章节"
+
+[node name="StateLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 34.0
+offset_right = 232.0
+offset_bottom = 52.0
+text = "状态: --"
+
+[node name="HpBar" type="ProgressBar" parent="BattleCard" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 56.0
+offset_right = 232.0
+offset_bottom = 74.0
+show_percentage = false
+max_value = 100.0
+value = 0.0
+
+[node name="HpLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 80.0
+offset_right = 232.0
+offset_bottom = 98.0
+text = "生命: --"
+
+[node name="SkillLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 102.0
+offset_right = 232.0
+offset_bottom = 120.0
+text = "流派: --"
+
+[node name="SkillIconPanel" type="Panel" parent="BattleCard"]
+offset_left = 258.0
+offset_top = 12.0
+offset_right = 348.0
+offset_bottom = 102.0
+
+[node name="SkillIconTexture" type="TextureRect" parent="BattleCard/SkillIconPanel" unique_name_in_owner="true"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 82.0
+offset_bottom = 82.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FocusLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 126.0
+offset_right = 348.0
+offset_bottom = 154.0
+text = "掉落方向: --"
+
+[node name="BattleSafeFrame" type="Panel" parent="."]
+offset_left = 8.0
+offset_top = 394.0
+offset_right = 1272.0
+offset_bottom = 594.0
+
+[node name="TargetCard" type="Panel" parent="."]
+offset_left = 936.0
+offset_top = 118.0
+offset_right = 1264.0
+offset_bottom = 238.0
+
+[node name="TargetTitleLabel" type="Label" parent="TargetCard"]
+offset_left = 18.0
+offset_top = 10.0
+offset_right = 260.0
+offset_bottom = 28.0
+text = "目标追踪"
+
+[node name="TargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 34.0
+offset_right = 272.0
+offset_bottom = 88.0
+autowrap_mode = 2
+text = "当前目标: --"
+
+[node name="CodexLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 92.0
+offset_right = 272.0
+offset_bottom = 118.0
+autowrap_mode = 2
+text = "图鉴: --"
+
+[node name="EquipCard" type="Panel" parent="."]
+offset_left = 16.0
+offset_top = 456.0
+offset_right = 388.0
+offset_bottom = 552.0
+
+[node name="CardArt" type="TextureRect" parent="EquipCard"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 372.0
+offset_bottom = 96.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="EquipTitleLabel" type="Label" parent="EquipCard"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 200.0
+offset_bottom = 26.0
+text = "装备概览"
+
+[node name="WeaponSlot" type="Panel" parent="EquipCard"]
+offset_left = 12.0
+offset_top = 34.0
+offset_right = 96.0
+offset_bottom = 84.0
+
+[node name="Icon" type="TextureRect" parent="EquipCard/WeaponSlot"]
+offset_left = 4.0
+offset_top = 10.0
+offset_right = 26.0
+offset_bottom = 32.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Frame" type="TextureRect" parent="EquipCard/WeaponSlot"]
+offset_right = 84.0
+offset_bottom = 50.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Title" type="Label" parent="EquipCard/WeaponSlot"]
+offset_left = 30.0
+offset_top = 8.0
+offset_right = 78.0
+offset_bottom = 20.0
+text = "武器"
+
+[node name="Value" type="Label" parent="EquipCard/WeaponSlot" unique_name_in_owner="true"]
+offset_left = 30.0
+offset_top = 22.0
+offset_right = 78.0
+offset_bottom = 46.0
+autowrap_mode = 2
+text = "--"
+
+[node name="HelmetSlot" type="Panel" parent="EquipCard"]
+offset_left = 102.0
+offset_top = 34.0
+offset_right = 186.0
+offset_bottom = 84.0
+
+[node name="Icon" type="TextureRect" parent="EquipCard/HelmetSlot"]
+offset_left = 4.0
+offset_top = 10.0
+offset_right = 26.0
+offset_bottom = 32.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Frame" type="TextureRect" parent="EquipCard/HelmetSlot"]
+offset_right = 84.0
+offset_bottom = 50.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Title" type="Label" parent="EquipCard/HelmetSlot"]
+offset_left = 30.0
+offset_top = 8.0
+offset_right = 78.0
+offset_bottom = 20.0
+text = "头盔"
+
+[node name="Value" type="Label" parent="EquipCard/HelmetSlot" unique_name_in_owner="true"]
+offset_left = 30.0
+offset_top = 22.0
+offset_right = 78.0
+offset_bottom = 46.0
+autowrap_mode = 2
+text = "--"
+
+[node name="ArmorSlot" type="Panel" parent="EquipCard"]
+offset_left = 192.0
+offset_top = 34.0
+offset_right = 276.0
+offset_bottom = 84.0
+
+[node name="Icon" type="TextureRect" parent="EquipCard/ArmorSlot"]
+offset_left = 4.0
+offset_top = 10.0
+offset_right = 26.0
+offset_bottom = 32.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Frame" type="TextureRect" parent="EquipCard/ArmorSlot"]
+offset_right = 84.0
+offset_bottom = 50.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Title" type="Label" parent="EquipCard/ArmorSlot"]
+offset_left = 30.0
+offset_top = 8.0
+offset_right = 78.0
+offset_bottom = 20.0
+text = "护甲"
+
+[node name="Value" type="Label" parent="EquipCard/ArmorSlot" unique_name_in_owner="true"]
+offset_left = 30.0
+offset_top = 22.0
+offset_right = 78.0
+offset_bottom = 46.0
+autowrap_mode = 2
+text = "--"
+
+[node name="GlovesSlot" type="Panel" parent="EquipCard"]
+offset_left = 282.0
+offset_top = 34.0
+offset_right = 366.0
+offset_bottom = 84.0
+
+[node name="Icon" type="TextureRect" parent="EquipCard/GlovesSlot"]
+offset_left = 4.0
+offset_top = 10.0
+offset_right = 26.0
+offset_bottom = 32.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Frame" type="TextureRect" parent="EquipCard/GlovesSlot"]
+offset_right = 84.0
+offset_bottom = 50.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Title" type="Label" parent="EquipCard/GlovesSlot"]
+offset_left = 30.0
+offset_top = 8.0
+offset_right = 78.0
+offset_bottom = 20.0
+text = "手套"
+
+[node name="Value" type="Label" parent="EquipCard/GlovesSlot" unique_name_in_owner="true"]
+offset_left = 30.0
+offset_top = 22.0
+offset_right = 78.0
+offset_bottom = 46.0
+autowrap_mode = 2
+text = "--"
+
+[node name="LootCard" type="Panel" parent="."]
+offset_left = 876.0
+offset_top = 456.0
+offset_right = 1264.0
+offset_bottom = 552.0
+
+[node name="CardArt" type="TextureRect" parent="LootCard"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 388.0
+offset_bottom = 96.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="LootTitleLabel" type="Label" parent="LootCard"]
+offset_left = 18.0
+offset_top = 8.0
+offset_right = 220.0
+offset_bottom = 26.0
+text = "最近掉落"
+
+[node name="HighlightLabel" type="Label" parent="LootCard" unique_name_in_owner="true"]
+offset_left = 68.0
+offset_top = 32.0
+offset_right = 356.0
+offset_bottom = 52.0
+text = "高价值掉落"
+
+[node name="LootIcon" type="TextureRect" parent="LootCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 30.0
+offset_right = 54.0
+offset_bottom = 66.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LootLabel" type="Label" parent="LootCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 58.0
+offset_right = 356.0
+offset_bottom = 84.0
+autowrap_mode = 2
+text = "最近掉落摘要"
+
+[node name="DropToast" type="Panel" parent="."]
+offset_left = 440.0
+offset_top = 64.0
+offset_right = 840.0
+offset_bottom = 118.0
+visible = false
+
+[node name="ToastIcon" type="TextureRect" parent="DropToast" unique_name_in_owner="true"]
+offset_left = 14.0
+offset_top = 14.0
+offset_right = 54.0
+offset_bottom = 54.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ToastTitle" type="Label" parent="DropToast" unique_name_in_owner="true"]
+offset_left = 66.0
+offset_top = 8.0
+offset_right = 372.0
+offset_bottom = 24.0
+text = "高价值掉落"
+
+[node name="ToastLabel" type="Label" parent="DropToast" unique_name_in_owner="true"]
+offset_left = 66.0
+offset_top = 24.0
+offset_right = 372.0
+offset_bottom = 46.0
+autowrap_mode = 2
+text = "掉落内容"

@@ -1,0 +1,10 @@
+.godot/
+.editorconfig
+
+# Local exports and temporary build output
+build/
+dist/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db

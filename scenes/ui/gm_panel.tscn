@@ -1,0 +1,270 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/gm_panel_controller.gd" id="1_gm"]
+
+[node name="GMPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gm")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 84.0
+offset_top = 56.0
+offset_right = 1196.0
+offset_bottom = 660.0
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+offset_left = 20.0
+offset_top = 14.0
+offset_right = 300.0
+offset_bottom = 40.0
+text = "GM 调试面板"
+
+[node name="SummaryLabel" type="Label" parent="Panel"]
+offset_left = 20.0
+offset_top = 48.0
+offset_right = 1010.0
+offset_bottom = 78.0
+autowrap_mode = 2
+text = "调试概览"
+
+[node name="CloseButton" type="Button" parent="Panel"]
+offset_left = 1032.0
+offset_top = 14.0
+offset_right = 1088.0
+offset_bottom = 42.0
+text = "关闭"
+
+[node name="ResourceSection" type="Panel" parent="Panel"]
+offset_left = 20.0
+offset_top = 94.0
+offset_right = 540.0
+offset_bottom = 238.0
+
+[node name="ResourceTitle" type="Label" parent="Panel/ResourceSection"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 220.0
+offset_bottom = 34.0
+text = "资源调试"
+
+[node name="ResourceOption" type="OptionButton" parent="Panel/ResourceSection"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 196.0
+offset_bottom = 82.0
+
+[node name="ResourceAmountSpin" type="SpinBox" parent="Panel/ResourceSection"]
+offset_left = 208.0
+offset_top = 48.0
+offset_right = 368.0
+offset_bottom = 82.0
+min_value = 0.0
+max_value = 9999999.0
+value = 1000.0
+
+[node name="ResourceAddButton" type="Button" parent="Panel/ResourceSection"]
+offset_left = 16.0
+offset_top = 98.0
+offset_right = 188.0
+offset_bottom = 130.0
+text = "增加资源"
+
+[node name="ResourceSetButton" type="Button" parent="Panel/ResourceSection"]
+offset_left = 198.0
+offset_top = 98.0
+offset_right = 370.0
+offset_bottom = 130.0
+text = "设置资源"
+
+[node name="ItemSection" type="Panel" parent="Panel"]
+offset_left = 560.0
+offset_top = 94.0
+offset_right = 1092.0
+offset_bottom = 316.0
+
+[node name="ItemTitle" type="Label" parent="Panel/ItemSection"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 220.0
+offset_bottom = 34.0
+text = "装备调试"
+
+[node name="BaseOption" type="OptionButton" parent="Panel/ItemSection"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 510.0
+offset_bottom = 82.0
+
+[node name="RarityOption" type="OptionButton" parent="Panel/ItemSection"]
+offset_left = 16.0
+offset_top = 98.0
+offset_right = 170.0
+offset_bottom = 132.0
+
+[node name="ItemCountSpin" type="SpinBox" parent="Panel/ItemSection"]
+offset_left = 184.0
+offset_top = 98.0
+offset_right = 306.0
+offset_bottom = 132.0
+min_value = 1.0
+max_value = 99.0
+value = 1.0
+
+[node name="ItemLevelSpin" type="SpinBox" parent="Panel/ItemSection"]
+offset_left = 320.0
+offset_top = 98.0
+offset_right = 442.0
+offset_bottom = 132.0
+min_value = 1.0
+max_value = 999.0
+value = 20.0
+
+[node name="ForceLegendaryCheck" type="CheckBox" parent="Panel/ItemSection"]
+offset_left = 16.0
+offset_top = 146.0
+offset_right = 222.0
+offset_bottom = 174.0
+text = "强制传奇特效"
+
+[node name="AddItemButton" type="Button" parent="Panel/ItemSection"]
+offset_left = 16.0
+offset_top = 182.0
+offset_right = 220.0
+offset_bottom = 214.0
+text = "添加到背包"
+
+[node name="NodeSection" type="Panel" parent="Panel"]
+offset_left = 20.0
+offset_top = 258.0
+offset_right = 540.0
+offset_bottom = 422.0
+
+[node name="NodeTitle" type="Label" parent="Panel/NodeSection"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 220.0
+offset_bottom = 34.0
+text = "节点调试"
+
+[node name="NodeOption" type="OptionButton" parent="Panel/NodeSection"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 494.0
+offset_bottom = 82.0
+
+[node name="JumpNodeButton" type="Button" parent="Panel/NodeSection"]
+offset_left = 16.0
+offset_top = 98.0
+offset_right = 188.0
+offset_bottom = 130.0
+text = "跳转到节点"
+
+[node name="RestartNodeButton" type="Button" parent="Panel/NodeSection"]
+offset_left = 198.0
+offset_top = 98.0
+offset_right = 370.0
+offset_bottom = 130.0
+text = "重开当前节点"
+
+[node name="ProgressSection" type="Panel" parent="Panel"]
+offset_left = 560.0
+offset_top = 336.0
+offset_right = 1092.0
+offset_bottom = 606.0
+
+[node name="ProgressTitle" type="Label" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 220.0
+offset_bottom = 34.0
+text = "全局调试"
+
+[node name="UnlockResearchButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 224.0
+offset_bottom = 80.0
+text = "解锁全部天赋树"
+
+[node name="UnlockCodexButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 240.0
+offset_top = 48.0
+offset_right = 448.0
+offset_bottom = 80.0
+text = "解锁全部图鉴"
+
+[node name="UnlockAllButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 94.0
+offset_right = 224.0
+offset_bottom = 126.0
+text = "全部解锁"
+
+[node name="MaxResourcesButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 240.0
+offset_top = 94.0
+offset_right = 448.0
+offset_bottom = 126.0
+text = "资源拉满"
+
+[node name="ResetResourcesButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 136.0
+offset_right = 224.0
+offset_bottom = 168.0
+text = "资源清零"
+
+[node name="ClearInventoryButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 240.0
+offset_top = 136.0
+offset_right = 448.0
+offset_bottom = 168.0
+text = "清空背包"
+
+[node name="ClearDropStatsButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 180.0
+offset_right = 224.0
+offset_bottom = 212.0
+text = "清空掉落统计"
+
+[node name="SaveSlotOption" type="OptionButton" parent="Panel/ProgressSection"]
+offset_left = 240.0
+offset_top = 180.0
+offset_right = 400.0
+offset_bottom = 212.0
+
+[node name="SaveButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 224.0
+offset_right = 120.0
+offset_bottom = 256.0
+text = "保存"
+
+[node name="LoadButton" type="Button" parent="Panel/ProgressSection"]
+offset_left = 132.0
+offset_top = 224.0
+offset_right = 236.0
+offset_bottom = 256.0
+text = "读档"
+
+[node name="SlotHintLabel" type="Label" parent="Panel/ProgressSection"]
+offset_left = 16.0
+offset_top = 266.0
+offset_right = 500.0
+offset_bottom = 298.0
+autowrap_mode = 2
+text = "存档位说明"
+
+[node name="ActionLogLabel" type="Label" parent="Panel"]
+offset_left = 20.0
+offset_top = 550.0
+offset_right = 1088.0
+offset_bottom = 586.0
+autowrap_mode = 2
+text = "最近操作: --"

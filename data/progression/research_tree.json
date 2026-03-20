@@ -1,0 +1,148 @@
+{
+	"research_nodes": [
+		{
+			"id": "research_attack_training",
+			"sort_id": "01",
+			"tree_type": "combat",
+			"name": "战斗训练",
+			"description": "稳定提升基础攻击百分比，是所有流派都能吃到的通用增益。",
+			"max_level": 5,
+			"prerequisite_ids": [],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 2},
+				{"level": 2, "resource_id": "core", "amount": 4},
+				{"level": 3, "resource_id": "core", "amount": 7},
+				{"level": 4, "resource_id": "core", "amount": 10},
+				{"level": 5, "resource_id": "core", "amount": 14}
+			],
+			"stat_bonuses": [
+				{"stat_key": "attack_percent", "value_per_level": 0.03}
+			]
+		},
+		{
+			"id": "research_core_mastery",
+			"sort_id": "02",
+			"tree_type": "combat",
+			"name": "核心精通",
+			"description": "提高核心技能伤害，让旋风、流血与连锁玩法都有更明显的爆发成长。",
+			"max_level": 4,
+			"prerequisite_ids": ["research_attack_training"],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 5},
+				{"level": 2, "resource_id": "core", "amount": 8},
+				{"level": 3, "resource_id": "core", "amount": 12},
+				{"level": 4, "resource_id": "legend_shard", "amount": 2}
+			],
+			"stat_bonuses": [
+				{"stat_key": "core_damage_percent", "value_per_level": 0.05}
+			]
+		},
+		{
+			"id": "research_idle_logistics",
+			"sort_id": "03",
+			"tree_type": "idle",
+			"name": "挂机调度",
+			"description": "提高离线收益效率，让挂机轮次结算更接近在线收益。",
+			"max_level": 4,
+			"prerequisite_ids": [],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 3},
+				{"level": 2, "resource_id": "core", "amount": 6},
+				{"level": 3, "resource_id": "core", "amount": 10},
+				{"level": 4, "resource_id": "legend_shard", "amount": 2}
+			],
+			"stat_bonuses": [
+				{"stat_key": "offline_efficiency_bonus", "value_per_level": 0.05}
+			]
+		},
+		{
+			"id": "research_long_watch",
+			"sort_id": "04",
+			"tree_type": "idle",
+			"name": "长线值守",
+			"description": "提高离线结算的时间上限，适合 Steam 桌面挂机的长时段收益。",
+			"max_level": 3,
+			"prerequisite_ids": ["research_idle_logistics"],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 6},
+				{"level": 2, "resource_id": "legend_shard", "amount": 2},
+				{"level": 3, "resource_id": "legend_shard", "amount": 4}
+			],
+			"stat_bonuses": [
+				{"stat_key": "max_offline_seconds_bonus", "value_per_level": 1800.0}
+			]
+		},
+		{
+			"id": "research_arcane_temper",
+			"sort_id": "05",
+			"tree_type": "combat",
+			"name": "奥术回路",
+			"description": "用传奇碎片压缩核心技能冷却，为后期 build 提供更明显的循环提升。",
+			"max_level": 3,
+			"prerequisite_ids": ["research_core_mastery"],
+			"costs": [
+				{"level": 1, "resource_id": "legend_shard", "amount": 2},
+				{"level": 2, "resource_id": "legend_shard", "amount": 4},
+				{"level": 3, "resource_id": "legend_shard", "amount": 6}
+			],
+			"stat_bonuses": [
+				{"stat_key": "core_cooldown_reduction", "value_per_level": 0.04}
+			]
+		},
+		{
+			"id": "research_trade_contracts",
+			"sort_id": "06",
+			"tree_type": "economy",
+			"name": "贸易合同",
+			"description": "提高关卡与离线结算中的金币获取效率，强化常规经济循环。",
+			"max_level": 4,
+			"prerequisite_ids": [],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 3},
+				{"level": 2, "resource_id": "core", "amount": 6},
+				{"level": 3, "resource_id": "core", "amount": 10},
+				{"level": 4, "resource_id": "legend_shard", "amount": 2}
+			],
+			"stat_bonuses": [
+				{"stat_key": "gold_gain_percent", "value_per_level": 0.08}
+			]
+		},
+		{
+			"id": "research_scrap_recycling",
+			"sort_id": "07",
+			"tree_type": "economy",
+			"name": "回收工艺",
+			"description": "提高装备分解回收率，并略微抬高铁屑直接掉落收益。",
+			"max_level": 4,
+			"prerequisite_ids": ["research_trade_contracts"],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 4},
+				{"level": 2, "resource_id": "core", "amount": 8},
+				{"level": 3, "resource_id": "legend_shard", "amount": 2},
+				{"level": 4, "resource_id": "legend_shard", "amount": 4}
+			],
+			"stat_bonuses": [
+				{"stat_key": "scrap_gain_percent", "value_per_level": 0.05},
+				{"stat_key": "salvage_scrap_percent", "value_per_level": 0.08}
+			]
+		},
+		{
+			"id": "research_core_refining",
+			"sort_id": "08",
+			"tree_type": "economy",
+			"name": "核心提炼",
+			"description": "提高核心与传奇碎片产出，为研究树后段与 Boss farming 提供支撑。",
+			"max_level": 3,
+			"prerequisite_ids": ["research_scrap_recycling"],
+			"costs": [
+				{"level": 1, "resource_id": "core", "amount": 6},
+				{"level": 2, "resource_id": "legend_shard", "amount": 3},
+				{"level": 3, "resource_id": "legend_shard", "amount": 5}
+			],
+			"stat_bonuses": [
+				{"stat_key": "core_gain_percent", "value_per_level": 0.1},
+				{"stat_key": "legend_shard_gain_percent", "value_per_level": 0.08}
+			]
+		}
+	]
+}

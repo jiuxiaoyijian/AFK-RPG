@@ -1,0 +1,205 @@
+{
+  "chapters": [
+    {
+      "id": "chapter_1",
+      "order": 1,
+      "name": "废墟边境",
+      "recommended_power": 100,
+      "unlock_rule": { "type": "default" },
+      "node_ids": ["ch1_n1", "ch1_n2", "ch1_n3", "ch1_boss"],
+      "background_id": "bg_ruins_border",
+      "next_chapter_id": "chapter_2"
+    },
+    {
+      "id": "chapter_2",
+      "order": 2,
+      "name": "焦灼矿场",
+      "recommended_power": 260,
+      "unlock_rule": { "type": "clear_chapter", "chapter_id": "chapter_1" },
+      "node_ids": ["ch2_n1", "ch2_n2", "ch2_n3", "ch2_n4", "ch2_boss"],
+      "background_id": "bg_scorched_mine",
+      "next_chapter_id": ""
+    }
+  ],
+  "chapter_nodes": [
+    {
+      "id": "ch1_n1",
+      "chapter_id": "chapter_1",
+      "node_type": "normal",
+      "enemy_pool_id": "pool_ch1_normal",
+      "wave_count": 2,
+      "time_limit": 90,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 20 },
+        { "item_id": "scrap", "count": 4 }
+      ],
+      "repeat_rewards_profile_id": "drop_normal_ch1",
+      "next_node_id": "ch1_n2"
+    },
+    {
+      "id": "ch1_n2",
+      "chapter_id": "chapter_1",
+      "node_type": "normal",
+      "enemy_pool_id": "pool_ch1_mixed",
+      "wave_count": 3,
+      "time_limit": 100,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 35 },
+        { "item_id": "scrap", "count": 6 }
+      ],
+      "repeat_rewards_profile_id": "drop_normal_ch1",
+      "next_node_id": "ch1_n3"
+    },
+    {
+      "id": "ch1_n3",
+      "chapter_id": "chapter_1",
+      "node_type": "elite",
+      "enemy_pool_id": "pool_ch1_elite",
+      "wave_count": 2,
+      "time_limit": 120,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 45 },
+        { "item_id": "scrap", "count": 10 }
+      ],
+      "repeat_rewards_profile_id": "drop_elite_ch1",
+      "next_node_id": "ch1_boss"
+    },
+    {
+      "id": "ch1_boss",
+      "chapter_id": "chapter_1",
+      "node_type": "boss",
+      "enemy_pool_id": "pool_ch1_boss",
+      "wave_count": 1,
+      "time_limit": 180,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 80 },
+        { "item_id": "scrap", "count": 20 }
+      ],
+      "repeat_rewards_profile_id": "drop_boss_ch1",
+      "next_node_id": ""
+    },
+    {
+      "id": "ch2_n1",
+      "chapter_id": "chapter_2",
+      "node_type": "normal",
+      "enemy_pool_id": "pool_ch2_raiders",
+      "wave_count": 3,
+      "time_limit": 110,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 70 },
+        { "item_id": "scrap", "count": 14 },
+        { "item_id": "core", "count": 2 }
+      ],
+      "repeat_rewards_profile_id": "drop_normal_ch2",
+      "next_node_id": "ch2_n2"
+    },
+    {
+      "id": "ch2_n2",
+      "chapter_id": "chapter_2",
+      "node_type": "normal",
+      "enemy_pool_id": "pool_ch2_hounds",
+      "wave_count": 3,
+      "time_limit": 120,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 86 },
+        { "item_id": "scrap", "count": 16 },
+        { "item_id": "core", "count": 2 }
+      ],
+      "repeat_rewards_profile_id": "drop_normal_ch2",
+      "next_node_id": "ch2_n3"
+    },
+    {
+      "id": "ch2_n3",
+      "chapter_id": "chapter_2",
+      "node_type": "elite",
+      "enemy_pool_id": "pool_ch2_elite_forge",
+      "wave_count": 2,
+      "time_limit": 135,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 110 },
+        { "item_id": "scrap", "count": 22 },
+        { "item_id": "core", "count": 4 }
+      ],
+      "repeat_rewards_profile_id": "drop_elite_ch2",
+      "next_node_id": "ch2_n4"
+    },
+    {
+      "id": "ch2_n4",
+      "chapter_id": "chapter_2",
+      "node_type": "elite",
+      "enemy_pool_id": "pool_ch2_elite_shock",
+      "wave_count": 2,
+      "time_limit": 145,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 124 },
+        { "item_id": "scrap", "count": 26 },
+        { "item_id": "core", "count": 5 }
+      ],
+      "repeat_rewards_profile_id": "drop_elite_ch2",
+      "next_node_id": "ch2_boss"
+    },
+    {
+      "id": "ch2_boss",
+      "chapter_id": "chapter_2",
+      "node_type": "boss",
+      "enemy_pool_id": "pool_ch2_boss",
+      "wave_count": 1,
+      "time_limit": 210,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 180 },
+        { "item_id": "scrap", "count": 40 },
+        { "item_id": "core", "count": 8 },
+        { "item_id": "legend_shard", "count": 2 }
+      ],
+      "repeat_rewards_profile_id": "drop_boss_ch2",
+      "next_node_id": ""
+    }
+  ],
+  "enemy_pools": [
+    {
+      "id": "pool_ch1_normal",
+      "enemy_ids": ["enemy_rat"],
+      "enemies_per_wave": 3
+    },
+    {
+      "id": "pool_ch1_mixed",
+      "enemy_ids": ["enemy_rat", "enemy_bone_guard"],
+      "enemies_per_wave": 3
+    },
+    {
+      "id": "pool_ch1_elite",
+      "enemy_ids": ["elite_plague_shaman", "enemy_bone_guard"],
+      "enemies_per_wave": 2
+    },
+    {
+      "id": "pool_ch1_boss",
+      "enemy_ids": ["boss_iron_beast"],
+      "enemies_per_wave": 1
+    },
+    {
+      "id": "pool_ch2_raiders",
+      "enemy_ids": ["enemy_ash_raider", "enemy_blast_hound"],
+      "enemies_per_wave": 3
+    },
+    {
+      "id": "pool_ch2_hounds",
+      "enemy_ids": ["enemy_blast_hound", "enemy_ash_raider", "enemy_quarry_guard"],
+      "enemies_per_wave": 3
+    },
+    {
+      "id": "pool_ch2_elite_forge",
+      "enemy_ids": ["elite_forge_templar", "enemy_quarry_guard"],
+      "enemies_per_wave": 2
+    },
+    {
+      "id": "pool_ch2_elite_shock",
+      "enemy_ids": ["elite_shock_handler", "enemy_blast_hound"],
+      "enemies_per_wave": 2
+    },
+    {
+      "id": "pool_ch2_boss",
+      "enemy_ids": ["boss_magma_overseer"],
+      "enemies_per_wave": 1
+    }
+  ]
+}

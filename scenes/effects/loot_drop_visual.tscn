@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/loot_drop_visual.gd" id="1_script"]
+
+[node name="LootDropVisual" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Shadow" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-18, 0, 18, 0, 24, 5, -24, 5)
+color = Color(0, 0, 0, 0.28)
+
+[node name="BeamGlow" type="Polygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-14, -132, 14, -132, 24, 0, -24, 0)
+color = Color(1, 0.85, 0.35, 0.2)
+
+[node name="Beam" type="Polygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-8, -126, 8, -126, 12, 0, -12, 0)
+color = Color(1, 0.82, 0.32, 0.46)
+
+[node name="Backdrop" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-18, -18, 18, -18, 18, 18, -18, 18)
+color = Color(0.7, 0.78, 0.9, 0.22)
+
+[node name="IconSprite" type="Sprite2D" parent="."]
+scale = Vector2(0.1, 0.1)
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = -90.0
+offset_top = -50.0
+offset_right = 90.0
+offset_bottom = -24.0
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = ""

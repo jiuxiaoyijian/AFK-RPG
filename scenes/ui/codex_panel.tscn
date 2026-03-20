@@ -1,0 +1,170 @@
+[gd_scene load_steps=2 format=3 uid="uid://desktop_idle_codex"]
+
+[ext_resource type="Script" path="res://scripts/ui/codex_panel_controller.gd" id="1_codex"]
+
+[node name="CodexPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_codex")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 140.0
+offset_top = 92.0
+offset_right = 1140.0
+offset_bottom = 620.0
+
+[node name="HeaderBar" type="Panel" parent="Panel"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 988.0
+offset_bottom = 44.0
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+offset_left = 20.0
+offset_top = 12.0
+offset_right = 320.0
+offset_bottom = 34.0
+text = "图鉴与目标追踪"
+
+[node name="SummarySection" type="Panel" parent="Panel"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 980.0
+offset_bottom = 92.0
+
+[node name="SummaryLabel" type="Label" parent="Panel"]
+offset_left = 20.0
+offset_top = 42.0
+offset_right = 970.0
+offset_bottom = 92.0
+autowrap_mode = 2
+text = "图鉴概览"
+
+[node name="FilterSection" type="Panel" parent="Panel"]
+offset_left = 16.0
+offset_top = 96.0
+offset_right = 344.0
+offset_bottom = 176.0
+
+[node name="FilterSectionLabel" type="Label" parent="Panel"]
+offset_left = 28.0
+offset_top = 104.0
+offset_right = 180.0
+offset_bottom = 126.0
+text = "条目分类"
+
+[node name="ListSection" type="Panel" parent="Panel"]
+offset_left = 16.0
+offset_top = 184.0
+offset_right = 344.0
+offset_bottom = 596.0
+
+[node name="ListSectionLabel" type="Label" parent="Panel"]
+offset_left = 28.0
+offset_top = 194.0
+offset_right = 180.0
+offset_bottom = 216.0
+text = "图鉴条目"
+
+[node name="DetailSection" type="Panel" parent="Panel"]
+offset_left = 352.0
+offset_top = 152.0
+offset_right = 980.0
+offset_bottom = 452.0
+
+[node name="DetailSectionLabel" type="Label" parent="Panel"]
+offset_left = 368.0
+offset_top = 162.0
+offset_right = 520.0
+offset_bottom = 184.0
+text = "条目详情"
+
+[node name="ActionSection" type="Panel" parent="Panel"]
+offset_left = 352.0
+offset_top = 464.0
+offset_right = 980.0
+offset_bottom = 596.0
+
+[node name="ActionSectionLabel" type="Label" parent="Panel"]
+offset_left = 368.0
+offset_top = 474.0
+offset_right = 520.0
+offset_bottom = 496.0
+text = "追踪操作"
+
+[node name="AllButton" type="Button" parent="Panel"]
+offset_left = 20.0
+offset_top = 134.0
+offset_right = 92.0
+offset_bottom = 168.0
+text = "全部"
+
+[node name="BaseButton" type="Button" parent="Panel"]
+offset_left = 100.0
+offset_top = 134.0
+offset_right = 172.0
+offset_bottom = 168.0
+text = "底材"
+
+[node name="AffixButton" type="Button" parent="Panel"]
+offset_left = 180.0
+offset_top = 134.0
+offset_right = 252.0
+offset_bottom = 168.0
+text = "词条"
+
+[node name="LegendaryButton" type="Button" parent="Panel"]
+offset_left = 260.0
+offset_top = 134.0
+offset_right = 340.0
+offset_bottom = 168.0
+text = "传奇"
+
+[node name="CloseButton" type="Button" parent="Panel"]
+offset_left = 922.0
+offset_top = 12.0
+offset_right = 980.0
+offset_bottom = 40.0
+text = "关闭"
+
+[node name="EntryList" type="ItemList" parent="Panel"]
+offset_left = 20.0
+offset_top = 220.0
+offset_right = 336.0
+offset_bottom = 584.0
+
+[node name="DetailLabel" type="RichTextLabel" parent="Panel"]
+offset_left = 360.0
+offset_top = 188.0
+offset_right = 972.0
+offset_bottom = 438.0
+scroll_active = true
+bbcode_enabled = false
+fit_content = false
+text = "未选择传奇目标"
+
+[node name="ActionHintLabel" type="Label" parent="Panel"]
+offset_left = 368.0
+offset_top = 500.0
+offset_right = 972.0
+offset_bottom = 530.0
+autowrap_mode = 2
+text = "追踪状态"
+
+[node name="TrackButton" type="Button" parent="Panel"]
+offset_left = 360.0
+offset_top = 548.0
+offset_right = 972.0
+offset_bottom = 582.0
+text = "设为追踪目标"
+
+[node name="CycleButton" type="Button" parent="Panel"]
+offset_left = 360.0
+offset_top = 510.0
+offset_right = 972.0
+offset_bottom = 542.0
+text = "按当前流派轮换目标"

@@ -1,0 +1,149 @@
+[
+  {
+    "id": "weapon_rust_blade",
+    "slot": "weapon",
+    "name": "锈刃",
+    "base_rarity": "common",
+    "required_breakthrough": "trainee",
+    "item_level": 1,
+    "base_stats": [
+      { "stat_key": "attack_flat", "value": 4.0 }
+    ],
+    "affix_pool_tags": ["whirlwind", "bleed"],
+    "legendary_pool_tags": ["whirlwind", "bleed"],
+    "icon_id": ""
+  },
+  {
+    "id": "weapon_arc_orb",
+    "slot": "weapon",
+    "name": "弧电法球",
+    "base_rarity": "common",
+    "required_breakthrough": "trainee",
+    "item_level": 1,
+    "base_stats": [
+      { "stat_key": "attack_flat", "value": 3.0 },
+      { "stat_key": "attack_speed_percent", "value": 0.03 }
+    ],
+    "affix_pool_tags": ["chain_lightning"],
+    "legendary_pool_tags": ["chain_lightning"],
+    "icon_id": ""
+  },
+  {
+    "id": "helmet_scout_hood",
+    "slot": "helmet",
+    "name": "斥候兜帽",
+    "base_rarity": "common",
+    "required_breakthrough": "trainee",
+    "item_level": 1,
+    "base_stats": [
+      { "stat_key": "hp_flat", "value": 12.0 }
+    ],
+    "affix_pool_tags": ["whirlwind", "bleed", "chain_lightning"],
+    "legendary_pool_tags": ["bleed"],
+    "icon_id": ""
+  },
+  {
+    "id": "armor_patch_coat",
+    "slot": "armor",
+    "name": "拼接护衣",
+    "base_rarity": "common",
+    "required_breakthrough": "trainee",
+    "item_level": 1,
+    "base_stats": [
+      { "stat_key": "hp_flat", "value": 20.0 },
+      { "stat_key": "defense_flat", "value": 2.0 }
+    ],
+    "affix_pool_tags": ["whirlwind", "bleed", "chain_lightning"],
+    "legendary_pool_tags": ["chain_lightning"],
+    "icon_id": ""
+  },
+  {
+    "id": "gloves_hunter_wrap",
+    "slot": "gloves",
+    "name": "猎手缠手",
+    "base_rarity": "common",
+    "required_breakthrough": "trainee",
+    "item_level": 1,
+    "base_stats": [
+      { "stat_key": "attack_speed_percent", "value": 0.04 }
+    ],
+    "affix_pool_tags": ["whirlwind", "chain_lightning"],
+    "legendary_pool_tags": ["whirlwind", "chain_lightning"],
+    "icon_id": ""
+  },
+  {
+    "id": "weapon_saw_cleaver",
+    "slot": "weapon",
+    "name": "锯齿斩刀",
+    "base_rarity": "rare",
+    "required_breakthrough": "trainee",
+    "item_level": 3,
+    "base_stats": [
+      { "stat_key": "attack_flat", "value": 7.0 },
+      { "stat_key": "attack_percent", "value": 0.04 }
+    ],
+    "affix_pool_tags": ["whirlwind", "bleed"],
+    "legendary_pool_tags": ["whirlwind", "bleed"],
+    "icon_id": ""
+  },
+  {
+    "id": "weapon_tempest_emitter",
+    "slot": "weapon",
+    "name": "风暴发射器",
+    "base_rarity": "rare",
+    "required_breakthrough": "trainee",
+    "item_level": 3,
+    "base_stats": [
+      { "stat_key": "attack_flat", "value": 6.0 },
+      { "stat_key": "attack_speed_percent", "value": 0.06 }
+    ],
+    "affix_pool_tags": ["chain_lightning"],
+    "legendary_pool_tags": ["chain_lightning"],
+    "icon_id": ""
+  },
+  {
+    "id": "helmet_war_mask",
+    "slot": "helmet",
+    "name": "矿场战面",
+    "base_rarity": "rare",
+    "required_breakthrough": "trainee",
+    "item_level": 3,
+    "base_stats": [
+      { "stat_key": "hp_flat", "value": 22.0 },
+      { "stat_key": "core_damage_percent", "value": 0.03 }
+    ],
+    "affix_pool_tags": ["whirlwind", "bleed", "chain_lightning"],
+    "legendary_pool_tags": ["bleed"],
+    "icon_id": ""
+  },
+  {
+    "id": "armor_heat_plate",
+    "slot": "armor",
+    "name": "耐热重甲",
+    "base_rarity": "rare",
+    "required_breakthrough": "trainee",
+    "item_level": 3,
+    "base_stats": [
+      { "stat_key": "hp_flat", "value": 36.0 },
+      { "stat_key": "defense_flat", "value": 4.0 }
+    ],
+    "affix_pool_tags": ["whirlwind", "bleed", "chain_lightning"],
+    "legendary_pool_tags": ["chain_lightning"],
+    "icon_id": ""
+  },
+  {
+    "id": "gloves_static_grips",
+    "slot": "gloves",
+    "name": "静电握套",
+    "base_rarity": "rare",
+    "required_breakthrough": "trainee",
+    "item_level": 3,
+    "base_stats": [
+      { "stat_key": "attack_speed_percent", "value": 0.07 },
+      { "stat_key": "core_damage_percent", "value": 0.03 }
+    ],
+    "affix_pool_tags": ["whirlwind", "chain_lightning", "bleed"],
+    "legendary_pool_tags": ["whirlwind", "chain_lightning"],
+    "icon_id": ""
+  }
+]

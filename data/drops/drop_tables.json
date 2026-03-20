@@ -1,0 +1,152 @@
+{
+  "drop_profiles": [
+    {
+      "id": "drop_normal_ch1",
+      "profile_type": "normal",
+      "drop_focus": "普通词条、基础底材、金币铁屑",
+      "equipment_rolls": 1,
+      "equipment_chance": 0.35,
+      "offline_seconds_per_run": 18,
+      "offline_efficiency": 0.55,
+      "max_offline_seconds": 21600,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 6, "max_count": 14, "weight": 100 },
+        { "item_id": "scrap", "min_count": 1, "max_count": 3, "weight": 70 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["common", "uncommon", "rare"],
+        "item_level_min": 1,
+        "item_level_max": 3,
+        "max_affix_count": 2,
+        "prefer_current_build": false,
+        "guaranteed_legendary_affix": false
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_elite_ch1",
+      "profile_type": "elite",
+      "drop_focus": "稀有/史诗成型装、核心材料",
+      "equipment_rolls": 1,
+      "equipment_chance": 0.8,
+      "offline_seconds_per_run": 22,
+      "offline_efficiency": 0.6,
+      "max_offline_seconds": 25200,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 14, "max_count": 26, "weight": 100 },
+        { "item_id": "scrap", "min_count": 3, "max_count": 7, "weight": 90 },
+        { "item_id": "core", "min_count": 1, "max_count": 3, "weight": 80 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["uncommon", "rare", "epic"],
+        "item_level_min": 2,
+        "item_level_max": 4,
+        "max_affix_count": 3,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": false
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_boss_ch1",
+      "profile_type": "boss",
+      "drop_focus": "传奇特效、高价值材料、冲毕业胚子",
+      "equipment_rolls": 2,
+      "equipment_chance": 1.0,
+      "offline_seconds_per_run": 30,
+      "offline_efficiency": 0.65,
+      "max_offline_seconds": 28800,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 25, "max_count": 40, "weight": 100 },
+        { "item_id": "scrap", "min_count": 6, "max_count": 10, "weight": 100 },
+        { "item_id": "core", "min_count": 3, "max_count": 6, "weight": 90 },
+        { "item_id": "legend_shard", "min_count": 1, "max_count": 2, "weight": 100 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["epic", "legendary"],
+        "item_level_min": 3,
+        "item_level_max": 5,
+        "max_affix_count": 4,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": true,
+        "required_legendary_source_type": "boss"
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_normal_ch2",
+      "profile_type": "normal",
+      "drop_focus": "高级底材、稀有词条、更多核心材料",
+      "equipment_rolls": 1,
+      "equipment_chance": 0.55,
+      "offline_seconds_per_run": 22,
+      "offline_efficiency": 0.6,
+      "max_offline_seconds": 25200,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 14, "max_count": 24, "weight": 100 },
+        { "item_id": "scrap", "min_count": 3, "max_count": 6, "weight": 90 },
+        { "item_id": "core", "min_count": 1, "max_count": 2, "weight": 55 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["uncommon", "rare", "epic"],
+        "item_level_min": 3,
+        "item_level_max": 5,
+        "max_affix_count": 3,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": false
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_elite_ch2",
+      "profile_type": "elite",
+      "drop_focus": "高评分精英词条、传奇胚子、核心与碎片",
+      "equipment_rolls": 2,
+      "equipment_chance": 1.0,
+      "offline_seconds_per_run": 26,
+      "offline_efficiency": 0.68,
+      "max_offline_seconds": 28800,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 24, "max_count": 40, "weight": 100 },
+        { "item_id": "scrap", "min_count": 5, "max_count": 9, "weight": 100 },
+        { "item_id": "core", "min_count": 2, "max_count": 4, "weight": 85 },
+        { "item_id": "legend_shard", "min_count": 1, "max_count": 1, "weight": 35 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["rare", "epic", "legendary"],
+        "item_level_min": 4,
+        "item_level_max": 6,
+        "max_affix_count": 4,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": false
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_boss_ch2",
+      "profile_type": "boss",
+      "drop_focus": "Boss专属传奇池、远古胚子、碎片爆发",
+      "equipment_rolls": 3,
+      "equipment_chance": 1.0,
+      "offline_seconds_per_run": 34,
+      "offline_efficiency": 0.72,
+      "max_offline_seconds": 32400,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 40, "max_count": 62, "weight": 100 },
+        { "item_id": "scrap", "min_count": 8, "max_count": 14, "weight": 100 },
+        { "item_id": "core", "min_count": 4, "max_count": 7, "weight": 90 },
+        { "item_id": "legend_shard", "min_count": 2, "max_count": 4, "weight": 100 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["epic", "legendary", "ancient"],
+        "item_level_min": 5,
+        "item_level_max": 7,
+        "max_affix_count": 4,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": true,
+        "required_legendary_source_type": "boss"
+      },
+      "pity_rules": {}
+    }
+  ]
+}
