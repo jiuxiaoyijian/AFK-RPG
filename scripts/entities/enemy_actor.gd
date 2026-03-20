@@ -213,15 +213,7 @@ func _apply_portrait_visual() -> void:
 
 
 func _load_runtime_texture(resource_path: String) -> Texture2D:
-	if resource_path.is_empty() or not FileAccess.file_exists(resource_path):
-		return null
-
-	var image: Image = Image.new()
-	var err: Error = image.load(ProjectSettings.globalize_path(resource_path))
-	if err != OK:
-		return null
-
-	return ImageTexture.create_from_image(image)
+	return RuntimeTextureLoader.load_texture(resource_path)
 
 
 func set_spawn_side(value: int) -> void:
