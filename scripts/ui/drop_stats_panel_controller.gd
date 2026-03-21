@@ -40,7 +40,14 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	title_label.text = "掉落统计"
+	title_label.text = "机缘推演"
+	quick_section_label.text = "速览"
+	list_section_label.text = "节点样本"
+	detail_section_label.text = "节点详情"
+	rate_section_label.text = "机缘效率"
+	recent_section_label.text = "近期记录"
+	current_button.text = "当前节点"
+	recommended_button.text = "推荐机缘"
 	summary_label.text = _build_summary_text()
 
 	var previous_selection: String = selected_node_id

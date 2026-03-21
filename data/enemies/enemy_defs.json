@@ -1,7 +1,7 @@
 [
   {
     "id": "enemy_rat",
-    "name": "腐鼠",
+    "name": "桃瘴鼠",
     "enemy_type": "normal",
     "tags": ["swarm"],
     "chapter_id": "chapter_1",
@@ -18,7 +18,7 @@
   },
   {
     "id": "enemy_bone_guard",
-    "name": "骨甲卫兵",
+    "name": "纸甲巡祠",
     "enemy_type": "normal",
     "tags": ["armored"],
     "chapter_id": "chapter_1",
@@ -35,7 +35,7 @@
   },
   {
     "id": "elite_plague_shaman",
-    "name": "疫病萨满",
+    "name": "香灰巫祝",
     "enemy_type": "elite",
     "tags": ["regenerator", "cursed"],
     "chapter_id": "chapter_1",
@@ -52,7 +52,7 @@
   },
   {
     "id": "boss_iron_beast",
-    "name": "铁爪巨兽",
+    "name": "伏祠山君",
     "enemy_type": "boss",
     "tags": ["boss", "armored"],
     "chapter_id": "chapter_1",
@@ -69,7 +69,7 @@
   },
   {
     "id": "enemy_ash_raider",
-    "name": "灰烬掠夺者",
+    "name": "盗火佃客",
     "enemy_type": "normal",
     "tags": ["raider"],
     "chapter_id": "chapter_2",
@@ -86,7 +86,7 @@
   },
   {
     "id": "enemy_blast_hound",
-    "name": "爆燃猎犬",
+    "name": "炽骨犬",
     "enemy_type": "normal",
     "tags": ["beast", "fast"],
     "chapter_id": "chapter_2",
@@ -103,7 +103,7 @@
   },
   {
     "id": "enemy_quarry_guard",
-    "name": "采场守卫",
+    "name": "守田傀",
     "enemy_type": "normal",
     "tags": ["armored"],
     "chapter_id": "chapter_2",
@@ -120,7 +120,7 @@
   },
   {
     "id": "elite_forge_templar",
-    "name": "锻炉圣卫",
+    "name": "护炉傩兵",
     "enemy_type": "elite",
     "tags": ["elite_guard", "armored"],
     "chapter_id": "chapter_2",
@@ -137,7 +137,7 @@
   },
   {
     "id": "elite_shock_handler",
-    "name": "电链驯导者",
+    "name": "引雷役修",
     "enemy_type": "elite",
     "tags": ["elite_caster", "charged"],
     "chapter_id": "chapter_2",
@@ -154,7 +154,7 @@
   },
   {
     "id": "boss_magma_overseer",
-    "name": "熔核监工",
+    "name": "祭炉监院",
     "enemy_type": "boss",
     "tags": ["boss", "armored", "charged"],
     "chapter_id": "chapter_2",

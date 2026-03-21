@@ -48,7 +48,7 @@ offset_left = 18.0
 offset_top = 14.0
 offset_right = 300.0
 offset_bottom = 40.0
-text = "离线收益报告"
+text = "闭关所得"
 
 [node name="HighlightLabel" type="Label" parent="Panel"]
 offset_left = 18.0
@@ -58,14 +58,37 @@ offset_bottom = 76.0
 autowrap_mode = 2
 text = "高光收益: --"
 
-[node name="ContentLabel" type="Label" parent="Panel"]
+[node name="EarningsTitleLabel" type="Label" parent="Panel"]
 offset_left = 18.0
-offset_top = 92.0
+offset_top = 88.0
+offset_right = 240.0
+offset_bottom = 106.0
+text = "本次闭关所得"
+
+[node name="ContentLabel" type="RichTextLabel" parent="Panel"]
+offset_left = 18.0
+offset_top = 112.0
 offset_right = 620.0
-offset_bottom = 396.0
+offset_bottom = 286.0
 autowrap_mode = 2
-text = "暂无离线收益"
-vertical_alignment = 0
+text = "暂无闭关所得"
+scroll_active = true
+
+[node name="GoalTitleLabel" type="Label" parent="Panel"]
+offset_left = 18.0
+offset_top = 300.0
+offset_right = 240.0
+offset_bottom = 318.0
+text = "回来先做什么"
+
+[node name="GoalLabel" type="RichTextLabel" parent="Panel"]
+offset_left = 18.0
+offset_top = 324.0
+offset_right = 620.0
+offset_bottom = 410.0
+autowrap_mode = 2
+text = "今日机缘建议"
+scroll_active = true
 
 [node name="CloseButton" type="Button" parent="Panel"]
 offset_left = 500.0

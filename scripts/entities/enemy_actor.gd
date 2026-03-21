@@ -94,7 +94,14 @@ func take_damage(raw_damage: float, attacker_tags: Array = [], attacker_payload:
 	var actual_damage: float = DamageResolverScript.apply_defense(raw_damage, defense)
 	current_hp = maxf(0.0, current_hp - actual_damage)
 	hp_bar.value = current_hp
-	_show_feedback("-%d" % int(actual_damage), _get_hit_color(attacker_payload))
+	var emphasis: float = 1.0
+	if enemy_type == "elite":
+		emphasis = 1.12
+	elif enemy_type == "boss":
+		emphasis = 1.28
+	if String(attacker_payload.get("source", "")) in ["whirlwind", "bleed", "chain_lightning", "core"]:
+		emphasis += 0.12
+	_show_feedback("-%d" % int(actual_damage), _get_hit_color(attacker_payload), emphasis)
 	_flash_body(_get_hit_color(attacker_payload))
 	if current_hp <= 0.0:
 		died.emit(enemy_id, global_position, enemy_type)
@@ -106,7 +113,7 @@ func take_damage(raw_damage: float, attacker_tags: Array = [], attacker_payload:
 		_apply_bleed(2.8, maxf(1.0, raw_damage * bleed_multiplier))
 		var execute_threshold: float = float(attacker_payload.get("execute_threshold", 0.0))
 		if execute_threshold > 0.0 and current_hp <= max_hp * execute_threshold:
-			_show_feedback("处决", Color(1.0, 0.2, 0.2, 1.0))
+			_show_feedback("处决", Color(1.0, 0.2, 0.2, 1.0), 1.36)
 			current_hp = 0.0
 			hp_bar.value = current_hp
 			died.emit(enemy_id, global_position, enemy_type)
@@ -134,7 +141,7 @@ func _process_bleed(delta: float) -> void:
 			var actual_damage: float = DamageResolverScript.apply_defense(float(effect["tick_damage"]), defense * 0.5)
 			current_hp = maxf(0.0, current_hp - actual_damage)
 			hp_bar.value = current_hp
-			_show_feedback("流血 %d" % int(actual_damage), Color(1.0, 0.35, 0.35, 1.0))
+			_show_feedback("流血 %d" % int(actual_damage), Color(1.0, 0.35, 0.35, 1.0), 1.08)
 
 	for index in range(bleed_ticks.size() - 1, -1, -1):
 		if float(bleed_ticks[index]["time_left"]) <= 0.0:
@@ -159,18 +166,21 @@ func update_status_label(attacker_payload: Dictionary) -> void:
 	status_label.text = " ".join(tags)
 
 
-func _show_feedback(text: String, color: Color) -> void:
+func _show_feedback(text: String, color: Color, emphasis: float = 1.0) -> void:
 	feedback_label.text = text
 	feedback_label.modulate = color
 	feedback_label.position = Vector2(-40.0, -74.0)
+	feedback_label.scale = Vector2.ONE * emphasis
 	if feedback_tween:
 		feedback_tween.kill()
 	feedback_tween = create_tween()
 	feedback_tween.tween_property(feedback_label, "position:y", feedback_label.position.y - 14.0, 0.35)
+	feedback_tween.parallel().tween_property(feedback_label, "scale", Vector2.ONE * 0.92, 0.35)
 	feedback_tween.parallel().tween_property(feedback_label, "modulate:a", 0.0, 0.35)
 	feedback_tween.finished.connect(func() -> void:
 		feedback_label.text = ""
 		feedback_label.modulate = Color(1, 1, 1, 1)
+		feedback_label.scale = Vector2.ONE
 	)
 
 

@@ -34,6 +34,10 @@ const CARD_MIN_TOP_GAP := 18.0
 
 @onready var resource_label: Label = $TopBar/ResourceLabel
 @onready var run_label: Label = $TopBar/RunLabel
+@onready var combat_highlight_panel: Panel = $CombatHighlightPanel
+@onready var combat_highlight_title: Label = $CombatHighlightPanel/CombatHighlightTitle
+@onready var combat_highlight_subtitle: Label = $CombatHighlightPanel/CombatHighlightSubtitle
+@onready var combat_highlight_detail: Label = $CombatHighlightPanel/CombatHighlightDetail
 @onready var battle_card: Panel = $BattleCard
 @onready var node_label: Label = $BattleCard/NodeLabel
 @onready var state_label: Label = $BattleCard/StateLabel
@@ -45,7 +49,16 @@ const CARD_MIN_TOP_GAP := 18.0
 @onready var battle_safe_frame: Panel = $BattleSafeFrame
 @onready var target_card: Panel = $TargetCard
 @onready var target_label: Label = $TargetCard/TargetLabel
+@onready var build_gap_label: Label = $TargetCard/BuildGapLabel
+@onready var next_target_label: Label = $TargetCard/NextTargetLabel
 @onready var codex_label: Label = $TargetCard/CodexLabel
+@onready var daily_goal_card: Panel = $DailyGoalCard
+@onready var daily_goal_title_label: Label = $DailyGoalCard/DailyGoalTitleLabel
+@onready var primary_goal_label: Label = $DailyGoalCard/PrimaryGoalLabel
+@onready var primary_goal_progress_label: Label = $DailyGoalCard/PrimaryProgressLabel
+@onready var primary_goal_cta_label: Label = $DailyGoalCard/PrimaryCtaLabel
+@onready var side_goals_label: Label = $DailyGoalCard/SideGoalsLabel
+@onready var next_step_label: Label = $DailyGoalCard/NextStepLabel
 @onready var equip_card: Panel = $EquipCard
 @onready var equip_card_art: TextureRect = $EquipCard/CardArt
 @onready var weapon_icon: TextureRect = $EquipCard/WeaponSlot/Icon
@@ -73,6 +86,7 @@ const CARD_MIN_TOP_GAP := 18.0
 
 var drop_toast_tween: Tween
 var drop_toast_base_position: Vector2 = Vector2.ZERO
+var combat_highlight_tween: Tween
 
 
 func _ready() -> void:
@@ -83,6 +97,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_hud_layout)
 	EventBus.node_changed.connect(_on_node_changed)
 	EventBus.combat_state_changed.connect(_on_state_changed)
+	EventBus.combat_highlight_requested.connect(_on_combat_highlight_requested)
 	EventBus.player_hp_changed.connect(_on_hp_changed)
 	EventBus.resources_changed.connect(_on_resources_changed)
 	EventBus.core_skill_changed.connect(_on_skill_changed)
@@ -90,6 +105,8 @@ func _ready() -> void:
 	EventBus.loot_summary_changed.connect(_on_loot_summary_changed)
 	EventBus.codex_changed.connect(_on_codex_changed)
 	EventBus.loot_target_changed.connect(_on_target_changed)
+	EventBus.daily_goals_changed.connect(_on_daily_goals_changed)
+	EventBus.research_changed.connect(_on_build_relevant_state_changed)
 
 	_on_node_changed(GameManager.current_node_id)
 	_on_state_changed("准备中")
@@ -99,8 +116,12 @@ func _ready() -> void:
 	_on_focus_changed()
 	_on_target_changed()
 	_on_codex_changed()
+	_on_daily_goals_changed()
 	_on_equipment_changed()
 	_on_loot_summary_changed(GameManager.last_loot_summary)
+	_apply_daily_goal_typography()
+	_apply_target_card_typography()
+	_apply_combat_highlight_style()
 	call_deferred("_apply_hud_layout")
 
 
@@ -114,6 +135,7 @@ func _on_node_changed(node_id: String) -> void:
 		String(node_data.get("node_type", "--")),
 	]
 	_on_focus_changed()
+	_refresh_target_card()
 	_on_resources_changed()
 
 
@@ -133,7 +155,7 @@ func _on_hp_changed(current_hp: float, max_hp: float) -> void:
 
 
 func _on_resources_changed() -> void:
-	resource_label.text = "金币 %d  |  铁屑 %d  |  核心 %d  |  碎片 %d  |  背包 %d" % [
+	resource_label.text = "香火钱 %d  |  祠灰 %d  |  灵核 %d  |  真意残片 %d  |  背包 %d" % [
 		MetaProgressionSystem.gold,
 		MetaProgressionSystem.scrap,
 		MetaProgressionSystem.core,
@@ -161,13 +183,45 @@ func _on_focus_changed() -> void:
 
 
 func _on_target_changed() -> void:
-	target_label.text = LootCodexSystem.get_tracked_target_summary_text()
-	target_label.add_theme_color_override("font_color", Color(0.92, 0.86, 1.0, 1.0))
+	_refresh_target_card()
 
 
 func _on_codex_changed() -> void:
-	codex_label.text = LootCodexSystem.get_codex_summary_text()
-	codex_label.add_theme_color_override("font_color", Color(0.74, 0.82, 1.0, 1.0))
+	_refresh_target_card()
+
+
+func _on_daily_goals_changed() -> void:
+	var goal_data: Dictionary = DailyGoalSystem.get_daily_goal_data()
+	var primary_goal: Dictionary = goal_data.get("primary_goal", {})
+	var side_goals: Array = goal_data.get("side_goals", [])
+	daily_goal_title_label.text = "今日机缘"
+	if primary_goal.is_empty():
+		primary_goal_label.text = "主机缘: 暂无"
+		primary_goal_progress_label.text = "进度: --"
+		primary_goal_cta_label.text = "先等待系统生成今日机缘。"
+		side_goals_label.text = "旁支: 暂无"
+		next_step_label.text = "回来先做什么: 暂无"
+		return
+
+	var primary_completed: bool = String(primary_goal.get("status", "active")) == "completed"
+	primary_goal_label.text = "主机缘: %s" % String(primary_goal.get("title", "未命名目标"))
+	primary_goal_progress_label.text = "进度: %s" % String(primary_goal.get("progress_text", "--"))
+	primary_goal_cta_label.text = "建议: %s" % String(primary_goal.get("cta_text", "继续推进主机缘"))
+	side_goals_label.text = _build_side_goals_text(side_goals)
+	next_step_label.text = "回来先做什么: %s" % String(goal_data.get("next_step_summary", "继续推进今日机缘"))
+
+	primary_goal_label.add_theme_color_override(
+		"font_color",
+		Color(1.0, 0.82, 0.44, 1.0) if primary_completed else Color(0.96, 0.92, 0.76, 1.0)
+	)
+	primary_goal_progress_label.add_theme_color_override(
+		"font_color",
+		Color(0.72, 0.92, 0.74, 1.0) if primary_completed else Color(0.76, 0.86, 1.0, 1.0)
+	)
+	primary_goal_cta_label.add_theme_color_override("font_color", Color(0.84, 0.9, 1.0, 1.0))
+	side_goals_label.add_theme_color_override("font_color", Color(0.74, 0.84, 0.94, 1.0))
+	next_step_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54, 1.0))
+	_refresh_target_card()
 
 
 func _on_equipment_changed() -> void:
@@ -175,6 +229,7 @@ func _on_equipment_changed() -> void:
 	_update_equipped_slot("helmet", helmet_label)
 	_update_equipped_slot("armor", armor_label)
 	_update_equipped_slot("gloves", gloves_label)
+	_refresh_target_card()
 
 
 func _on_loot_summary_changed(summary_text: String) -> void:
@@ -197,6 +252,19 @@ func _on_loot_summary_changed(summary_text: String) -> void:
 		loot_label.text = "\n".join(summary_lines.slice(1))
 	loot_label.add_theme_color_override("font_color", Color(0.82, 0.86, 0.9, 1.0))
 	_maybe_show_drop_toast(highlight_line)
+
+
+func _on_combat_highlight_requested(highlight_data: Dictionary) -> void:
+	var highlight_type: String = String(highlight_data.get("highlight_type", "generic"))
+	combat_highlight_title.text = String(highlight_data.get("title", "战斗高光"))
+	combat_highlight_subtitle.text = String(highlight_data.get("subtitle", ""))
+	combat_highlight_detail.text = String(highlight_data.get("detail", ""))
+	var colors: Dictionary = _get_combat_highlight_colors(highlight_type)
+	combat_highlight_title.add_theme_color_override("font_color", colors.get("title", Color(1, 1, 1, 1)))
+	combat_highlight_subtitle.add_theme_color_override("font_color", colors.get("subtitle", Color(1, 1, 1, 1)))
+	combat_highlight_detail.add_theme_color_override("font_color", colors.get("detail", Color(1, 1, 1, 1)))
+	_apply_panel_tint(combat_highlight_panel, colors.get("panel", Color(0.18, 0.22, 0.30, 0.92)))
+	_show_combat_highlight_banner()
 
 
 func _update_equipped_slot(slot: String, label: Label) -> void:
@@ -302,15 +370,21 @@ func _apply_battle_safe_frame_style() -> void:
 
 func _apply_hud_layout() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
+	combat_highlight_panel.position = Vector2((viewport_size.x - combat_highlight_panel.size.x) * 0.5, 66.0)
 	var nav_top: float = main_nav_bar.position.y if main_nav_bar != null else viewport_size.y - 92.0
 	var safe_frame_bottom: float = nav_top - SAFE_FRAME_BOTTOM_GAP
 	var safe_frame_top: float = safe_frame_bottom - SAFE_FRAME_HEIGHT
 	battle_safe_frame.position = Vector2(SAFE_FRAME_SIDE_MARGIN, safe_frame_top)
 	battle_safe_frame.size = Vector2(viewport_size.x - SAFE_FRAME_SIDE_MARGIN * 2.0, SAFE_FRAME_HEIGHT)
+	daily_goal_card.position = Vector2(target_card.position.x, target_card.position.y + target_card.size.y + 12.0)
+	daily_goal_card.size.x = target_card.size.x
 
 	var reference_top: float = maxf(
-		battle_card.position.y + battle_card.size.y,
-		target_card.position.y + target_card.size.y
+		maxf(
+			battle_card.position.y + battle_card.size.y,
+			target_card.position.y + target_card.size.y
+		),
+		daily_goal_card.position.y + daily_goal_card.size.y
 	) + CARD_MIN_TOP_GAP
 	var desired_card_y: float = safe_frame_top - equip_card.size.y - CARD_TO_FRAME_GAP
 	var card_y: float = maxf(reference_top, desired_card_y)
@@ -337,6 +411,73 @@ func _apply_font_size_recursive(node: Node) -> void:
 		button_node.add_theme_font_size_override("font_size", 14)
 	for child in node.get_children():
 		_apply_font_size_recursive(child)
+
+
+func _apply_daily_goal_typography() -> void:
+	for label in [
+		daily_goal_title_label,
+		primary_goal_label,
+		primary_goal_progress_label,
+		primary_goal_cta_label,
+		side_goals_label,
+		next_step_label,
+	]:
+		label.add_theme_font_size_override("font_size", 12)
+
+
+func _apply_target_card_typography() -> void:
+	for label in [
+		target_label,
+		build_gap_label,
+		next_target_label,
+		codex_label,
+	]:
+		label.add_theme_font_size_override("font_size", 11)
+
+
+func _apply_combat_highlight_style() -> void:
+	combat_highlight_title.add_theme_font_size_override("font_size", 20)
+	combat_highlight_subtitle.add_theme_font_size_override("font_size", 14)
+	combat_highlight_detail.add_theme_font_size_override("font_size", 12)
+	_apply_panel_tint(combat_highlight_panel, Color(0.18, 0.22, 0.30, 0.92))
+	combat_highlight_panel.visible = false
+
+
+func _refresh_target_card() -> void:
+	var advice: Dictionary = GameManager.get_build_advice_data()
+	if advice.is_empty():
+		target_label.text = "追踪: --"
+		build_gap_label.text = "缺口: --"
+		next_target_label.text = "下一件: --"
+		codex_label.text = LootCodexSystem.get_codex_summary_text()
+		return
+
+	target_label.text = String(advice.get("tracked_target_line", "追踪: --"))
+	build_gap_label.text = String(advice.get("gap_line", "缺口: --"))
+	next_target_label.text = String(advice.get("next_target_line", "下一件: --"))
+	codex_label.text = String(advice.get("recommendation_line", LootCodexSystem.get_codex_summary_text()))
+
+	target_label.add_theme_color_override("font_color", Color(0.92, 0.86, 1.0, 1.0))
+	build_gap_label.add_theme_color_override("font_color", Color(0.98, 0.84, 0.54, 1.0))
+	next_target_label.add_theme_color_override("font_color", Color(0.84, 0.92, 0.76, 1.0))
+	codex_label.add_theme_color_override("font_color", Color(0.74, 0.82, 1.0, 1.0))
+
+
+func _on_build_relevant_state_changed() -> void:
+	_refresh_target_card()
+
+
+func _build_side_goals_text(goals: Array) -> String:
+	if goals.is_empty():
+		return "支线: 暂无"
+	var lines: Array[String] = []
+	for goal_variant in goals:
+		var goal: Dictionary = goal_variant
+		lines.append("%s (%s)" % [
+			String(goal.get("title", "支线目标")),
+			String(goal.get("progress_text", "--")),
+		])
+	return "支线:\n%s" % "\n".join(lines)
 
 
 func _apply_slot_icons() -> void:
@@ -384,21 +525,25 @@ func _maybe_show_drop_toast(highlight_line: String) -> void:
 		return
 
 	toast_icon.texture = loot_icon.texture
-	toast_title.text = "传奇掉落" if bool(highlight.get("has_legendary_affix", false)) else "高价值掉落"
+	toast_title.text = _get_drop_toast_title(highlight)
 	toast_label.text = String(highlight.get("item_name", highlight_line))
-	drop_toast.modulate = Color(1.0, 0.84, 0.48, 0.95) if bool(highlight.get("has_legendary_affix", false)) else Color(0.76, 0.9, 1.0, 0.92)
+	drop_toast.modulate = _get_drop_toast_color(highlight)
 	drop_toast.visible = true
 	drop_toast.position = drop_toast_base_position
 	if drop_toast_tween:
 		drop_toast_tween.kill()
 	drop_toast_tween = create_tween()
-	drop_toast_tween.tween_property(drop_toast, "position:y", drop_toast_base_position.y - 10.0, 0.25)
+	var lift_offset: float = 18.0 if bool(highlight.get("is_tracked_target", false)) else 10.0
+	var hold_time: float = 2.4 if bool(highlight.get("is_tracked_target", false)) else (2.0 if bool(highlight.get("has_legendary_affix", false)) else 1.5)
+	drop_toast_tween.tween_property(drop_toast, "position:y", drop_toast_base_position.y - lift_offset, 0.25)
+	drop_toast_tween.parallel().tween_property(drop_toast, "scale", Vector2.ONE * (1.06 if bool(highlight.get("is_tracked_target", false)) else 1.0), 0.22)
 	drop_toast_tween.parallel().tween_property(drop_toast, "modulate:a", 1.0, 0.15)
-	drop_toast_tween.tween_interval(1.5)
+	drop_toast_tween.tween_interval(hold_time)
 	drop_toast_tween.tween_property(drop_toast, "modulate:a", 0.0, 0.35)
 	drop_toast_tween.finished.connect(func() -> void:
 		drop_toast.visible = false
 		drop_toast.modulate.a = 1.0
+		drop_toast.scale = Vector2.ONE
 		drop_toast.position = drop_toast_base_position
 	)
 
@@ -411,6 +556,87 @@ func _get_loot_card_modulate(text: String) -> Color:
 	if text.contains("分解"):
 		return Color(0.94, 0.72, 0.52, 0.52)
 	return Color(0.9, 0.92, 0.98, 0.45)
+
+
+func _show_combat_highlight_banner() -> void:
+	combat_highlight_panel.visible = true
+	combat_highlight_panel.modulate = Color(1, 1, 1, 0.0)
+	combat_highlight_panel.scale = Vector2.ONE * 0.96
+	if combat_highlight_tween:
+		combat_highlight_tween.kill()
+	combat_highlight_tween = create_tween()
+	combat_highlight_tween.tween_property(combat_highlight_panel, "modulate:a", 1.0, 0.12)
+	combat_highlight_tween.parallel().tween_property(combat_highlight_panel, "scale", Vector2.ONE, 0.18)
+	combat_highlight_tween.tween_interval(1.45)
+	combat_highlight_tween.tween_property(combat_highlight_panel, "modulate:a", 0.0, 0.3)
+	combat_highlight_tween.finished.connect(func() -> void:
+		combat_highlight_panel.visible = false
+		combat_highlight_panel.modulate.a = 1.0
+		combat_highlight_panel.scale = Vector2.ONE
+	)
+
+
+func _apply_panel_tint(panel: Panel, bg_color: Color) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.border_color = Color(minf(bg_color.r + 0.18, 1.0), minf(bg_color.g + 0.18, 1.0), minf(bg_color.b + 0.18, 1.0), 0.92)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	panel.add_theme_stylebox_override("panel", style)
+
+
+func _get_combat_highlight_colors(highlight_type: String) -> Dictionary:
+	match highlight_type:
+		"elite", "elite_kill":
+			return {
+				"panel": Color(0.34, 0.18, 0.10, 0.94),
+				"title": Color(1.0, 0.78, 0.42, 1.0),
+				"subtitle": Color(1.0, 0.90, 0.72, 1.0),
+				"detail": Color(0.98, 0.84, 0.66, 1.0),
+			}
+		"boss", "boss_kill":
+			return {
+				"panel": Color(0.34, 0.10, 0.10, 0.96),
+				"title": Color(1.0, 0.70, 0.38, 1.0),
+				"subtitle": Color(1.0, 0.88, 0.78, 1.0),
+				"detail": Color(1.0, 0.82, 0.62, 1.0),
+			}
+		"core_skill":
+			return {
+				"panel": Color(0.12, 0.20, 0.34, 0.94),
+				"title": Color(0.82, 0.92, 1.0, 1.0),
+				"subtitle": Color(0.96, 0.92, 0.72, 1.0),
+				"detail": Color(0.78, 0.88, 1.0, 1.0),
+			}
+		_:
+			return {
+				"panel": Color(0.18, 0.22, 0.30, 0.92),
+				"title": Color(0.94, 0.96, 1.0, 1.0),
+				"subtitle": Color(0.88, 0.90, 0.94, 1.0),
+				"detail": Color(0.76, 0.84, 0.94, 1.0),
+			}
+
+
+func _get_drop_toast_title(highlight: Dictionary) -> String:
+	if bool(highlight.get("is_tracked_target", false)):
+		return "追踪目标达成"
+	if bool(highlight.get("has_legendary_affix", false)):
+		return "传奇掉落"
+	return "高价值掉落"
+
+
+func _get_drop_toast_color(highlight: Dictionary) -> Color:
+	if bool(highlight.get("is_tracked_target", false)):
+		return Color(1.0, 0.50, 0.36, 0.98)
+	if bool(highlight.get("has_legendary_affix", false)):
+		return Color(1.0, 0.84, 0.48, 0.95)
+	return Color(0.76, 0.9, 1.0, 0.92)
 
 
 func _load_runtime_texture(resource_path: String) -> Texture2D:

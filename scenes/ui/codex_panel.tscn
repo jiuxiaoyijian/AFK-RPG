@@ -28,7 +28,7 @@ offset_left = 20.0
 offset_top = 12.0
 offset_right = 320.0
 offset_bottom = 34.0
-text = "图鉴与目标追踪"
+text = "异闻录与机缘追踪"
 
 [node name="SummarySection" type="Panel" parent="Panel"]
 offset_left = 16.0
@@ -42,7 +42,7 @@ offset_top = 42.0
 offset_right = 970.0
 offset_bottom = 92.0
 autowrap_mode = 2
-text = "图鉴概览"
+text = "异闻概览"
 
 [node name="FilterSection" type="Panel" parent="Panel"]
 offset_left = 16.0
@@ -68,7 +68,7 @@ offset_left = 28.0
 offset_top = 194.0
 offset_right = 180.0
 offset_bottom = 216.0
-text = "图鉴条目"
+text = "异闻条目"
 
 [node name="DetailSection" type="Panel" parent="Panel"]
 offset_left = 352.0
@@ -122,7 +122,7 @@ offset_left = 260.0
 offset_top = 134.0
 offset_right = 340.0
 offset_bottom = 168.0
-text = "传奇"
+text = "异宝"
 
 [node name="CloseButton" type="Button" parent="Panel"]
 offset_left = 922.0
@@ -145,7 +145,7 @@ offset_bottom = 438.0
 scroll_active = true
 bbcode_enabled = false
 fit_content = false
-text = "未选择传奇目标"
+text = "未选择异宝机缘"
 
 [node name="ActionHintLabel" type="Label" parent="Panel"]
 offset_left = 368.0
@@ -167,4 +167,4 @@ offset_left = 360.0
 offset_top = 510.0
 offset_right = 972.0
 offset_bottom = 542.0
-text = "按当前流派轮换目标"
+text = "按当前道统轮换机缘"

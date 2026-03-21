@@ -158,6 +158,7 @@ func _spawn_wave() -> void:
 
 	current_wave_index += 1
 	battle_state = "moving"
+	_emit_wave_highlight(enemy_ids)
 	EventBus.combat_state_changed.emit("第 %d 波战斗中" % current_wave_index)
 
 
@@ -211,6 +212,7 @@ func _on_enemy_died(enemy_id: String, world_position: Vector2, enemy_type: Strin
 	GameManager.record_kill()
 	last_enemy_death_position = world_position
 	_spawn_enemy_death_visuals(world_position, enemy_type)
+	_emit_enemy_death_highlight(enemy_id, enemy_type)
 	EventBus.enemy_killed.emit(enemy_id)
 
 
@@ -225,6 +227,39 @@ func _on_player_died() -> void:
 
 func _restart_current_node() -> void:
 	_start_current_node()
+
+
+func _emit_wave_highlight(enemy_ids: Array) -> void:
+	if enemy_ids.is_empty():
+		return
+	var primary_enemy_id: String = String(enemy_ids[0])
+	var enemy_data: Dictionary = ConfigDB.get_enemy(primary_enemy_id)
+	var enemy_type: String = String(enemy_data.get("enemy_type", "normal"))
+	if enemy_type == "normal":
+		return
+	var chapter_data: Dictionary = ConfigDB.get_chapter(String(current_node_data.get("chapter_id", GameManager.current_chapter_id)))
+	var enemy_name: String = String(enemy_data.get("name", primary_enemy_id))
+	var node_name: String = String(current_node_data.get("id", GameManager.current_node_id))
+	var highlight_title: String = "精英来袭" if enemy_type == "elite" else "Boss 降临"
+	var highlight_subtitle: String = "%s · %s" % [String(chapter_data.get("name", GameManager.current_chapter_id)), node_name]
+	EventBus.combat_highlight_requested.emit({
+		"highlight_type": enemy_type,
+		"title": highlight_title,
+		"subtitle": enemy_name,
+		"detail": highlight_subtitle,
+	})
+
+
+func _emit_enemy_death_highlight(enemy_id: String, enemy_type: String) -> void:
+	if not ["elite", "boss"].has(enemy_type):
+		return
+	var enemy_data: Dictionary = ConfigDB.get_enemy(enemy_id)
+	EventBus.combat_highlight_requested.emit({
+		"highlight_type": "%s_kill" % enemy_type,
+		"title": "精英击破" if enemy_type == "elite" else "Boss 击破",
+		"subtitle": String(enemy_data.get("name", enemy_id)),
+		"detail": "战线已被撕开，继续收下这一波高价值结算。",
+	})
 
 
 func _clear_enemies() -> void:

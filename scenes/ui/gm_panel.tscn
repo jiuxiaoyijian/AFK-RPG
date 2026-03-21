@@ -129,7 +129,7 @@ offset_left = 16.0
 offset_top = 146.0
 offset_right = 222.0
 offset_bottom = 174.0
-text = "强制传奇特效"
+text = "强制异宝真意"
 
 [node name="AddItemButton" type="Button" parent="Panel/ItemSection"]
 offset_left = 16.0
@@ -196,7 +196,7 @@ offset_left = 240.0
 offset_top = 48.0
 offset_right = 448.0
 offset_bottom = 80.0
-text = "解锁全部图鉴"
+text = "解锁全部异闻录"
 
 [node name="UnlockAllButton" type="Button" parent="Panel/ProgressSection"]
 offset_left = 16.0
@@ -231,7 +231,7 @@ offset_left = 16.0
 offset_top = 180.0
 offset_right = 224.0
 offset_bottom = 212.0
-text = "清空掉落统计"
+text = "清空机缘推演"
 
 [node name="SaveSlotOption" type="OptionButton" parent="Panel/ProgressSection"]
 offset_left = 240.0

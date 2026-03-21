@@ -5,7 +5,7 @@
 			"sort_id": "01",
 			"tree_type": "combat",
 			"name": "战斗训练",
-			"description": "稳定提升基础攻击百分比，是所有流派都能吃到的通用增益。",
+			"description": "稳定提升基础攻击百分比，是所有道统都能吃到的通用增益。",
 			"max_level": 5,
 			"prerequisite_ids": [],
 			"costs": [
@@ -23,8 +23,8 @@
 			"id": "research_core_mastery",
 			"sort_id": "02",
 			"tree_type": "combat",
-			"name": "核心精通",
-			"description": "提高核心技能伤害，让旋风、流血与连锁玩法都有更明显的爆发成长。",
+			"name": "道术精通",
+			"description": "提高道术伤害，让御风、血劫与五雷三路都有更明显的爆发成长。",
 			"max_level": 4,
 			"prerequisite_ids": ["research_attack_training"],
 			"costs": [
@@ -41,8 +41,8 @@
 			"id": "research_idle_logistics",
 			"sort_id": "03",
 			"tree_type": "idle",
-			"name": "挂机调度",
-			"description": "提高离线收益效率，让挂机轮次结算更接近在线收益。",
+			"name": "闭关调度",
+			"description": "提高闭关所得效率，让闭关轮次结算更接近在线收益。",
 			"max_level": 4,
 			"prerequisite_ids": [],
 			"costs": [
@@ -60,7 +60,7 @@
 			"sort_id": "04",
 			"tree_type": "idle",
 			"name": "长线值守",
-			"description": "提高离线结算的时间上限，适合 Steam 桌面挂机的长时段收益。",
+			"description": "提高闭关结算的时间上限，适合桌面常驻时的长时段收益。",
 			"max_level": 3,
 			"prerequisite_ids": ["research_idle_logistics"],
 			"costs": [
@@ -77,7 +77,7 @@
 			"sort_id": "05",
 			"tree_type": "combat",
 			"name": "奥术回路",
-			"description": "用传奇碎片压缩核心技能冷却，为后期 build 提供更明显的循环提升。",
+			"description": "用真意残片压缩道术冷却，为后期道统提供更明显的循环提升。",
 			"max_level": 3,
 			"prerequisite_ids": ["research_core_mastery"],
 			"costs": [
@@ -94,7 +94,7 @@
 			"sort_id": "06",
 			"tree_type": "economy",
 			"name": "贸易合同",
-			"description": "提高关卡与离线结算中的金币获取效率，强化常规经济循环。",
+			"description": "提高探境与闭关结算中的香火钱获取效率，强化常规机缘循环。",
 			"max_level": 4,
 			"prerequisite_ids": [],
 			"costs": [
@@ -112,7 +112,7 @@
 			"sort_id": "07",
 			"tree_type": "economy",
 			"name": "回收工艺",
-			"description": "提高装备分解回收率，并略微抬高铁屑直接掉落收益。",
+			"description": "提高装备分解回收率，并略微抬高祠灰直接掉落收益。",
 			"max_level": 4,
 			"prerequisite_ids": ["research_trade_contracts"],
 			"costs": [
@@ -130,8 +130,8 @@
 			"id": "research_core_refining",
 			"sort_id": "08",
 			"tree_type": "economy",
-			"name": "核心提炼",
-			"description": "提高核心与传奇碎片产出，为研究树后段与 Boss farming 提供支撑。",
+			"name": "灵核提炼",
+			"description": "提高灵核与真意残片产出，为悟道后段与首领刷取提供支撑。",
 			"max_level": 3,
 			"prerequisite_ids": ["research_scrap_recycling"],
 			"costs": [

@@ -41,15 +41,28 @@ func load_save_data(payload: Dictionary) -> void:
 
 func register_item(item: Dictionary) -> void:
 	var changed: bool = false
+	var new_legendary_affix_id: String = ""
+	var new_legendary_name: String = ""
 	changed = _register_unique(discovered_base_ids, String(item.get("base_id", ""))) or changed
 	for affix_entry_variant in item.get("affixes", []):
 		var affix_entry: Dictionary = affix_entry_variant
 		changed = _register_unique(discovered_affix_ids, String(affix_entry.get("affix_id", ""))) or changed
 	if not item.get("legendary_affix", {}).is_empty():
 		var legendary_affix: Dictionary = item.get("legendary_affix", {})
-		changed = _register_unique(discovered_legendary_affix_ids, String(legendary_affix.get("legendary_affix_id", ""))) or changed
+		var legendary_affix_id: String = String(legendary_affix.get("legendary_affix_id", ""))
+		var legendary_added: bool = _register_unique(discovered_legendary_affix_ids, legendary_affix_id)
+		changed = legendary_added or changed
+		if legendary_added:
+			new_legendary_affix_id = legendary_affix_id
+			new_legendary_name = String(legendary_affix.get("name", legendary_affix_id))
 	if changed:
 		EventBus.codex_changed.emit()
+	if not new_legendary_affix_id.is_empty():
+		EventBus.legendary_discovered.emit(
+			new_legendary_affix_id,
+			new_legendary_name,
+			new_legendary_affix_id == tracked_legendary_affix_id
+		)
 	_ensure_valid_target()
 
 
@@ -75,7 +88,7 @@ func record_node_loot(node_id: String, items: Array) -> void:
 
 
 func get_codex_summary_text() -> String:
-	return "图鉴: 底材 %d/%d | 词条 %d/%d | 传奇 %d/%d | 样本 %d 次" % [
+	return "异闻录: 底材 %d/%d | 真意 %d/%d | 异宝 %d/%d | 样本 %d 次" % [
 		discovered_base_ids.size(),
 		ConfigDB.get_all_equipment_bases().size(),
 		discovered_affix_ids.size(),
@@ -96,7 +109,7 @@ func get_drop_stats_overview_text() -> String:
 		total_clears += int(stats.get("clears", 0))
 		total_equipment_drops += int(stats.get("equipment_drops", 0))
 		total_legendary_drops += int(stats.get("legendary_drops", 0))
-	return "总样本 %d 次 | 装备 %d 件 | 传奇特效 %d 次 | 最近记录 %d 条" % [
+	return "总样本 %d 次 | 装备 %d 件 | 异宝真意 %d 次 | 最近记录 %d 条" % [
 		total_clears,
 		total_equipment_drops,
 		total_legendary_drops,
@@ -117,7 +130,7 @@ func get_drop_stats_overview_lines() -> Array[String]:
 	return [
 		"总样本 %d 次" % total_clears,
 		"装备样本 %d 件" % total_equipment_drops,
-		"传奇特效 %d 次" % total_legendary_drops,
+		"异宝真意 %d 次" % total_legendary_drops,
 		"已记录节点 %d 个" % node_drop_stats.size(),
 	]
 
@@ -157,7 +170,7 @@ func get_drop_stat_visual_data(node_id: String) -> Dictionary:
 	var actual_legendary_rate: float = float(stats.get("legendary_drops", 0)) / maxf(float(clears), 1.0)
 	return {
 		"equipment": _build_visual_rate_entry("装备效率", expected_equipment_rate, actual_equipment_rate, clears),
-		"legendary": _build_visual_rate_entry("传奇效率", expected_legendary_rate, actual_legendary_rate, clears),
+		"legendary": _build_visual_rate_entry("异宝效率", expected_legendary_rate, actual_legendary_rate, clears),
 		"tracked_target": get_tracked_target_visual_data(node_id),
 	}
 
@@ -165,8 +178,8 @@ func get_drop_stat_visual_data(node_id: String) -> Dictionary:
 func get_tracked_target_visual_data(node_id: String) -> Dictionary:
 	if tracked_legendary_affix_id.is_empty():
 		return {
-			"label": "追踪目标",
-			"status": "未设置追踪目标",
+			"label": "机缘追踪",
+			"status": "未设置机缘追踪",
 			"bar_value": 0.0,
 			"expected_rate": 0.0,
 			"actual_rate": 0.0,
@@ -182,7 +195,7 @@ func get_tracked_target_visual_data(node_id: String) -> Dictionary:
 	if affix.is_empty():
 		return {
 			"label": target_name,
-			"status": "目标不存在",
+			"status": "机缘不存在",
 			"bar_value": 0.0,
 			"expected_rate": 0.0,
 			"actual_rate": 0.0,
@@ -192,7 +205,7 @@ func get_tracked_target_visual_data(node_id: String) -> Dictionary:
 	if not _profile_matches_entry("legendary", affix, drop_profile):
 		return {
 			"label": target_name,
-			"status": "当前节点不产出该目标",
+			"status": "当前节点不产出该机缘",
 			"bar_value": 0.0,
 			"expected_rate": 0.0,
 			"actual_rate": 0.0,
@@ -243,12 +256,12 @@ func get_drop_stat_detail_text(node_id: String) -> String:
 	lines.append("掉落方向: %s" % String(drop_profile.get("drop_focus", "常规掉落")))
 	lines.append("样本次数: %d" % clears)
 	lines.append("装备掉落: %d (%.2f / 次)" % [equipment_drops, float(equipment_drops) / maxf(float(clears), 1.0)])
-	lines.append("传奇特效: %d (%.2f / 次)" % [legendary_drops, float(legendary_drops) / maxf(float(clears), 1.0)])
+	lines.append("异宝真意: %d (%.2f / 次)" % [legendary_drops, float(legendary_drops) / maxf(float(clears), 1.0)])
 	lines.append(_get_node_rate_comparison_text(node_id))
 	lines.append("节点时限: %d 秒" % int(node_data.get("time_limit", 60)))
 	var tracked_recommendation: Dictionary = get_recommended_farm_node_for_legendary(tracked_legendary_affix_id)
 	if String(tracked_recommendation.get("node_id", "")) == node_id:
-		lines.append("追踪目标推荐: 是")
+		lines.append("机缘追踪推荐: 是")
 	var tracked_target_comparison: String = _get_tracked_target_comparison_text(node_id, node_data, drop_profile)
 	if not tracked_target_comparison.is_empty():
 		lines.append(tracked_target_comparison)
@@ -293,7 +306,7 @@ func _get_node_rate_comparison_text(node_id: String) -> String:
 	var actual_legendary_rate: float = float(stats.get("legendary_drops", 0)) / float(clears)
 	return "偏差对比: %s | %s" % [
 		_build_rate_comparison_text("装备", expected_equipment_rate, actual_equipment_rate),
-		_build_rate_comparison_text("传奇", expected_legendary_rate, actual_legendary_rate),
+		_build_rate_comparison_text("异宝", expected_legendary_rate, actual_legendary_rate),
 	]
 
 
@@ -304,10 +317,10 @@ func _get_tracked_target_comparison_text(node_id: String, node_data: Dictionary,
 	if affix.is_empty():
 		return ""
 	if not _profile_matches_entry("legendary", affix, drop_profile):
-		return "追踪目标对比: 当前节点不产出该目标"
+		return "机缘追踪对比: 当前节点不产出该机缘"
 	var metrics: Dictionary = _get_expectation_metrics("legendary", affix, drop_profile, node_data)
 	if metrics.is_empty():
-		return "追踪目标对比: 暂无法估算"
+		return "机缘追踪对比: 暂无法估算"
 	var observed_stats: Dictionary = get_observed_entry_stats(tracked_legendary_affix_id, "legendary", node_id)
 	var clears: int = int(observed_stats.get("clears", 0))
 	var hits: int = int(observed_stats.get("hits", 0))
@@ -317,10 +330,10 @@ func _get_tracked_target_comparison_text(node_id: String, node_data: Dictionary,
 		actual_rate = float(hits) / float(clears)
 	var comparison_text: String = _build_rate_comparison_text(String(affix.get("name", tracked_legendary_affix_id)), expected_rate, actual_rate)
 	if hits <= 0 and clears > 0 and expected_rate > 0.0:
-		return "追踪目标对比: %s | 当前样本 %d 次仍未见到目标" % [comparison_text, clears]
+		return "机缘追踪对比: %s | 当前样本 %d 次仍未见到机缘" % [comparison_text, clears]
 	if hits <= 0:
-		return "追踪目标对比: %s | 暂无实测样本" % comparison_text
-	return "追踪目标对比: %s | 实测约 %.1f 次/见 1 次" % [
+		return "机缘追踪对比: %s | 暂无实测样本" % comparison_text
+	return "机缘追踪对比: %s | 实测约 %.1f 次/见 1 次" % [
 		comparison_text,
 		float(observed_stats.get("clears_per_hit", 0.0)),
 	]
@@ -533,14 +546,14 @@ func _get_affix_by_id(affix_id: String) -> Dictionary:
 func _get_legendary_detail_text(legendary_affix_id: String) -> String:
 	var affix: Dictionary = _get_legendary_affix_by_id(legendary_affix_id)
 	if affix.is_empty():
-		return "未选择传奇目标"
+		return "未选择异宝机缘"
 	var recommendation: Dictionary = get_recommended_farm_node_for_legendary(legendary_affix_id)
 	var lines: Array[String] = []
 	lines.append(String(affix.get("name", legendary_affix_id)))
-	lines.append("分类: 传奇")
+	lines.append("分类: 异宝")
 	lines.append("状态: %s" % ("已发现" if is_legendary_discovered(legendary_affix_id) else "未发现"))
-	lines.append("追踪: %s" % ("当前目标" if tracked_legendary_affix_id == legendary_affix_id else "否"))
-	lines.append("适配流派: %s" % _format_array(affix.get("archetype_tags", []), "通用"))
+	lines.append("追踪: %s" % ("当前机缘" if tracked_legendary_affix_id == legendary_affix_id else "否"))
+	lines.append("适配道统: %s" % _format_array(affix.get("archetype_tags", []), "通用"))
 	lines.append("描述: %s" % String(affix.get("description", "")))
 	lines.append("掉落来源: %s" % _format_array(affix.get("source_profile_types", []), "任意高阶来源"))
 	if not recommendation.is_empty():
@@ -576,14 +589,14 @@ func _get_base_detail_text(base_id: String) -> String:
 func _get_affix_detail_text(affix_id: String) -> String:
 	var affix: Dictionary = _get_affix_by_id(affix_id)
 	if affix.is_empty():
-		return "未选择词条"
+		return "未选择真意"
 	var recommendation: Dictionary = get_recommended_farm_node_for_affix(affix_id)
 	var lines: Array[String] = []
 	lines.append(String(affix.get("name", affix_id)))
-	lines.append("分类: 词条")
+	lines.append("分类: 真意")
 	lines.append("状态: %s" % ("已发现" if discovered_affix_ids.has(affix_id) else "未发现"))
-	lines.append("词条类型: %s" % String(affix.get("affix_type", "")))
-	lines.append("适配流派: %s" % _format_array(affix.get("archetype_tags", []), "通用"))
+	lines.append("真意类型: %s" % String(affix.get("affix_type", "")))
+	lines.append("适配道统: %s" % _format_array(affix.get("archetype_tags", []), "通用"))
 	lines.append("作用属性: %s" % String(affix.get("stat_key", "")))
 	lines.append("数值范围: %.2f - %.2f" % [float(affix.get("value_min", 0.0)), float(affix.get("value_max", 0.0))])
 	lines.append("掉落来源: %s" % _format_array(affix.get("source_profile_types", []), "常规来源"))

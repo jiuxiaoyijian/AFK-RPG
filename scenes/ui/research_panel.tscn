@@ -28,7 +28,7 @@ offset_left = 20.0
 offset_top = 12.0
 offset_right = 320.0
 offset_bottom = 34.0
-text = "研究树与长期成长"
+text = "悟道与长期成长"
 
 [node name="SummarySection" type="Panel" parent="Panel"]
 offset_left = 16.0
@@ -42,7 +42,7 @@ offset_top = 42.0
 offset_right = 970.0
 offset_bottom = 88.0
 autowrap_mode = 2
-text = "研究概览"
+text = "悟道概览"
 
 [node name="FilterSection" type="Panel" parent="Panel"]
 offset_left = 16.0
@@ -55,7 +55,7 @@ offset_left = 28.0
 offset_top = 104.0
 offset_right = 180.0
 offset_bottom = 126.0
-text = "研究分类"
+text = "悟道分支"
 
 [node name="ListSection" type="Panel" parent="Panel"]
 offset_left = 16.0
@@ -68,7 +68,7 @@ offset_left = 28.0
 offset_top = 194.0
 offset_right = 180.0
 offset_bottom = 216.0
-text = "研究节点"
+text = "悟道节点"
 
 [node name="DetailSection" type="Panel" parent="Panel"]
 offset_left = 352.0
@@ -115,14 +115,14 @@ offset_left = 180.0
 offset_top = 134.0
 offset_right = 252.0
 offset_bottom = 168.0
-text = "挂机"
+text = "闭关"
 
 [node name="EconomyButton" type="Button" parent="Panel"]
 offset_left = 260.0
 offset_top = 134.0
 offset_right = 332.0
 offset_bottom = 168.0
-text = "经济"
+text = "机缘"
 
 [node name="CloseButton" type="Button" parent="Panel"]
 offset_left = 922.0
@@ -143,7 +143,7 @@ offset_top = 132.0
 offset_right = 972.0
 offset_bottom = 438.0
 autowrap_mode = 2
-text = "未选择研究"
+text = "未选择悟道"
 vertical_alignment = 0
 
 [node name="ActionHintLabel" type="Label" parent="Panel"]
@@ -152,11 +152,11 @@ offset_top = 500.0
 offset_right = 972.0
 offset_bottom = 530.0
 autowrap_mode = 2
-text = "研究状态"
+text = "悟道状态"
 
 [node name="UpgradeButton" type="Button" parent="Panel"]
 offset_left = 360.0
 offset_top = 546.0
 offset_right = 972.0
 offset_bottom = 580.0
-text = "升级研究"
+text = "提升悟道"

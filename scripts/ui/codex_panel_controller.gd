@@ -48,7 +48,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _refresh() -> void:
-	title_label.text = "图鉴与目标追踪"
+	title_label.text = "异闻录与机缘追踪"
+	filter_section_label.text = "条目分类"
+	list_section_label.text = "异闻条目"
+	detail_section_label.text = "条目详情"
+	action_section_label.text = "机缘操作"
 	summary_label.text = _build_summary_text()
 	_update_filter_buttons()
 
@@ -93,11 +97,11 @@ func _refresh_detail() -> void:
 	track_button.disabled = not can_track
 	detail_label.add_theme_color_override("default_color", _get_detail_color())
 	if not can_track:
-		track_button.text = "仅传奇可追踪"
+		track_button.text = "仅异宝可追踪"
 		action_hint_label.text = _build_action_hint(selected_category, false)
 		action_hint_label.add_theme_color_override("font_color", Color(0.78, 0.82, 0.88, 1.0))
 	else:
-		track_button.text = "设为追踪目标" if selected_entry_id != LootCodexSystem.tracked_legendary_affix_id else "当前追踪目标"
+		track_button.text = "设为机缘追踪" if selected_entry_id != LootCodexSystem.tracked_legendary_affix_id else "当前机缘追踪"
 		action_hint_label.text = _build_action_hint(selected_category, true)
 		action_hint_label.add_theme_color_override(
 			"font_color",
@@ -194,7 +198,7 @@ func _build_summary_text() -> String:
 		"affix":
 			filter_label = "词条"
 		"legendary":
-			filter_label = "传奇"
+			filter_label = "异宝"
 	return "当前分类: %s | %s\n%s" % [
 		filter_label,
 		LootCodexSystem.get_codex_summary_text(),
@@ -204,19 +208,19 @@ func _build_summary_text() -> String:
 
 func _build_action_hint(_selected_category: String, can_track: bool) -> String:
 	if selected_entry_id.is_empty():
-		return "未选择条目 | 先从左侧列表中选择一个图鉴条目"
+		return "未选择条目 | 先从左侧列表中选择一个异闻条目"
 
 	var selected_entry: Dictionary = _get_selected_entry()
 	var discovered: bool = bool(selected_entry.get("discovered", false))
 	if not can_track:
-		return "当前条目: %s | %s | 仅传奇条目可设为追踪" % [
+		return "当前条目: %s | %s | 仅异宝条目可设为追踪" % [
 			String(selected_entry.get("name", selected_entry_id)),
 			"已发现" if discovered else "未发现",
 		]
 	return "当前条目: %s | %s | %s" % [
 		String(selected_entry.get("name", selected_entry_id)),
 		"已发现" if discovered else "未发现",
-		"当前正在追踪" if selected_entry_id == LootCodexSystem.tracked_legendary_affix_id else "可设为追踪目标",
+		"当前正在追踪" if selected_entry_id == LootCodexSystem.tracked_legendary_affix_id else "可设为机缘追踪",
 	]
 
 

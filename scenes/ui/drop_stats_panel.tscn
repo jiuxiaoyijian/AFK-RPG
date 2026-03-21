@@ -28,7 +28,7 @@ offset_left = 20.0
 offset_top = 12.0
 offset_right = 180.0
 offset_bottom = 34.0
-text = "掉落统计"
+text = "机缘推演"
 
 [node name="SummarySection" type="Panel" parent="Panel"]
 offset_left = 16.0

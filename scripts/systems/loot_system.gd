@@ -47,16 +47,17 @@ func process_node_loot(node_data: Dictionary) -> Dictionary:
 		var rarity: String = String(generated_item.get("rarity", "common"))
 		var loot_prefix: String = ""
 		if not generated_item.get("legendary_affix", {}).is_empty():
-			loot_prefix = "传奇特效! "
+			loot_prefix = "异宝真意! "
 		elif GameManager.get_rarity_rank(rarity) >= GameManager.get_rarity_rank("legendary"):
-			loot_prefix = "传奇掉落! "
+			loot_prefix = "异宝掉落! "
 		match String(result.get("action", "none")):
 			"equip":
 				summary_lines.append("%s装备: %s" % [loot_prefix, String(result.get("item_name", ""))])
 			"salvage":
-				summary_lines.append("%s分解: %s -> 铁屑 +%d" % [
+				summary_lines.append("%s分解: %s -> %s +%d" % [
 					loot_prefix,
 					String(result.get("item_name", "")),
+					MetaProgressionSystem.get_resource_display_name("scrap"),
 					int(result.get("scrap", 0)),
 				])
 			"store":
@@ -102,14 +103,8 @@ func _generate_materials(drop_profile: Dictionary) -> Dictionary:
 			"count": count,
 		})
 		match item_id:
-			"gold":
-				lines.append("金币 +%d" % count)
-			"scrap":
-				lines.append("铁屑 +%d" % count)
-			"core":
-				lines.append("核心 +%d" % count)
-			"legend_shard":
-				lines.append("碎片 +%d" % count)
+			"gold", "scrap", "core", "legend_shard":
+				lines.append("%s +%d" % [MetaProgressionSystem.get_resource_display_name(item_id), count])
 			_:
 				lines.append("%s +%d" % [item_id, count])
 	return {
@@ -119,12 +114,18 @@ func _generate_materials(drop_profile: Dictionary) -> Dictionary:
 
 
 func _pick_better_highlight(current_best: Dictionary, item: Dictionary, result: Dictionary, loot_prefix: String) -> Dictionary:
+	var legendary_affix: Dictionary = item.get("legendary_affix", {})
+	var legendary_affix_id: String = String(legendary_affix.get("legendary_affix_id", ""))
+	var is_tracked_target: bool = not legendary_affix_id.is_empty() and legendary_affix_id == LootCodexSystem.tracked_legendary_affix_id
 	var candidate: Dictionary = {
 		"slot": String(item.get("slot", "")),
 		"rarity": String(item.get("rarity", "common")),
 		"item_name": String(result.get("item_name", item.get("name", ""))),
 		"action": String(result.get("action", "none")),
-		"has_legendary_affix": not item.get("legendary_affix", {}).is_empty(),
+		"has_legendary_affix": not legendary_affix.is_empty(),
+		"legendary_affix_id": legendary_affix_id,
+		"legendary_name": String(legendary_affix.get("name", "")),
+		"is_tracked_target": is_tracked_target,
 		"prefix": loot_prefix,
 		"score": float(item.get("score", 0.0)),
 	}
@@ -142,6 +143,8 @@ func _pick_better_highlight(current_best: Dictionary, item: Dictionary, result: 
 
 
 func _get_highlight_rank(highlight: Dictionary) -> int:
+	if bool(highlight.get("is_tracked_target", false)):
+		return 140
 	if bool(highlight.get("has_legendary_affix", false)):
 		return 100
 	var rarity_rank: int = GameManager.get_rarity_rank(String(highlight.get("rarity", "common")))
@@ -247,37 +250,34 @@ func _build_material_visual_data(item_id: String, show_label: bool, boss_bonus: 
 func _build_item_visual_data(item: Dictionary, boss_bonus: bool) -> Dictionary:
 	var rarity: String = String(item.get("rarity", "common"))
 	var slot: String = String(item.get("slot", "weapon"))
-	var has_legendary_affix: bool = not item.get("legendary_affix", {}).is_empty()
+	var legendary_affix: Dictionary = item.get("legendary_affix", {})
+	var has_legendary_affix: bool = not legendary_affix.is_empty()
+	var legendary_affix_id: String = String(legendary_affix.get("legendary_affix_id", ""))
+	var is_tracked_target: bool = not legendary_affix_id.is_empty() and legendary_affix_id == LootCodexSystem.tracked_legendary_affix_id
 	var tint: Color = _get_rarity_color(rarity)
-	var beam_color: Color = tint
+	var beam_color: Color = Color(1.0, 0.36, 0.24, 1.0) if is_tracked_target else tint
 	var show_beam: bool = boss_bonus or has_legendary_affix or GameManager.get_rarity_rank(rarity) >= GameManager.get_rarity_rank("epic")
 	return {
 		"icon_path": String(EQUIPMENT_ICON_PATHS.get(slot, EQUIPMENT_ICON_PATHS["weapon"])),
-		"label": _format_drop_item_name(item),
+		"label": _format_drop_item_name(item, is_tracked_target),
 		"show_label": true,
 		"show_beam": show_beam,
 		"pickup_target": "inventory",
 		"tint": tint,
 		"beam_color": beam_color,
-		"visual_scale": 0.84,
-		"spread": 54.0,
-		"auto_pickup_delay": 3.0,
-		"drop_duration": 0.5,
-		"arc_height": 156.0 if show_beam else 128.0,
-		"z_index": 24,
+		"visual_scale": 0.96 if is_tracked_target else 0.84,
+		"spread": 60.0 if is_tracked_target else 54.0,
+		"auto_pickup_delay": 3.6 if is_tracked_target else 3.0,
+		"drop_duration": 0.56 if is_tracked_target else 0.5,
+		"arc_height": 172.0 if is_tracked_target else (156.0 if show_beam else 128.0),
+		"z_index": 26 if is_tracked_target else 24,
 	}
 
 
 func _get_resource_label(item_id: String, count: int) -> String:
 	match item_id:
-		"gold":
-			return "金币 +%d" % count
-		"scrap":
-			return "铁屑 +%d" % count
-		"core":
-			return "核心 +%d" % count
-		"legend_shard":
-			return "碎片 +%d" % count
+		"gold", "scrap", "core", "legend_shard":
+			return "%s +%d" % [MetaProgressionSystem.get_resource_display_name(item_id), count]
 		_:
 			return "%s +%d" % [item_id, count]
 
@@ -298,5 +298,6 @@ func _get_rarity_color(rarity: String) -> Color:
 			return Color(0.84, 0.88, 0.94, 1.0)
 
 
-func _format_drop_item_name(item: Dictionary) -> String:
-	return "[%s] %s" % [String(item.get("rarity", "common")), String(item.get("name", "未知装备"))]
+func _format_drop_item_name(item: Dictionary, is_tracked_target: bool = false) -> String:
+	var prefix: String = "[追踪达成] " if is_tracked_target else ""
+	return "%s[%s] %s" % [prefix, String(item.get("rarity", "common")), String(item.get("name", "未知装备"))]

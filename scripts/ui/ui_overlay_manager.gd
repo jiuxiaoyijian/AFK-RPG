@@ -11,12 +11,14 @@ extends CanvasLayer
 @onready var collect_effects: Node2D = $CollectEffects
 
 var active_panel_id: String = ""
+var stage_event_queue: Array = []
 
 
 func _ready() -> void:
 	EventBus.ui_panel_requested.connect(_on_ui_panel_requested)
 	EventBus.ui_close_requested.connect(_close_active_panel)
 	EventBus.offline_report_ready.connect(_show_offline_report)
+	EventBus.stage_event_ready.connect(_on_stage_event_ready)
 
 	_close_regular_panels()
 	_apply_popup_panel_styles()
@@ -79,9 +81,13 @@ func _close_active_panel() -> void:
 	if active_panel_id == "offline_report" or offline_report_popup.visible:
 		_hide_offline_report()
 		return
+	if active_panel_id == "stage_event":
+		_hide_stage_event()
+		return
 	active_panel_id = ""
 	_close_regular_panels()
 	_emit_ui_state()
+	_try_show_next_stage_event()
 
 
 func _close_regular_panels() -> void:
@@ -175,11 +181,43 @@ func _hide_offline_report() -> void:
 		offline_report_popup.visible = false
 	active_panel_id = ""
 	_emit_ui_state()
+	_try_show_next_stage_event()
+
+
+func _on_stage_event_ready(event_data: Dictionary) -> void:
+	stage_event_queue.append(event_data.duplicate(true))
+	_try_show_next_stage_event()
+
+
+func _try_show_next_stage_event() -> void:
+	if stage_event_queue.is_empty():
+		return
+	if active_panel_id != "" or offline_report_popup.visible:
+		return
+	var next_event: Dictionary = stage_event_queue.pop_front()
+	active_panel_id = "stage_event"
+	ui_dimmer.visible = false
+	if offline_report_popup.has_method("show_stage_event"):
+		offline_report_popup.show_stage_event(next_event)
+	else:
+		offline_report_popup.visible = true
+	_emit_ui_state()
+
+
+func _hide_stage_event() -> void:
+	if offline_report_popup.has_method("hide_popup"):
+		offline_report_popup.hide_popup()
+	else:
+		offline_report_popup.visible = false
+	active_panel_id = ""
+	EventBus.stage_event_closed.emit()
+	_emit_ui_state()
+	_try_show_next_stage_event()
 
 
 func _emit_ui_state() -> void:
 	EventBus.ui_blocking_input = active_panel_id != ""
-	ui_dimmer.visible = EventBus.ui_blocking_input and active_panel_id != "offline_report"
+	ui_dimmer.visible = EventBus.ui_blocking_input and active_panel_id != "offline_report" and active_panel_id != "stage_event"
 	main_nav_bar.visible = not EventBus.ui_blocking_input
 	collect_effects.visible = not EventBus.ui_blocking_input
 	EventBus.ui_state_changed.emit(active_panel_id, EventBus.ui_blocking_input)

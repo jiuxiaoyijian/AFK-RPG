@@ -42,11 +42,11 @@ func _process_offline_rewards(saved_unix_time: int) -> void:
 		return
 
 	var summary_lines: Array[String] = []
-	summary_lines.append("离线时长: %d 分 %d 秒" % [int(capped_seconds / 60.0), int(capped_seconds % 60)])
-	summary_lines.append("离线节点: %s" % node_id)
+	summary_lines.append("闭关时长: %d 分 %d 秒" % [int(capped_seconds / 60.0), int(capped_seconds % 60)])
+	summary_lines.append("闭关节点: %s" % node_id)
 	summary_lines.append("掉落方向: %s" % String(drop_profile.get("drop_focus", "常规掉落")))
 	summary_lines.append("模拟轮次: %d" % simulated_runs)
-	summary_lines.append("研究修正: 效率 x%.2f, 上限 %+d 秒" % [efficiency, max_offline_seconds_bonus])
+	summary_lines.append("悟道修正: 效率 x%.2f, 上限 %+d 秒" % [efficiency, max_offline_seconds_bonus])
 
 	var material_lines: Array[String] = _grant_offline_materials(drop_profile, simulated_runs, efficiency)
 	summary_lines.append_array(material_lines)
@@ -73,14 +73,8 @@ func _grant_offline_materials(drop_profile: Dictionary, simulated_runs: int, eff
 		if not applied_entries.is_empty():
 			total_count = int(applied_entries[0].get("count", base_count))
 		match item_id:
-			"gold":
-				lines.append("金币 +%d" % total_count)
-			"scrap":
-				lines.append("铁屑 +%d" % total_count)
-			"core":
-				lines.append("核心 +%d" % total_count)
-			"legend_shard":
-				lines.append("碎片 +%d" % total_count)
+			"gold", "scrap", "core", "legend_shard":
+				lines.append("%s +%d" % [MetaProgressionSystem.get_resource_display_name(item_id), total_count])
 			_:
 				lines.append("%s +%d" % [item_id, total_count])
 	return lines
@@ -90,7 +84,7 @@ func _grant_offline_equipment(drop_profile: Dictionary, simulated_runs: int, eff
 	var lines: Array[String] = []
 	var loot_system: Node = _get_loot_system()
 	if loot_system == null:
-		lines.append("离线装备结算未接入 LootSystem")
+		lines.append("闭关装备结算未接入 LootSystem")
 		return lines
 
 	var equipment_rolls: int = int(drop_profile.get("equipment_rolls", 1))
@@ -101,7 +95,7 @@ func _grant_offline_equipment(drop_profile: Dictionary, simulated_runs: int, eff
 	)
 
 	if equipment_count <= 0:
-		lines.append("离线未掉落装备")
+		lines.append("闭关未掉落装备")
 		return lines
 
 	for _i in range(equipment_count):
@@ -113,20 +107,21 @@ func _grant_offline_equipment(drop_profile: Dictionary, simulated_runs: int, eff
 		var result: Dictionary = GameManager.process_loot_item(item)
 		var prefix: String = ""
 		if not item.get("legendary_affix", {}).is_empty():
-			prefix = "传奇特效! "
+			prefix = "异宝真意! "
 		elif GameManager.get_rarity_rank(String(item.get("rarity", "common"))) >= GameManager.get_rarity_rank("legendary"):
-			prefix = "传奇掉落! "
+			prefix = "异宝掉落! "
 		match String(result.get("action", "none")):
 			"equip":
-				lines.append("%s离线装备: %s" % [prefix, String(result.get("item_name", ""))])
+				lines.append("%s闭关装备: %s" % [prefix, String(result.get("item_name", ""))])
 			"salvage":
-				lines.append("%s离线分解: %s -> 铁屑 +%d" % [
+				lines.append("%s闭关分解: %s -> %s +%d" % [
 					prefix,
 					String(result.get("item_name", "")),
+					MetaProgressionSystem.get_resource_display_name("scrap"),
 					int(result.get("scrap", 0)),
 				])
 			"store":
-				lines.append("%s离线入包: %s" % [prefix, String(result.get("item_name", ""))])
+				lines.append("%s闭关入包: %s" % [prefix, String(result.get("item_name", ""))])
 	return lines
 
 

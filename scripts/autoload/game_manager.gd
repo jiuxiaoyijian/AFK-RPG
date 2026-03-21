@@ -5,6 +5,122 @@ const AVAILABLE_CORE_SKILLS := [
 	"core_deep_wound",
 	"core_chain_lightning",
 ]
+const BUILD_ARCHETYPE_PROFILES := {
+	"whirlwind": {
+		"display_name": "御风道",
+		"phase_text": "先成型风痕范围和攻速，再补道术爆发。",
+		"new_player_summary": "优先补风痕范围和攻速，站稳后再拉道术伤害。",
+		"primary_stats": [
+			{
+				"stat_key": "whirlwind_radius_percent",
+				"label": "旋风范围",
+				"category": "function",
+				"category_label": "功能词条",
+				"target_base": 0.16,
+				"target_per_chapter": 0.08,
+				"affix_ids": ["affix_whirlwind_radius", "affix_elite_vortex"],
+				"legendary_ids": ["legend_whirlwind_eye", "legend_boss_maelstrom_crown"],
+			},
+			{
+				"stat_key": "attack_speed_percent",
+				"label": "攻速",
+				"category": "damage",
+				"category_label": "伤害",
+				"target_base": 0.22,
+				"target_per_chapter": 0.08,
+				"affix_ids": ["affix_attack_speed"],
+				"legendary_ids": ["legend_time_fissure", "legend_boss_tyrant_shell"],
+			},
+			{
+				"stat_key": "core_damage_percent",
+				"label": "道术伤害",
+				"category": "damage",
+				"category_label": "伤害",
+				"target_base": 0.24,
+				"target_per_chapter": 0.08,
+				"affix_ids": ["affix_core_damage", "affix_whirlwind_power"],
+				"legendary_ids": ["legend_whirlwind_eye", "legend_boss_maelstrom_crown"],
+			},
+		],
+		"recommended_base_ids": ["gloves_static_grips", "gloves_hunter_wrap", "weapon_saw_cleaver"],
+	},
+	"bleed": {
+		"display_name": "血劫道",
+		"phase_text": "先补血劫倍率和断命线，再抬高单点爆发。",
+		"new_player_summary": "先让血劫与断命线成型，再补攻击与道术伤害。",
+		"primary_stats": [
+			{
+				"stat_key": "bleed_dot_percent",
+				"label": "流血倍率",
+				"category": "damage",
+				"category_label": "伤害",
+				"target_base": 0.22,
+				"target_per_chapter": 0.10,
+				"affix_ids": ["affix_bleed_dot"],
+				"legendary_ids": ["legend_blood_edict", "legend_boss_crimson_decree"],
+			},
+			{
+				"stat_key": "execute_threshold",
+				"label": "处决线",
+				"category": "function",
+				"category_label": "功能词条",
+				"target_base": 0.05,
+				"target_per_chapter": 0.03,
+				"affix_ids": ["affix_elite_bloodhunt"],
+				"legendary_ids": ["legend_blood_edict", "legend_boss_crimson_decree"],
+			},
+			{
+				"stat_key": "core_damage_percent",
+				"label": "道术伤害",
+				"category": "damage",
+				"category_label": "伤害",
+				"target_base": 0.26,
+				"target_per_chapter": 0.10,
+				"affix_ids": ["affix_core_damage", "affix_bleed_power"],
+				"legendary_ids": ["legend_blood_edict", "legend_boss_crimson_decree"],
+			},
+		],
+		"recommended_base_ids": ["helmet_war_mask", "weapon_saw_cleaver", "helmet_scout_hood"],
+	},
+	"chain_lightning": {
+		"display_name": "五雷道",
+		"phase_text": "先把引雷次数拉起来，再追攻速和雷痕伤害。",
+		"new_player_summary": "优先补引雷次数和攻速，再拉高雷痕与道术伤害。",
+		"primary_stats": [
+			{
+				"stat_key": "chain_count_bonus",
+				"label": "连锁次数",
+				"category": "function",
+				"category_label": "功能词条",
+				"target_base": 1.0,
+				"target_per_chapter": 1.0,
+				"affix_ids": ["affix_chain_count"],
+				"legendary_ids": ["legend_storm_matrix", "legend_boss_thunder_throne"],
+			},
+			{
+				"stat_key": "attack_speed_percent",
+				"label": "攻速",
+				"category": "damage",
+				"category_label": "伤害",
+				"target_base": 0.20,
+				"target_per_chapter": 0.08,
+				"affix_ids": ["affix_chain_speed", "affix_attack_speed"],
+				"legendary_ids": ["legend_time_fissure", "legend_boss_tyrant_shell"],
+			},
+			{
+				"stat_key": "chain_damage_percent",
+				"label": "连锁伤害",
+				"category": "damage",
+				"category_label": "伤害",
+				"target_base": 0.22,
+				"target_per_chapter": 0.10,
+				"affix_ids": ["affix_chain_damage", "affix_elite_overcharge"],
+				"legendary_ids": ["legend_storm_matrix", "legend_boss_thunder_throne"],
+			},
+		],
+		"recommended_base_ids": ["weapon_tempest_emitter", "gloves_static_grips", "weapon_arc_orb"],
+	},
+}
 
 var current_chapter_id: String = "chapter_1"
 var current_node_id: String = "ch1_n1"
@@ -130,6 +246,94 @@ func get_total_combat_bonuses() -> Dictionary:
 	return totals
 
 
+func get_build_advice_data() -> Dictionary:
+	var skill_data: Dictionary = get_selected_core_skill()
+	if skill_data.is_empty():
+		return {}
+
+	var archetype_id: String = _get_primary_archetype_tag(skill_data)
+	var profile: Dictionary = BUILD_ARCHETYPE_PROFILES.get(archetype_id, {})
+	var chapter_data: Dictionary = ConfigDB.get_chapter(current_chapter_id)
+	var chapter_name: String = String(chapter_data.get("name", current_chapter_id))
+	var chapter_order: int = int(chapter_data.get("order", 1))
+	var bonuses: Dictionary = get_total_combat_bonuses()
+
+	var primary_gap: Dictionary = _get_primary_stat_gap(profile, bonuses, chapter_order)
+	var survival_gap: Dictionary = _get_survival_gap(bonuses, chapter_order)
+	var chosen_gap: Dictionary = primary_gap
+	if chosen_gap.is_empty() or float(survival_gap.get("deficit_ratio", 0.0)) > float(chosen_gap.get("deficit_ratio", 0.0)) + 0.18:
+		chosen_gap = survival_gap
+	if chosen_gap.is_empty():
+		chosen_gap = {
+			"category": "damage",
+			"category_label": "伤害",
+			"label": "道术伤害",
+			"current_value": float(bonuses.get("core_damage_percent", 0.0)),
+			"target_value": 0.24 + float(maxi(chapter_order - 1, 0)) * 0.08,
+			"deficit_ratio": 0.0,
+			"affix_ids": ["affix_core_damage"],
+			"legendary_ids": ["legend_time_fissure"],
+		}
+
+	var recommendation_target: Dictionary = _build_recommendation_target(profile, chosen_gap)
+	var tracked_target_line: String = _build_tracked_target_line()
+	var recommendation_label: String = String(recommendation_target.get("recommended_node_label", chapter_name))
+	var recommendation_short: String = String(recommendation_target.get("recommendation_short", "先刷当前可稳定通关的推荐节点"))
+	var gap_stat_label: String = String(chosen_gap.get("label", "道统属性"))
+	var gap_category_label: String = String(chosen_gap.get("category_label", "伤害"))
+	var gap_metric_text: String = "%s/%s" % [
+		_format_stat_value(String(chosen_gap.get("stat_key", "")), float(chosen_gap.get("current_value", 0.0))),
+		_format_stat_value(String(chosen_gap.get("stat_key", "")), float(chosen_gap.get("target_value", 0.0))),
+	]
+	var primary_target_name: String = String(recommendation_target.get("primary_target_name", "当前道统核心掉落"))
+	var secondary_target_name: String = String(recommendation_target.get("secondary_target_name", "对应词条"))
+	var base_target_name: String = String(recommendation_target.get("base_target_name", "合适底材"))
+	var next_target_segments: Array[String] = []
+	for segment_variant in [primary_target_name, secondary_target_name, base_target_name]:
+		var segment: String = String(segment_variant)
+		if segment.is_empty() or next_target_segments.has(segment):
+			continue
+		next_target_segments.append(segment)
+
+	var next_target_line: String = "下一件: %s" % (" / ".join(next_target_segments) if not next_target_segments.is_empty() else "继续补当前道统核心件")
+	var recommendation_line: String = "推荐: %s | %s" % [recommendation_label, recommendation_short]
+	var gap_line: String = "缺口: %s -> %s %s" % [gap_category_label, gap_stat_label, gap_metric_text]
+	var action_lines: Array[String] = [
+		"先补 %s，当前 %s，建议至少到 %s。" % [
+			gap_stat_label,
+			_format_stat_value(String(chosen_gap.get("stat_key", "")), float(chosen_gap.get("current_value", 0.0))),
+			_format_stat_value(String(chosen_gap.get("stat_key", "")), float(chosen_gap.get("target_value", 0.0))),
+		],
+		"下一件优先找 %s，副目标看 %s。" % [primary_target_name, secondary_target_name],
+		"推荐去 %s 刷，%s。" % [recommendation_label, recommendation_short],
+	]
+
+	return {
+		"archetype_id": archetype_id,
+		"archetype_name": String(profile.get("display_name", String(skill_data.get("name", selected_core_skill_id)))),
+		"chapter_name": chapter_name,
+		"phase_text": String(profile.get("phase_text", "")),
+		"new_player_summary": String(profile.get("new_player_summary", "")),
+		"gap_category": String(chosen_gap.get("category", "damage")),
+		"gap_category_label": gap_category_label,
+		"gap_label": gap_stat_label,
+		"gap_metric_text": gap_metric_text,
+		"gap_summary": "当前更缺 %s，先补 %s。" % [gap_category_label, gap_stat_label],
+		"tracked_target_line": tracked_target_line,
+		"gap_line": gap_line,
+		"next_target_line": next_target_line,
+		"recommendation_line": recommendation_line,
+		"primary_target_name": primary_target_name,
+		"secondary_target_name": secondary_target_name,
+		"base_target_name": base_target_name,
+		"recommended_node_id": String(recommendation_target.get("recommended_node_id", current_node_id)),
+		"recommended_node_label": recommendation_label,
+		"recommendation_short": recommendation_short,
+		"recommendation_reason": String(recommendation_target.get("reason", "")),
+		"action_lines": action_lines,
+	}
+
+
 func get_meta_progression_bonuses() -> Dictionary:
 	return MetaProgressionSystem.get_meta_progression_bonuses()
 
@@ -251,7 +455,7 @@ func get_item_detail_text(item: Dictionary) -> String:
 		lines.append("- %s %+0.2f" % [affix_name, float(affix_entry.get("value", 0.0))])
 	if not item.get("legendary_affix", {}).is_empty():
 		var legendary_affix: Dictionary = item.get("legendary_affix", {})
-		lines.append("传奇特效:")
+		lines.append("异宝真意:")
 		lines.append("- %s" % String(legendary_affix.get("name", "")))
 		lines.append("- %s" % String(legendary_affix.get("description", "")))
 		lines.append("- %s %+0.2f" % [String(legendary_affix.get("stat_key", "")), float(legendary_affix.get("value", 0.0))])
@@ -314,7 +518,7 @@ func salvage_inventory_item(item_id: String) -> bool:
 		var salvage_scrap: int = get_adjusted_salvage_scrap(salvage_scrap_base)
 		MetaProgressionSystem.add_resource("scrap", salvage_scrap)
 		inventory.remove_at(i)
-		update_loot_summary(["手动分解: %s -> 铁屑 +%d" % [_format_item_name(item), salvage_scrap]])
+		update_loot_summary(["手动分解: %s -> %s +%d" % [_format_item_name(item), MetaProgressionSystem.get_resource_display_name("scrap"), salvage_scrap]])
 		EventBus.inventory_changed.emit()
 		return true
 	return false
@@ -463,3 +667,165 @@ func complete_node(node_id: String) -> void:
 func fallback_to_stable_node() -> void:
 	current_node_id = stable_node_id
 	EventBus.node_changed.emit(current_node_id)
+
+
+func _get_primary_archetype_tag(skill_data: Dictionary) -> String:
+	var archetype_tags: Array = skill_data.get("archetype_tags", [])
+	if archetype_tags.is_empty():
+		return ""
+	return String(archetype_tags[0])
+
+
+func _get_primary_stat_gap(profile: Dictionary, totals: Dictionary, chapter_order: int) -> Dictionary:
+	var best_gap: Dictionary = {}
+	var best_score: float = -1.0
+	for entry_variant in profile.get("primary_stats", []):
+		var entry: Dictionary = entry_variant
+		var stat_key: String = String(entry.get("stat_key", ""))
+		var target_value: float = float(entry.get("target_base", 0.0)) + float(maxi(chapter_order - 1, 0)) * float(entry.get("target_per_chapter", 0.0))
+		var current_value: float = float(totals.get(stat_key, 0.0))
+		var deficit_ratio: float = maxf(0.0, target_value - current_value) / maxf(target_value, 0.001)
+		var score: float = deficit_ratio
+		if String(entry.get("category", "")) == "function":
+			score += 0.08
+		if current_value <= 0.0:
+			score += 0.06
+		if score > best_score:
+			best_score = score
+			best_gap = entry.duplicate(true)
+			best_gap["target_value"] = target_value
+			best_gap["current_value"] = current_value
+			best_gap["deficit_ratio"] = deficit_ratio
+	return best_gap
+
+
+func _get_survival_gap(totals: Dictionary, chapter_order: int) -> Dictionary:
+	var hp_target: float = 34.0 + float(chapter_order) * 26.0
+	var defense_target: float = 4.0 + float(chapter_order) * 2.0
+	var hp_value: float = float(totals.get("hp_flat", 0.0))
+	var defense_value: float = float(totals.get("defense_flat", 0.0))
+	var hp_ratio: float = maxf(0.0, hp_target - hp_value) / maxf(hp_target, 1.0)
+	var defense_ratio: float = maxf(0.0, defense_target - defense_value) / maxf(defense_target, 1.0)
+	return {
+		"stat_key": "hp_flat",
+		"label": "生存面板",
+		"category": "survival",
+		"category_label": "生存",
+		"current_value": hp_value + defense_value * 4.0,
+		"target_value": hp_target + defense_target * 4.0,
+		"deficit_ratio": (hp_ratio + defense_ratio) * 0.5,
+		"affix_ids": ["affix_hp_flat", "affix_defense_flat"],
+		"legendary_ids": ["legend_boss_tyrant_shell"],
+	}
+
+
+func _build_recommendation_target(profile: Dictionary, gap: Dictionary) -> Dictionary:
+	var legendary_ids: Array = gap.get("legendary_ids", [])
+	var affix_ids: Array = gap.get("affix_ids", [])
+	var primary_legendary_id: String = _pick_prioritized_entry_id(legendary_ids, "legendary")
+	var primary_affix_id: String = _pick_prioritized_entry_id(affix_ids, "affix")
+	var base_id: String = _pick_recommended_base_id(profile, primary_legendary_id, primary_affix_id)
+	var recommendation: Dictionary = {}
+	if not primary_legendary_id.is_empty():
+		recommendation = LootCodexSystem.get_recommended_farm_node_for_legendary(primary_legendary_id)
+	if recommendation.is_empty() and not primary_affix_id.is_empty():
+		recommendation = LootCodexSystem.get_recommended_farm_node_for_affix(primary_affix_id)
+	if recommendation.is_empty() and not base_id.is_empty():
+		recommendation = LootCodexSystem.get_recommended_farm_node_for_base(base_id)
+
+	var expectation: String = ""
+	if not recommendation.is_empty():
+		expectation = "约 %.1f 次/见 1 次" % float(recommendation.get("expected_clears_per_hit", 0.0))
+	return {
+		"primary_target_name": _get_named_entry(primary_legendary_id, "legendary").get("name", _get_named_entry(primary_affix_id, "affix").get("name", "核心件")),
+		"secondary_target_name": _get_named_entry(primary_affix_id, "affix").get("name", _get_named_entry(primary_legendary_id, "legendary").get("name", "功能真意")),
+		"base_target_name": _get_named_entry(base_id, "base").get("name", "合适底材"),
+		"recommended_node_id": String(recommendation.get("node_id", current_node_id)),
+		"recommended_node_label": String(recommendation.get("short_label", current_node_id)),
+		"recommendation_short": _build_recommendation_short_text(recommendation, expectation),
+		"reason": String(recommendation.get("reason", "")),
+	}
+
+
+func _build_recommendation_short_text(recommendation: Dictionary, expectation: String) -> String:
+	if recommendation.is_empty():
+		return "先刷当前能稳定通关的节点"
+	var reason: String = String(recommendation.get("reason", ""))
+	var state_text: String = "当前可刷"
+	if reason.begins_with("后续章节"):
+		state_text = "后续章节"
+	return "%s，%s" % [state_text, expectation if not expectation.is_empty() else "看掉率推荐推进"]
+
+
+func _pick_prioritized_entry_id(candidate_ids: Array, category: String) -> String:
+	for candidate_variant in candidate_ids:
+		var candidate_id: String = String(candidate_variant)
+		if candidate_id.is_empty():
+			continue
+		if category == "legendary" and not LootCodexSystem.is_legendary_discovered(candidate_id):
+			return candidate_id
+		if not _get_named_entry(candidate_id, category).is_empty():
+			return candidate_id
+	return ""
+
+
+func _pick_recommended_base_id(profile: Dictionary, legendary_id: String, affix_id: String) -> String:
+	var preferred_slot_tags: Array = []
+	var legendary_entry: Dictionary = _get_named_entry(legendary_id, "legendary")
+	if not legendary_entry.is_empty():
+		preferred_slot_tags = legendary_entry.get("slot_tags", [])
+	var affix_entry: Dictionary = _get_named_entry(affix_id, "affix")
+	if preferred_slot_tags.is_empty() and not affix_entry.is_empty():
+		preferred_slot_tags = affix_entry.get("slot_tags", [])
+
+	var recommended_ids: Array = profile.get("recommended_base_ids", [])
+	for base_id_variant in recommended_ids:
+		var base_id: String = String(base_id_variant)
+		var base_entry: Dictionary = _get_named_entry(base_id, "base")
+		if base_entry.is_empty():
+			continue
+		if preferred_slot_tags.is_empty() or preferred_slot_tags.has(String(base_entry.get("slot", ""))):
+			return base_id
+	for base_entry_variant in ConfigDB.get_all_equipment_bases():
+		var base_entry: Dictionary = base_entry_variant
+		if preferred_slot_tags.is_empty() or preferred_slot_tags.has(String(base_entry.get("slot", ""))):
+			return String(base_entry.get("id", ""))
+	return ""
+
+
+func _get_named_entry(entry_id: String, category: String) -> Dictionary:
+	if entry_id.is_empty():
+		return {}
+	var pool: Array = []
+	match category:
+		"base":
+			pool = ConfigDB.get_all_equipment_bases()
+		"affix":
+			pool = ConfigDB.get_all_affixes()
+		_:
+			pool = ConfigDB.get_all_legendary_affixes()
+	for entry_variant in pool:
+		var entry: Dictionary = entry_variant
+		if String(entry.get("id", "")) == entry_id:
+			return entry
+	return {}
+
+
+func _build_tracked_target_line() -> String:
+	var tracked_id: String = LootCodexSystem.tracked_legendary_affix_id
+	if tracked_id.is_empty():
+		return "追踪: 未设机缘，先按道统推荐刷装"
+	var target_name: String = String(_get_named_entry(tracked_id, "legendary").get("name", tracked_id))
+	var recommendation: Dictionary = LootCodexSystem.get_recommended_farm_node_for_legendary(tracked_id)
+	var recommendation_label: String = String(recommendation.get("short_label", current_node_id))
+	return "追踪: %s -> %s" % [target_name, recommendation_label]
+
+
+func _format_stat_value(stat_key: String, value: float) -> String:
+	match stat_key:
+		"attack_speed_percent", "attack_percent", "core_damage_percent", "core_cooldown_reduction", "whirlwind_radius_percent", "bleed_dot_percent", "execute_threshold", "chain_damage_percent":
+			return "%d%%" % int(round(value * 100.0))
+		"chain_count_bonus":
+			return "+%d" % int(round(value))
+		_:
+			return "%d" % int(round(value))

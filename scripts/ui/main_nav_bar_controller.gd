@@ -36,11 +36,11 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	inventory_button.text = "背包  I\n%d 件可管理" % GameManager.get_inventory_count()
-	research_button.text = "研究  U\n%s" % _get_research_button_summary()
-	codex_button.text = "图鉴  O\n%s" % _get_codex_button_summary()
-	stats_button.text = "统计  P\n%s" % _get_stats_button_summary()
+	research_button.text = "悟道  U\n%s" % _get_research_button_summary()
+	codex_button.text = "异闻录  O\n%s" % _get_codex_button_summary()
+	stats_button.text = "推演  P\n%s" % _get_stats_button_summary()
 	gm_button.text = "GM  G\n调试入口"
-	hint_label.text = "1/2/3 切流派  R 重开  T 切目标  G GM  F5/F8 档1  Esc 关闭"
+	hint_label.text = "1/2/3 切道统  R 重开  T 切机缘  G GM  F5/F8 档1  Esc 关闭"
 	_update_button_states()
 
 
@@ -68,7 +68,7 @@ func _get_research_button_summary() -> String:
 		var state: Dictionary = MetaProgressionSystem.can_upgrade_research(String(research_node.get("id", "")))
 		if bool(state.get("ok", false)):
 			upgradable_count += 1
-	return "可升级 %d 项" % upgradable_count
+	return "可悟道 %d 项" % upgradable_count
 
 
 func _get_codex_button_summary() -> String:
@@ -79,8 +79,8 @@ func _get_codex_button_summary() -> String:
 		if String(entry.get("id", "")) == tracked_name:
 			tracked_affix = entry
 			break
-	var short_target: String = String(tracked_affix.get("name", "未设目标"))
-	return "目标 %s" % short_target
+	var short_target: String = String(tracked_affix.get("name", "未设机缘"))
+	return "机缘 %s" % short_target
 
 
 func _get_stats_button_summary() -> String:

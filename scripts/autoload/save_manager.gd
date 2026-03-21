@@ -42,6 +42,8 @@ func save_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	}
 	payload.merge(MetaProgressionSystem.build_save_data(), true)
 	payload.merge(LootCodexSystem.build_save_data(), true)
+	payload.merge(DailyGoalSystem.build_save_data(), true)
+	payload.merge(StageEventSystem.build_save_data(), true)
 	var file: FileAccess = FileAccess.open(_get_save_path(slot), FileAccess.WRITE)
 	if file == null:
 		return false
@@ -75,6 +77,8 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	GameManager.equipped_items = payload.get("equipped_items", GameManager.equipped_items)
 	MetaProgressionSystem.load_save_data(payload)
 	LootCodexSystem.load_save_data(payload)
+	DailyGoalSystem.load_save_data(payload)
+	StageEventSystem.load_save_data(payload)
 	GameManager.auto_salvage_below_rarity = String(payload.get("auto_salvage_below_rarity", GameManager.auto_salvage_below_rarity))
 	GameManager.last_loot_summary = String(payload.get("last_loot_summary", GameManager.last_loot_summary))
 	GameManager.last_loot_highlight = payload.get("last_loot_highlight", GameManager.last_loot_highlight)
@@ -88,6 +92,7 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	EventBus.research_changed.emit()
 	EventBus.codex_changed.emit()
 	EventBus.loot_target_changed.emit()
+	EventBus.daily_goals_changed.emit()
 	OfflineSystem.process_saved_timestamp(saved_unix_time)
 	return true
 

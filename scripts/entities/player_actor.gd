@@ -28,7 +28,7 @@ var chain_count_bonus: int = 0
 var chain_damage_bonus_percent: float = 0.0
 
 var core_skill_id: String = "core_whirlwind"
-var core_skill_name: String = "旋风斩"
+var core_skill_name: String = "御风道"
 const IDLE_RETURN_THRESHOLD := 4.0
 const IDLE_RETURN_SPEED_MULTIPLIER := 0.75
 
@@ -52,7 +52,7 @@ func _ready() -> void:
 
 func setup_from_skill(skill_data: Dictionary) -> void:
 	core_skill_id = String(skill_data.get("id", "core_whirlwind"))
-	core_skill_name = String(skill_data.get("name", "旋风斩"))
+	core_skill_name = String(skill_data.get("name", "御风道"))
 
 	max_hp = 160.0
 	current_hp = max_hp
@@ -163,10 +163,12 @@ func _cast_core_skill() -> void:
 	match core_skill_id:
 		"core_whirlwind":
 			_show_cast_feedback("旋风!")
+			_emit_core_highlight("御风回斩", "风痕已成阵", "保持贴近敌群，吃满风刃回环收益")
 			_cast_whirlwind()
 		"core_deep_wound":
 			if target and is_instance_valid(target):
 				_show_cast_feedback("裂伤!")
+				_emit_core_highlight("血劫断命", "血线与断命线同步抬升", "观察目标是否已经进入断命时机")
 				var raw_damage: float = DamageResolverScript.build_damage(attack, 1.6, core_bonus_percent + core_damage_bonus_percent)
 				target.take_damage(raw_damage, ["bleed"], {
 					"source": "bleed",
@@ -175,6 +177,11 @@ func _cast_core_skill() -> void:
 				})
 		"core_chain_lightning":
 			_show_cast_feedback("连锁!")
+			_emit_core_highlight(
+				"五雷连引",
+				"本次引雷 %d 段" % mini(3 + chain_count_bonus, get_tree().get_nodes_in_group("enemy_actor").size()),
+				"优先观察攻速、引雷次数和雷痕伤害反馈"
+			)
 			_cast_chain_lightning()
 		_:
 			if target and is_instance_valid(target):
@@ -251,6 +258,15 @@ func _show_cast_feedback(text: String) -> void:
 		cast_label.text = ""
 		cast_label.modulate = Color(1, 0.95, 0.4, 1)
 	)
+
+
+func _emit_core_highlight(title: String, subtitle: String, detail: String) -> void:
+	EventBus.combat_highlight_requested.emit({
+		"highlight_type": "core_skill",
+		"title": title,
+		"subtitle": subtitle,
+		"detail": detail,
+	})
 
 
 func _apply_portrait_visual() -> void:

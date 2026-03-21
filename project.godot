@@ -23,6 +23,8 @@ ConfigDB="*res://scripts/autoload/config_db.gd"
 MetaProgressionSystem="*res://scripts/autoload/meta_progression_system.gd"
 LootCodexSystem="*res://scripts/autoload/loot_codex_system.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
+DailyGoalSystem="*res://scripts/autoload/daily_goal_system.gd"
+StageEventSystem="*res://scripts/autoload/stage_event_system.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 OfflineSystem="*res://scripts/autoload/offline_system.gd"
 
@@ -31,8 +33,6 @@ OfflineSystem="*res://scripts/autoload/offline_system.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
-window/handheld/orientation=0
 
 [gui]
 

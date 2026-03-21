@@ -75,7 +75,7 @@ func open_panel() -> void:
 
 func _refresh(_unused: Variant = null) -> void:
 	title_label.text = "GM 调试面板"
-	summary_label.text = "节点 %s | 库存 %d 件 | 金币 %d | 铁屑 %d | 核心 %d | 碎片 %d" % [
+	summary_label.text = "节点 %s | 库存 %d 件 | 香火钱 %d | 祠灰 %d | 灵核 %d | 真意残片 %d" % [
 		GameManager.current_node_id,
 		GameManager.get_inventory_count(),
 		MetaProgressionSystem.get_resource_amount("gold"),
@@ -222,13 +222,13 @@ func _on_unlock_research_pressed() -> void:
 
 func _on_unlock_codex_pressed() -> void:
 	LootCodexSystem.gm_unlock_all_codex()
-	_push_action_log("已解锁全部图鉴")
+	_push_action_log("已解锁全部异闻录")
 
 
 func _on_unlock_all_pressed() -> void:
 	MetaProgressionSystem.gm_unlock_all_research()
 	LootCodexSystem.gm_unlock_all_codex()
-	_push_action_log("已解锁全部天赋树与图鉴")
+	_push_action_log("已解锁全部悟道与异闻录")
 
 
 func _on_max_resources_pressed() -> void:
@@ -249,7 +249,7 @@ func _on_clear_inventory_pressed() -> void:
 
 func _on_clear_drop_stats_pressed() -> void:
 	LootCodexSystem.gm_clear_drop_stats()
-	_push_action_log("已清空掉落统计样本")
+	_push_action_log("已清空机缘推演样本")
 
 
 func _on_save_pressed() -> void:
@@ -283,13 +283,13 @@ func _get_selected_save_slot() -> int:
 func _get_resource_label(resource_id: String) -> String:
 	match resource_id:
 		"gold":
-			return "金币"
+			return "香火钱"
 		"scrap":
-			return "铁屑"
+			return "祠灰"
 		"core":
-			return "核心"
+			return "灵核"
 		"legend_shard":
-			return "碎片"
+			return "真意残片"
 		_:
 			return resource_id
 

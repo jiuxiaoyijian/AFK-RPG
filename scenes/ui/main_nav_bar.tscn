@@ -33,14 +33,14 @@ offset_left = 224.0
 offset_top = 10.0
 offset_right = 410.0
 offset_bottom = 58.0
-text = "研究"
+text = "悟道"
 
 [node name="CodexButton" type="Button" parent="Panel"]
 offset_left = 424.0
 offset_top = 10.0
 offset_right = 700.0
 offset_bottom = 58.0
-text = "图鉴"
+text = "异闻录"
 
 [node name="StatsButton" type="Button" parent="Panel"]
 offset_left = 714.0

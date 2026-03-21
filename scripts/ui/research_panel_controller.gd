@@ -38,7 +38,14 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	title_label.text = "研究树与长期成长"
+	title_label.text = "悟道与长期成长"
+	filter_section_label.text = "悟道分支"
+	list_section_label.text = "悟道节点"
+	detail_section_label.text = "悟道详情"
+	action_section_label.text = "悟道操作"
+	combat_button.text = "战法"
+	idle_button.text = "闭关"
+	economy_button.text = "机缘"
 	summary_label.text = _build_research_summary()
 	_update_filter_buttons()
 
@@ -77,8 +84,8 @@ func _refresh_detail() -> void:
 	detail_label.text = MetaProgressionSystem.get_research_detail_text(selected_research_id)
 	if selected_research_id.is_empty():
 		upgrade_button.disabled = true
-		upgrade_button.text = "升级研究"
-		action_hint_label.text = "未选择研究 | 左侧选择节点后可查看升级条件"
+		upgrade_button.text = "提升悟道"
+		action_hint_label.text = "未选择悟道 | 左侧选择节点后可查看提升条件"
 		action_hint_label.add_theme_color_override("font_color", Color(0.74, 0.78, 0.86, 1.0))
 		detail_label.add_theme_color_override("font_color", Color(0.82, 0.84, 0.90, 1.0))
 		_update_button_style(upgrade_button, Color(0.42, 0.42, 0.46, 1.0))
@@ -89,18 +96,18 @@ func _refresh_detail() -> void:
 	detail_label.add_theme_color_override("font_color", _get_tree_type_color(_get_selected_tree_type()))
 	if bool(upgrade_state.get("ok", false)):
 		var cost_entry: Dictionary = upgrade_state.get("cost", {})
-		upgrade_button.text = "升级研究 (%s x%d)" % [
-			String(cost_entry.get("resource_id", "")),
+		upgrade_button.text = "提升悟道 (%s x%d)" % [
+			MetaProgressionSystem.get_resource_display_name(String(cost_entry.get("resource_id", ""))),
 			int(cost_entry.get("amount", 0)),
 		]
-		action_hint_label.text = "当前研究可提升 | 下一跳消耗 %s x%d" % [
-			String(cost_entry.get("resource_id", "")),
+		action_hint_label.text = "当前悟道可提升 | 下一跳消耗 %s x%d" % [
+			MetaProgressionSystem.get_resource_display_name(String(cost_entry.get("resource_id", ""))),
 			int(cost_entry.get("amount", 0)),
 		]
 		action_hint_label.add_theme_color_override("font_color", Color(0.56, 0.88, 0.62, 1.0))
 	else:
 		upgrade_button.text = String(upgrade_state.get("reason", "不可升级"))
-		action_hint_label.text = "当前研究状态 | %s" % String(upgrade_state.get("reason", "不可升级"))
+		action_hint_label.text = "当前悟道状态 | %s" % String(upgrade_state.get("reason", "不可升级"))
 		action_hint_label.add_theme_color_override("font_color", Color(0.96, 0.80, 0.42, 1.0))
 	_update_button_style(
 		upgrade_button,
@@ -148,11 +155,11 @@ func _update_filter_buttons() -> void:
 func _get_tree_type_label(tree_type: String) -> String:
 	match tree_type:
 		"combat":
-			return "战斗"
+			return "战法"
 		"idle":
-			return "挂机"
+			return "闭关"
 		"economy":
-			return "经济"
+			return "机缘"
 		_:
 			return tree_type
 
@@ -172,7 +179,7 @@ func _build_research_summary() -> String:
 		branch_stats[tree_type]["max"] += int(node.get("max_level", 1))
 
 	var bonus: Dictionary = MetaProgressionSystem.get_meta_progression_bonuses()
-	return "当前筛选: %s | 战斗 %d/%d | 挂机 %d/%d | 经济 %d/%d\n资源加成: 金币 %+d%% | 铁屑 %+d%% | 核心 %+d%%" % [
+	return "当前筛选: %s | 战法 %d/%d | 闭关 %d/%d | 机缘 %d/%d\n资源加成: 香火钱 %+d%% | 祠灰 %+d%% | 灵核 %+d%%" % [
 		_get_tree_type_label(current_filter) if current_filter != "all" else "全部",
 		int(branch_stats["combat"]["current"]),
 		int(branch_stats["combat"]["max"]),

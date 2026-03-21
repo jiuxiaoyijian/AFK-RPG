@@ -106,6 +106,20 @@ func get_resource_amount(resource_id: String) -> int:
 			return 0
 
 
+func get_resource_display_name(resource_id: String) -> String:
+	match resource_id:
+		"gold":
+			return "香火钱"
+		"scrap":
+			return "祠灰"
+		"core":
+			return "灵核"
+		"legend_shard":
+			return "真意残片"
+		_:
+			return resource_id
+
+
 func get_meta_progression_bonuses() -> Dictionary:
 	var totals: Dictionary = RESEARCH_META_KEYS.duplicate(true)
 	for research_id in research_levels.keys():
@@ -143,7 +157,7 @@ func get_research_level(node_id: String) -> int:
 func can_upgrade_research(node_id: String) -> Dictionary:
 	var research_node: Dictionary = ConfigDB.get_research_node(node_id)
 	if research_node.is_empty():
-		return {"ok": false, "reason": "研究节点不存在"}
+		return {"ok": false, "reason": "悟道节点不存在"}
 
 	var current_level: int = get_research_level(node_id)
 	var max_level: int = int(research_node.get("max_level", 1))
@@ -163,7 +177,7 @@ func can_upgrade_research(node_id: String) -> Dictionary:
 	var resource_id: String = String(cost_entry.get("resource_id", ""))
 	var cost_amount: int = int(cost_entry.get("amount", 0))
 	if get_resource_amount(resource_id) < cost_amount:
-		return {"ok": false, "reason": "%s 不足" % resource_id}
+		return {"ok": false, "reason": "%s 不足" % get_resource_display_name(resource_id)}
 
 	return {"ok": true, "reason": "", "cost": cost_entry, "next_level": current_level + 1}
 
@@ -178,13 +192,14 @@ func upgrade_research(node_id: String) -> Dictionary:
 	research_levels[node_id] = int(check_result.get("next_level", 1))
 	var research_node: Dictionary = ConfigDB.get_research_node(node_id)
 	GameManager.update_loot_summary([
-		"研究完成: %s Lv.%d" % [String(research_node.get("name", node_id)), get_research_level(node_id)],
-		"消耗: %s x%d" % [String(cost_entry.get("resource_id", "")), int(cost_entry.get("amount", 0))],
+		"悟道有成: %s Lv.%d" % [String(research_node.get("name", node_id)), get_research_level(node_id)],
+		"消耗: %s x%d" % [get_resource_display_name(String(cost_entry.get("resource_id", ""))), int(cost_entry.get("amount", 0))],
 		"效果: %s" % String(research_node.get("description", "")),
 	])
 	EventBus.resources_changed.emit()
 	EventBus.equipment_changed.emit()
 	EventBus.research_changed.emit()
+	EventBus.research_upgraded.emit(node_id, get_research_level(node_id))
 	return {"ok": true, "reason": "", "new_level": get_research_level(node_id)}
 
 
@@ -234,7 +249,7 @@ func get_research_overview_text(tree_filter: String = "all") -> String:
 	])
 
 	var meta_bonuses: Dictionary = get_meta_progression_bonuses()
-	lines.append("经济加成: 金币 %+d%% | 铁屑 %+d%% | 核心 %+d%% | 碎片 %+d%% | 分解 %+d%%" % [
+	lines.append("机缘加成: 香火钱 %+d%% | 祠灰 %+d%% | 灵核 %+d%% | 真意残片 %+d%% | 分解 %+d%%" % [
 		int(round(float(meta_bonuses.get("gold_gain_percent", 0.0)) * 100.0)),
 		int(round(float(meta_bonuses.get("scrap_gain_percent", 0.0)) * 100.0)),
 		int(round(float(meta_bonuses.get("core_gain_percent", 0.0)) * 100.0)),
@@ -247,7 +262,7 @@ func get_research_overview_text(tree_filter: String = "all") -> String:
 func get_research_detail_text(node_id: String) -> String:
 	var research_node: Dictionary = ConfigDB.get_research_node(node_id)
 	if research_node.is_empty():
-		return "未选择研究"
+		return "未选择悟道节点"
 
 	var current_level: int = get_research_level(node_id)
 	var max_level: int = int(research_node.get("max_level", 1))

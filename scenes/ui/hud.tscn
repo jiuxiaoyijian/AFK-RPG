@@ -17,12 +17,43 @@ offset_top = 12.0
 offset_right = 1268.0
 offset_bottom = 56.0
 
+[node name="CombatHighlightPanel" type="Panel" parent="."]
+offset_left = 430.0
+offset_top = 66.0
+offset_right = 850.0
+offset_bottom = 132.0
+visible = false
+
+[node name="CombatHighlightTitle" type="Label" parent="CombatHighlightPanel" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 10.0
+offset_right = 400.0
+offset_bottom = 30.0
+horizontal_alignment = 1
+text = "战斗高光"
+
+[node name="CombatHighlightSubtitle" type="Label" parent="CombatHighlightPanel" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 30.0
+offset_right = 400.0
+offset_bottom = 48.0
+horizontal_alignment = 1
+text = "副标题"
+
+[node name="CombatHighlightDetail" type="Label" parent="CombatHighlightPanel" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 48.0
+offset_right = 400.0
+offset_bottom = 62.0
+horizontal_alignment = 1
+text = "细节"
+
 [node name="ResourceLabel" type="Label" parent="TopBar" unique_name_in_owner="true"]
 offset_left = 18.0
 offset_top = 10.0
 offset_right = 860.0
 offset_bottom = 30.0
-text = "金币 0"
+text = "香火钱 0"
 
 [node name="RunLabel" type="Label" parent="TopBar" unique_name_in_owner="true"]
 offset_left = 866.0
@@ -43,7 +74,7 @@ offset_left = 14.0
 offset_top = 12.0
 offset_right = 232.0
 offset_bottom = 30.0
-text = "当前章节"
+text = "当前探境"
 
 [node name="StateLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
 offset_left = 14.0
@@ -73,7 +104,7 @@ offset_left = 14.0
 offset_top = 102.0
 offset_right = 232.0
 offset_bottom = 120.0
-text = "流派: --"
+text = "道统: --"
 
 [node name="SkillIconPanel" type="Panel" parent="BattleCard"]
 offset_left = 258.0
@@ -113,23 +144,91 @@ offset_left = 18.0
 offset_top = 10.0
 offset_right = 260.0
 offset_bottom = 28.0
-text = "目标追踪"
+text = "机缘追踪"
 
 [node name="TargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 34.0
-offset_right = 272.0
-offset_bottom = 88.0
+offset_top = 30.0
+offset_right = 304.0
+offset_bottom = 46.0
 autowrap_mode = 2
-text = "当前目标: --"
+text = "追踪: --"
+
+[node name="BuildGapLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 48.0
+offset_right = 304.0
+offset_bottom = 64.0
+autowrap_mode = 2
+text = "缺口: --"
+
+[node name="NextTargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 66.0
+offset_right = 304.0
+offset_bottom = 82.0
+autowrap_mode = 2
+text = "下一件: --"
 
 [node name="CodexLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 92.0
-offset_right = 272.0
-offset_bottom = 118.0
+offset_top = 84.0
+offset_right = 304.0
+offset_bottom = 110.0
 autowrap_mode = 2
-text = "图鉴: --"
+text = "推荐: --"
+
+[node name="DailyGoalCard" type="Panel" parent="."]
+offset_left = 936.0
+offset_top = 250.0
+offset_right = 1264.0
+offset_bottom = 388.0
+
+[node name="DailyGoalTitleLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 10.0
+offset_right = 220.0
+offset_bottom = 26.0
+text = "今日机缘"
+
+[node name="PrimaryGoalLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 28.0
+offset_right = 310.0
+offset_bottom = 44.0
+autowrap_mode = 2
+text = "主目标: --"
+
+[node name="PrimaryProgressLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 46.0
+offset_right = 300.0
+offset_bottom = 60.0
+text = "进度: --"
+
+[node name="PrimaryCtaLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 62.0
+offset_right = 304.0
+offset_bottom = 82.0
+autowrap_mode = 2
+text = "建议: --"
+
+[node name="SideGoalsLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 84.0
+offset_right = 304.0
+offset_bottom = 108.0
+autowrap_mode = 2
+text = "支线: --"
+
+[node name="NextStepLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 110.0
+offset_right = 304.0
+offset_bottom = 132.0
+autowrap_mode = 2
+text = "回来先做什么: --"
 
 [node name="EquipCard" type="Panel" parent="."]
 offset_left = 16.0

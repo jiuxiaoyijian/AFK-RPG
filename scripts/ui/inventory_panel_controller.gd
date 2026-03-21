@@ -71,7 +71,7 @@ func _refresh_detail() -> void:
 	salvage_button.disabled = not has_item or bool(item.get("is_locked", false))
 	lock_button.text = "解锁" if bool(item.get("is_locked", false)) else "锁定"
 	equip_button.text = "装备到对应槽位" if has_item else "装备"
-	salvage_button.text = "已锁定，无法分解" if bool(item.get("is_locked", false)) else "分解为铁屑"
+	salvage_button.text = "已锁定，无法分解" if bool(item.get("is_locked", false)) else "分解为祠灰"
 	detail_label.add_theme_color_override("font_color", _get_item_detail_color(item))
 	action_hint_label.text = _build_action_hint(item)
 	action_hint_label.add_theme_color_override("font_color", _get_action_hint_color(item))
