@@ -5,7 +5,11 @@ const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const ENEMY_PORTRAIT_PATHS := {
 	"normal": "res://assets/generated/portraits/enemy_normal_placeholder.png",
 	"elite": "res://assets/generated/portraits/enemy_elite_placeholder.png",
-	"boss": "res://assets/generated/portraits/enemy_boss_placeholder.png",
+	"boss": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_battle_stance.png",
+}
+const ENEMY_PORTRAIT_PATHS_BY_ID := {
+	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_battle_stance.png",
+	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_staff_standing.png",
 }
 
 signal died(enemy_id: String, world_position: Vector2, enemy_type: String)
@@ -213,7 +217,9 @@ func _get_base_color() -> Color:
 
 
 func _apply_portrait_visual() -> void:
-	var texture_path: String = String(ENEMY_PORTRAIT_PATHS.get(enemy_type, ENEMY_PORTRAIT_PATHS["normal"]))
+	var texture_path: String = String(ENEMY_PORTRAIT_PATHS_BY_ID.get(enemy_id, ""))
+	if texture_path.is_empty():
+		texture_path = String(ENEMY_PORTRAIT_PATHS.get(enemy_type, ENEMY_PORTRAIT_PATHS["normal"]))
 	var portrait_texture: Texture2D = _load_runtime_texture(texture_path)
 	portrait_visual.texture = portrait_texture
 	portrait_visual.visible = portrait_texture != null

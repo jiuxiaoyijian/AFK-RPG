@@ -256,7 +256,11 @@ func get_build_advice_data() -> Dictionary:
 	var chapter_data: Dictionary = ConfigDB.get_chapter(current_chapter_id)
 	var chapter_name: String = String(chapter_data.get("name", current_chapter_id))
 	var chapter_order: int = int(chapter_data.get("order", 1))
+	var current_node: Dictionary = ConfigDB.get_chapter_node(current_node_id)
+	var stable_node: Dictionary = ConfigDB.get_chapter_node(stable_node_id)
 	var bonuses: Dictionary = get_total_combat_bonuses()
+	var is_progress_blocked: bool = current_node_id != stable_node_id and not current_node.is_empty() and not stable_node.is_empty()
+	var block_node_label: String = _get_node_short_label(current_node, chapter_data)
 
 	var primary_gap: Dictionary = _get_primary_stat_gap(profile, bonuses, chapter_order)
 	var survival_gap: Dictionary = _get_survival_gap(bonuses, chapter_order)
@@ -264,18 +268,12 @@ func get_build_advice_data() -> Dictionary:
 	if chosen_gap.is_empty() or float(survival_gap.get("deficit_ratio", 0.0)) > float(chosen_gap.get("deficit_ratio", 0.0)) + 0.18:
 		chosen_gap = survival_gap
 	if chosen_gap.is_empty():
-		chosen_gap = {
-			"category": "damage",
-			"category_label": "伤害",
-			"label": "道术伤害",
-			"current_value": float(bonuses.get("core_damage_percent", 0.0)),
-			"target_value": 0.24 + float(maxi(chapter_order - 1, 0)) * 0.08,
-			"deficit_ratio": 0.0,
-			"affix_ids": ["affix_core_damage"],
-			"legendary_ids": ["legend_time_fissure"],
-		}
+		chosen_gap = _get_default_gap(bonuses, chapter_order)
 
+	var gap_severity: String = _get_gap_severity(float(chosen_gap.get("deficit_ratio", 0.0)))
+	var gap_severity_label: String = _get_gap_severity_label(gap_severity)
 	var recommendation_target: Dictionary = _build_recommendation_target(profile, chosen_gap)
+	var research_action: Dictionary = _get_research_action_data()
 	var tracked_target_line: String = _build_tracked_target_line()
 	var recommendation_label: String = String(recommendation_target.get("recommended_node_label", chapter_name))
 	var recommendation_short: String = String(recommendation_target.get("recommendation_short", "先刷当前可稳定通关的推荐节点"))
@@ -297,16 +295,27 @@ func get_build_advice_data() -> Dictionary:
 
 	var next_target_line: String = "下一件: %s" % (" / ".join(next_target_segments) if not next_target_segments.is_empty() else "继续补当前道统核心件")
 	var recommendation_line: String = "推荐: %s | %s" % [recommendation_label, recommendation_short]
-	var gap_line: String = "缺口: %s -> %s %s" % [gap_category_label, gap_stat_label, gap_metric_text]
-	var action_lines: Array[String] = [
-		"先补 %s，当前 %s，建议至少到 %s。" % [
+	var gap_line: String = "缺口: %s(%s) -> %s %s" % [gap_category_label, gap_severity_label, gap_stat_label, gap_metric_text]
+	var pivot_data: Dictionary = _build_pivot_recommendation(
+		chosen_gap,
+		gap_severity,
+		recommendation_target,
+		research_action,
+		is_progress_blocked,
+		block_node_label
+	)
+	var unlock_preview_line: String = _build_unlock_preview_line(current_node, chapter_data)
+	var action_lines: Array[String] = []
+	action_lines.append(String(pivot_data.get("pivot_summary", "当前还能继续探境，边推边补当前缺口。")))
+	action_lines.append("先补 %s，当前 %s，建议至少到 %s。" % [
 			gap_stat_label,
 			_format_stat_value(String(chosen_gap.get("stat_key", "")), float(chosen_gap.get("current_value", 0.0))),
 			_format_stat_value(String(chosen_gap.get("stat_key", "")), float(chosen_gap.get("target_value", 0.0))),
-		],
-		"下一件优先找 %s，副目标看 %s。" % [primary_target_name, secondary_target_name],
-		"推荐去 %s 刷，%s。" % [recommendation_label, recommendation_short],
-	]
+		])
+	action_lines.append("下一件优先找 %s，副目标看 %s。" % [primary_target_name, secondary_target_name])
+	action_lines.append("推荐去 %s 刷，%s。" % [recommendation_label, recommendation_short])
+	if not unlock_preview_line.is_empty():
+		action_lines.append(unlock_preview_line)
 
 	return {
 		"archetype_id": archetype_id,
@@ -314,11 +323,20 @@ func get_build_advice_data() -> Dictionary:
 		"chapter_name": chapter_name,
 		"phase_text": String(profile.get("phase_text", "")),
 		"new_player_summary": String(profile.get("new_player_summary", "")),
+		"is_progress_blocked": is_progress_blocked,
+		"block_node_id": current_node_id if is_progress_blocked else "",
+		"block_node_label": block_node_label if is_progress_blocked else "",
 		"gap_category": String(chosen_gap.get("category", "damage")),
 		"gap_category_label": gap_category_label,
 		"gap_label": gap_stat_label,
+		"gap_severity": gap_severity,
+		"gap_severity_label": gap_severity_label,
 		"gap_metric_text": gap_metric_text,
 		"gap_summary": "当前更缺 %s，先补 %s。" % [gap_category_label, gap_stat_label],
+		"pivot_type": String(pivot_data.get("pivot_type", "push")),
+		"pivot_summary": String(pivot_data.get("pivot_summary", "")),
+		"stall_summary": String(pivot_data.get("stall_summary", recommendation_line)),
+		"unlock_preview_line": unlock_preview_line,
 		"tracked_target_line": tracked_target_line,
 		"gap_line": gap_line,
 		"next_target_line": next_target_line,
@@ -330,6 +348,11 @@ func get_build_advice_data() -> Dictionary:
 		"recommended_node_label": recommendation_label,
 		"recommendation_short": recommendation_short,
 		"recommendation_reason": String(recommendation_target.get("reason", "")),
+		"research_action_type": String(research_action.get("action_type", "")),
+		"research_action_name": String(research_action.get("node_name", "")),
+		"research_action_resource_id": String(research_action.get("resource_id", "")),
+		"research_action_missing_amount": int(research_action.get("missing_amount", 0)),
+		"research_action_summary": String(research_action.get("summary", "")),
 		"action_lines": action_lines,
 	}
 
@@ -717,6 +740,147 @@ func _get_survival_gap(totals: Dictionary, chapter_order: int) -> Dictionary:
 		"affix_ids": ["affix_hp_flat", "affix_defense_flat"],
 		"legendary_ids": ["legend_boss_tyrant_shell"],
 	}
+
+
+func _get_default_gap(bonuses: Dictionary, chapter_order: int) -> Dictionary:
+	return {
+		"stat_key": "core_damage_percent",
+		"category": "damage",
+		"category_label": "伤害",
+		"label": "道术伤害",
+		"current_value": float(bonuses.get("core_damage_percent", 0.0)),
+		"target_value": 0.24 + float(maxi(chapter_order - 1, 0)) * 0.08,
+		"deficit_ratio": 0.0,
+		"affix_ids": ["affix_core_damage"],
+		"legendary_ids": ["legend_time_fissure"],
+	}
+
+
+func _get_gap_severity(deficit_ratio: float) -> String:
+	if deficit_ratio >= 0.55:
+		return "severe"
+	if deficit_ratio >= 0.28:
+		return "moderate"
+	return "mild"
+
+
+func _get_gap_severity_label(severity: String) -> String:
+	match severity:
+		"severe":
+			return "严重"
+		"moderate":
+			return "明显"
+		_:
+			return "轻度"
+
+
+func _build_pivot_recommendation(
+	gap: Dictionary,
+	gap_severity: String,
+	recommendation_target: Dictionary,
+	research_action: Dictionary,
+	is_progress_blocked: bool,
+	block_node_label: String
+) -> Dictionary:
+	var gap_label: String = String(gap.get("label", "当前缺口"))
+	var recommended_node_label: String = String(recommendation_target.get("recommended_node_label", current_node_id))
+	var recommended_node_id: String = String(recommendation_target.get("recommended_node_id", current_node_id))
+	var research_summary: String = String(research_action.get("summary", ""))
+	var pivot_type: String = "push"
+	var pivot_summary: String = "当前还能继续探境，边打边补 %s。" % gap_label
+	var stall_summary: String = "当前可继续推进，边打边补 %s。" % gap_label
+
+	if is_progress_blocked:
+		if String(research_action.get("action_type", "")) == "research_upgrade" and gap_severity != "mild":
+			pivot_type = "research_upgrade"
+			pivot_summary = "先去悟道，立刻补一层 %s。" % String(research_action.get("node_name", "当前悟道"))
+			stall_summary = "卡在 %s，先做一次悟道再回头推进。" % block_node_label
+		elif String(research_action.get("action_type", "")) == "resource_collect" and gap_severity == "severe":
+			pivot_type = "research_resource"
+			pivot_summary = research_summary if not research_summary.is_empty() else "先筹够悟道材料，再回头推当前卡点。"
+			stall_summary = "卡在 %s，先筹材料做悟道更稳。" % block_node_label
+		elif not recommended_node_id.is_empty() and recommended_node_id != current_node_id:
+			pivot_type = "farm"
+			pivot_summary = "先回刷 %s，优先补 %s。" % [recommended_node_label, gap_label]
+			stall_summary = "卡在 %s，先回刷 %s 补 %s。" % [block_node_label, recommended_node_label, gap_label]
+		else:
+			stall_summary = "当前卡在 %s，继续补 %s 后再推。" % [block_node_label, gap_label]
+	elif String(research_action.get("action_type", "")) == "research_upgrade" and gap_severity == "severe":
+		pivot_type = "research_upgrade"
+		pivot_summary = "当前还能推进，但先做一次悟道会更稳。"
+		stall_summary = "先做一次悟道，再继续推进会更稳。"
+	elif not recommended_node_id.is_empty() and recommended_node_id != current_node_id and gap_severity == "severe":
+		pivot_type = "farm"
+		pivot_summary = "先刷 %s，优先补 %s。" % [recommended_node_label, gap_label]
+		stall_summary = "先回刷 %s 补 %s，再继续推进。" % [recommended_node_label, gap_label]
+
+	return {
+		"pivot_type": pivot_type,
+		"pivot_summary": pivot_summary,
+		"stall_summary": stall_summary,
+	}
+
+
+func _get_research_action_data() -> Dictionary:
+	for tree_filter in ["combat", "economy", "idle"]:
+		for research_node_variant in MetaProgressionSystem.get_research_items(tree_filter):
+			var research_node: Dictionary = research_node_variant
+			var node_id: String = String(research_node.get("id", ""))
+			var upgrade_state: Dictionary = MetaProgressionSystem.can_upgrade_research(node_id)
+			if bool(upgrade_state.get("ok", false)):
+				return {
+					"action_type": "research_upgrade",
+					"node_id": node_id,
+					"node_name": String(research_node.get("name", node_id)),
+					"summary": "悟道可立刻提升 %s。" % String(research_node.get("name", node_id)),
+				}
+			var reason: String = String(upgrade_state.get("reason", ""))
+			if reason.contains("不足"):
+				var current_level: int = MetaProgressionSystem.get_research_level(node_id)
+				var cost_entry: Dictionary = _get_research_upgrade_cost(research_node, current_level + 1)
+				if cost_entry.is_empty():
+					continue
+				var resource_id: String = String(cost_entry.get("resource_id", ""))
+				var cost_amount: int = int(cost_entry.get("amount", 0))
+				var current_amount: int = MetaProgressionSystem.get_resource_amount(resource_id)
+				var missing_amount: int = maxi(1, cost_amount - current_amount)
+				return {
+					"action_type": "resource_collect",
+					"node_id": node_id,
+					"node_name": String(research_node.get("name", node_id)),
+					"resource_id": resource_id,
+					"missing_amount": missing_amount,
+					"summary": "还差 %s x%d，才能悟道 %s。" % [
+						MetaProgressionSystem.get_resource_display_name(resource_id),
+						missing_amount,
+						String(research_node.get("name", node_id)),
+					],
+				}
+	return {}
+
+
+func _build_unlock_preview_line(current_node: Dictionary, chapter_data: Dictionary) -> String:
+	if current_node.is_empty():
+		return ""
+	var next_node_id: String = String(current_node.get("next_node_id", ""))
+	if not next_node_id.is_empty():
+		return "突破后续: 再过当前节点，将推进到 %s。" % next_node_id
+	if String(current_node.get("node_type", "")) != "boss":
+		return ""
+	var next_chapter_id: String = String(chapter_data.get("next_chapter_id", ""))
+	if next_chapter_id.is_empty():
+		return "突破后续: 当前探境已到尽头，之后转为高价值回刷。"
+	var next_chapter: Dictionary = ConfigDB.get_chapter(next_chapter_id)
+	return "突破后续: 击破后将开启 %s。" % String(next_chapter.get("name", next_chapter_id))
+
+
+func _get_node_short_label(node_data: Dictionary, chapter_data: Dictionary) -> String:
+	if node_data.is_empty():
+		return current_node_id
+	return "%s/%s" % [
+		String(chapter_data.get("name", current_chapter_id)),
+		String(node_data.get("node_type", String(node_data.get("id", current_node_id)))),
+	]
 
 
 func _build_recommendation_target(profile: Dictionary, gap: Dictionary) -> Dictionary:

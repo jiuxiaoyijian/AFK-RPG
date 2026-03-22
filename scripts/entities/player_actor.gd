@@ -2,7 +2,11 @@ class_name PlayerActor
 extends CharacterBody2D
 
 const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
-const HERO_PORTRAIT_PATH := "res://assets/generated/portraits/hero_placeholder.png"
+const HERO_PORTRAIT_PATHS := {
+	"idle": "res://assets/generated/afk_rpg_formal/characters/hero_standing_pose.png",
+	"move": "res://assets/generated/afk_rpg_formal/characters/hero_walking_hint.png",
+	"combat": "res://assets/generated/afk_rpg_formal/characters/hero_side_profile.png",
+}
 
 signal died()
 
@@ -41,6 +45,7 @@ var cast_tween: Tween
 var idle_anchor_x: float = 0.0
 var movement_left_bound: float = 426.0
 var movement_right_bound: float = 854.0
+var portrait_state: String = "idle"
 
 
 func _ready() -> void:
@@ -137,6 +142,7 @@ func _physics_process(delta: float) -> void:
 		status_text = "战斗中"
 
 	global_position.x = clampf(global_position.x, movement_left_bound, movement_right_bound)
+	_update_portrait_state()
 
 	if target == null or not is_instance_valid(target):
 		return
@@ -270,7 +276,8 @@ func _emit_core_highlight(title: String, subtitle: String, detail: String) -> vo
 
 
 func _apply_portrait_visual() -> void:
-	var portrait_texture: Texture2D = _load_runtime_texture(HERO_PORTRAIT_PATH)
+	var texture_path: String = String(HERO_PORTRAIT_PATHS.get(portrait_state, HERO_PORTRAIT_PATHS["idle"]))
+	var portrait_texture: Texture2D = _load_runtime_texture(texture_path)
 	portrait_visual.texture = portrait_texture
 	portrait_visual.visible = portrait_texture != null
 	body_visual.visible = portrait_texture == null
@@ -288,6 +295,18 @@ func _apply_portrait_tint() -> void:
 			portrait_visual.modulate = Color(0.92, 0.94, 1.0, 1.0)
 		_:
 			portrait_visual.modulate = Color(1, 1, 1, 1)
+
+
+func _update_portrait_state() -> void:
+	var next_state: String = "idle"
+	if should_move:
+		next_state = "move"
+	elif target != null and is_instance_valid(target):
+		next_state = "combat"
+	if next_state == portrait_state:
+		return
+	portrait_state = next_state
+	_apply_portrait_visual()
 
 
 func _load_runtime_texture(resource_path: String) -> Texture2D:

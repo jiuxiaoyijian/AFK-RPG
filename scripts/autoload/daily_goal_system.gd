@@ -220,6 +220,7 @@ func _build_primary_goal() -> Dictionary:
 		and not stable_node.is_empty() \
 		and String(stable_node.get("chapter_id", "")) == String(current_chapter.get("id", "")) \
 		and String(stable_node.get("node_type", "")) == "boss"
+	var build_advice: Dictionary = GameManager.get_build_advice_data()
 
 	if is_last_chapter_loop:
 		var farm_node: Dictionary = _get_high_value_farm_node(String(current_chapter.get("id", GameManager.current_chapter_id)))
@@ -235,6 +236,10 @@ func _build_primary_goal() -> Dictionary:
 			"",
 			"维持成长曲线 / 补高价值掉落"
 		)
+
+	var diagnostic_goal: Dictionary = _build_diagnostic_primary_goal(build_advice, current_node)
+	if not diagnostic_goal.is_empty():
+		return diagnostic_goal
 
 	if String(current_node.get("node_type", "normal")) == "boss":
 		return _build_goal(
@@ -278,15 +283,93 @@ func _build_primary_goal() -> Dictionary:
 	)
 
 
+func _build_diagnostic_primary_goal(build_advice: Dictionary, current_node: Dictionary) -> Dictionary:
+	if build_advice.is_empty():
+		return {}
+	var pivot_type: String = String(build_advice.get("pivot_type", "push"))
+	var gap_severity: String = String(build_advice.get("gap_severity", "mild"))
+	var is_progress_blocked: bool = bool(build_advice.get("is_progress_blocked", false))
+	if not is_progress_blocked and gap_severity != "severe":
+		return {}
+
+	var block_node_label: String = String(build_advice.get("block_node_label", String(current_node.get("id", GameManager.current_node_id))))
+	var recommended_node_id: String = String(build_advice.get("recommended_node_id", GameManager.current_node_id))
+	var recommended_node_label: String = String(build_advice.get("recommended_node_label", recommended_node_id))
+	var gap_label: String = String(build_advice.get("gap_label", "当前缺口"))
+	var pivot_summary: String = String(build_advice.get("pivot_summary", "先补当前卡点。"))
+
+	match pivot_type:
+		"research_upgrade":
+			var research_name: String = String(build_advice.get("research_action_name", "当前悟道"))
+			return _build_goal(
+				"goal_research_primary_%s" % String(build_advice.get("research_action_name", research_name)),
+				"research_upgrade",
+				"先做一次悟道",
+				"当前卡在 %s，先悟道 %s，优先补 %s 再回头推进。" % [
+					block_node_label if not block_node_label.is_empty() else "当前探境",
+					research_name,
+					gap_label,
+				],
+				1,
+				PRIMARY_PRIORITY,
+				pivot_summary,
+				"",
+				"research",
+				"稳住当前卡点 / 再回探境"
+			)
+		"research_resource":
+			var resource_id: String = String(build_advice.get("research_action_resource_id", "core"))
+			var missing_amount: int = maxi(1, int(build_advice.get("research_action_missing_amount", 1)))
+			return _build_goal(
+				"goal_research_resource_primary_%s" % resource_id,
+				"resource_collect",
+				"先筹悟道材料",
+				"当前卡在 %s，先补 %s，再回头稳住当前道统。" % [
+					block_node_label if not block_node_label.is_empty() else "当前探境",
+					MetaProgressionSystem.get_resource_display_name(resource_id),
+				],
+				missing_amount,
+				PRIMARY_PRIORITY,
+				pivot_summary,
+				recommended_node_id,
+				"research",
+				"补齐悟道材料 / 稳住当前卡点",
+				{"resource_id": resource_id}
+			)
+		"farm":
+			if recommended_node_id.is_empty():
+				return {}
+			return _build_goal(
+				"goal_pivot_farm_%s" % recommended_node_id,
+				"push_farm",
+				"先补当前卡点",
+				"当前卡在 %s，先回刷 %s，优先补 %s。" % [
+					block_node_label if not block_node_label.is_empty() else "当前探境",
+					recommended_node_label,
+					gap_label,
+				],
+				3,
+				PRIMARY_PRIORITY,
+				pivot_summary,
+				recommended_node_id,
+				"codex",
+				"回刷稳住强度 / 再回主线"
+			)
+		_:
+			return {}
+
+
 func _build_research_side_goal() -> Dictionary:
+	var advice: Dictionary = GameManager.get_build_advice_data()
 	var preferred_upgrade: Dictionary = _get_preferred_research_upgrade()
 	if not preferred_upgrade.is_empty():
 		var node_name: String = String(preferred_upgrade.get("name", "悟道"))
+		var gap_label: String = String(advice.get("gap_label", "当前缺口"))
 		return _build_goal(
 			"goal_research_upgrade_%s" % String(preferred_upgrade.get("id", "")),
 			"research_upgrade",
-			"悟道 1 次",
-			"优先提升 %s，给当前道统增加直接成长。" % node_name,
+			"补悟道缺口",
+			"优先提升 %s，先稳住 %s。" % [node_name, gap_label],
 			1,
 			SIDE_RESEARCH_PRIORITY,
 			"先打开悟道面板，优先提升 %s。" % node_name,
@@ -326,17 +409,19 @@ func _build_loot_side_goal() -> Dictionary:
 		recommendation_label = String(recommendation.get("short_label", recommendation_label))
 	var primary_target_name: String = String(advice.get("primary_target_name", tracked_target_name))
 	var gap_summary: String = String(advice.get("gap_summary", "继续围绕当前道统刷装。"))
+	var gap_category_label: String = String(advice.get("gap_category_label", "道统"))
+	var gap_label: String = String(advice.get("gap_label", "当前缺口"))
 	var description: String = "围绕当前机缘追踪继续刷装，推动道统成型。"
 	if not primary_target_name.is_empty():
 		description = "围绕 %s 继续刷装，%s" % [primary_target_name, gap_summary]
 	return _build_goal(
 		"goal_loot_farm_%s" % recommended_node_id,
 		"loot_farm",
-		"刷装推进道统",
+		"补%s缺口" % gap_category_label,
 		description,
 		3,
 		SIDE_LOOT_PRIORITY,
-		"先刷 %s，优先补 %s。" % [recommendation_label, primary_target_name if not primary_target_name.is_empty() else "当前道统核心件"],
+		"先刷 %s，优先补 %s。" % [recommendation_label, gap_label if not gap_label.is_empty() else (primary_target_name if not primary_target_name.is_empty() else "当前道统核心件")],
 		recommended_node_id,
 		"codex",
 		"机缘追踪 / 装备成型",
@@ -664,6 +749,8 @@ func _refresh_recommendation_snapshot() -> void:
 		"recommended_panel": _get_recommended_panel(),
 		"build_gap_summary": String(build_advice.get("gap_summary", "")),
 		"build_next_target_summary": String(build_advice.get("next_target_line", "")),
+		"stall_summary": String(build_advice.get("stall_summary", "")),
+		"pivot_summary": String(build_advice.get("pivot_summary", "")),
 	}
 
 

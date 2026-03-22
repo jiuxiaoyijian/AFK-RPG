@@ -2,9 +2,9 @@ extends Control
 
 const NAV_ICON_PATHS := {
 	"inventory": "res://assets/generated/icons/nav_inventory.png",
-	"research": "res://assets/generated/icons/nav_research.png",
-	"codex": "res://assets/generated/icons/nav_codex.png",
-	"drop_stats": "res://assets/generated/icons/nav_stats.png",
+	"research": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
+	"codex": "res://assets/generated/afk_rpg_formal/icons/system_yiwenlu.png",
+	"drop_stats": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
 }
 
 @onready var inventory_button: Button = $Panel/InventoryButton

@@ -4,16 +4,27 @@ const PLAYER_SCENE := preload("res://scenes/entities/player.tscn")
 const ENEMY_SCENE := preload("res://scenes/entities/enemy.tscn")
 const LOOT_DROP_VISUAL_SCENE := preload("res://scenes/effects/loot_drop_visual.tscn")
 const CHAPTER_BACKGROUND_PATHS := {
-	"chapter_1": "res://assets/generated/backgrounds/chapter_1_ruins.png",
-	"chapter_2": "res://assets/generated/backgrounds/chapter_2_mine.png",
+	"chapter_1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_formal_candidate.png",
+	"chapter_2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_formal_candidate.png",
+}
+const NODE_BACKGROUND_PATHS := {
+	"ch1_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_far_vista.png",
+	"ch1_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_mid_town.png",
+	"ch1_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_close_pier.png",
+	"ch1_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_formal_candidate.png",
+	"ch2_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_bird_view.png",
+	"ch2_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_field_path.png",
+	"ch2_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_shrine_gate.png",
+	"ch2_n4": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_field_path.png",
+	"ch2_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_formal_candidate.png",
 }
 const CHAPTER_BACKGROUND_COLORS := {
-	"chapter_1": Color(0.09, 0.1, 0.14, 1.0),
-	"chapter_2": Color(0.14, 0.09, 0.08, 1.0),
+	"chapter_1": Color(0.12, 0.11, 0.14, 1.0),
+	"chapter_2": Color(0.17, 0.2, 0.18, 1.0),
 }
 const CHAPTER_GROUND_COLORS := {
-	"chapter_1": Color(0.17, 0.18, 0.22, 1.0),
-	"chapter_2": Color(0.22, 0.16, 0.12, 1.0),
+	"chapter_1": Color(0.19, 0.18, 0.2, 1.0),
+	"chapter_2": Color(0.21, 0.23, 0.17, 1.0),
 }
 const HERO_LEFT_BOUND := 426.0
 const HERO_RIGHT_BOUND := 854.0
@@ -103,7 +114,10 @@ func _start_current_node() -> void:
 	if current_node_data.is_empty():
 		return
 
-	_apply_chapter_visuals(String(current_node_data.get("chapter_id", GameManager.current_chapter_id)))
+	_apply_chapter_visuals(
+		String(current_node_data.get("chapter_id", GameManager.current_chapter_id)),
+		String(current_node_data.get("id", GameManager.current_node_id))
+	)
 	_clear_enemies()
 	_spawn_player()
 	last_enemy_death_position = Vector2(760.0, player_spawn.global_position.y)
@@ -267,11 +281,13 @@ func _clear_enemies() -> void:
 		child.queue_free()
 
 
-func _apply_chapter_visuals(chapter_id: String) -> void:
+func _apply_chapter_visuals(chapter_id: String, node_id: String = "") -> void:
 	background_fill.color = CHAPTER_BACKGROUND_COLORS.get(chapter_id, Color(0.1, 0.11, 0.16, 1.0))
 	ground_fill.color = CHAPTER_GROUND_COLORS.get(chapter_id, Color(0.16, 0.18, 0.24, 1.0))
 
-	var texture_path: String = String(CHAPTER_BACKGROUND_PATHS.get(chapter_id, ""))
+	var texture_path: String = String(NODE_BACKGROUND_PATHS.get(node_id, ""))
+	if texture_path.is_empty():
+		texture_path = String(CHAPTER_BACKGROUND_PATHS.get(chapter_id, ""))
 	if texture_path.is_empty():
 		background_art.texture = null
 		return

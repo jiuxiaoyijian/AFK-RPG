@@ -5,6 +5,9 @@
 build/
 dist/
 
+# ComfyUI / LoRA training workspace (kept local only)
+ComfyUI+LoRA/
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

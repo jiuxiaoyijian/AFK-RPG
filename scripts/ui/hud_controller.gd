@@ -1,17 +1,18 @@
 extends Control
 
 const CORE_SKILL_ICON_PATHS := {
-	"core_whirlwind": "res://assets/generated/icons/core_whirlwind.png",
-	"core_deep_wound": "res://assets/generated/icons/core_deep_wound.png",
-	"core_chain_lightning": "res://assets/generated/icons/core_chain_lightning.png",
+	"core_whirlwind": "res://assets/generated/afk_rpg_formal/icons/school_yufengdao_highlight.png",
+	"core_deep_wound": "res://assets/generated/afk_rpg_formal/icons/school_xuejiedao_highlight.png",
+	"core_chain_lightning": "res://assets/generated/afk_rpg_formal/icons/school_wuleidao_highlight.png",
 }
+const DAILY_GOAL_ICON_PATH := "res://assets/generated/afk_rpg_formal/icons/system_jinrijiyuan.png"
 const EQUIPMENT_ICON_PATHS := {
 	"weapon": "res://assets/generated/icons/equip_weapon.png",
 	"helmet": "res://assets/generated/icons/equip_helmet.png",
 	"armor": "res://assets/generated/icons/equip_armor.png",
 	"gloves": "res://assets/generated/icons/equip_gloves.png",
 }
-const HUD_RESULT_CARD_PATH := "res://assets/generated/ui/result_card_bg.png"
+const HUD_RESULT_CARD_PATH := "res://assets/generated/afk_rpg_formal/ui/result_card_template_common.png"
 const HUD_RARITY_FRAME_PATHS := {
 	"common": "res://assets/generated/ui/frame_common.png",
 	"uncommon": "res://assets/generated/ui/frame_common.png",
@@ -21,8 +22,9 @@ const HUD_RARITY_FRAME_PATHS := {
 	"ancient": "res://assets/generated/ui/frame_ancient.png",
 }
 const LOOT_ICON_PATHS := {
-	"legendary": "res://assets/generated/icons/drop_legendary.png",
-	"store": "res://assets/generated/icons/drop_store.png",
+	"legendary": "res://assets/generated/afk_rpg_formal/icons/drop_rare.png",
+	"equip": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
+	"store": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
 	"salvage": "res://assets/generated/icons/drop_salvage.png",
 }
 const SAFE_FRAME_SIDE_MARGIN := 8.0
@@ -53,6 +55,7 @@ const CARD_MIN_TOP_GAP := 18.0
 @onready var next_target_label: Label = $TargetCard/NextTargetLabel
 @onready var codex_label: Label = $TargetCard/CodexLabel
 @onready var daily_goal_card: Panel = $DailyGoalCard
+@onready var daily_goal_icon: TextureRect = $DailyGoalCard/DailyGoalIcon
 @onready var daily_goal_title_label: Label = $DailyGoalCard/DailyGoalTitleLabel
 @onready var primary_goal_label: Label = $DailyGoalCard/PrimaryGoalLabel
 @onready var primary_goal_progress_label: Label = $DailyGoalCard/PrimaryProgressLabel
@@ -347,6 +350,7 @@ func _apply_card_art() -> void:
 	loot_card_art.texture = result_card_texture
 	equip_card_art.modulate = Color(0.86, 0.9, 0.95, 0.4)
 	loot_card_art.modulate = Color(0.9, 0.92, 0.98, 0.45)
+	daily_goal_icon.texture = _load_runtime_texture(DAILY_GOAL_ICON_PATH)
 
 
 func _apply_compact_typography() -> void:
@@ -455,12 +459,18 @@ func _refresh_target_card() -> void:
 	target_label.text = String(advice.get("tracked_target_line", "追踪: --"))
 	build_gap_label.text = String(advice.get("gap_line", "缺口: --"))
 	next_target_label.text = String(advice.get("next_target_line", "下一件: --"))
-	codex_label.text = String(advice.get("recommendation_line", LootCodexSystem.get_codex_summary_text()))
+	codex_label.text = String(advice.get(
+		"stall_summary",
+		String(advice.get("recommendation_line", LootCodexSystem.get_codex_summary_text()))
+	))
 
 	target_label.add_theme_color_override("font_color", Color(0.92, 0.86, 1.0, 1.0))
 	build_gap_label.add_theme_color_override("font_color", Color(0.98, 0.84, 0.54, 1.0))
 	next_target_label.add_theme_color_override("font_color", Color(0.84, 0.92, 0.76, 1.0))
-	codex_label.add_theme_color_override("font_color", Color(0.74, 0.82, 1.0, 1.0))
+	codex_label.add_theme_color_override(
+		"font_color",
+		Color(0.98, 0.78, 0.52, 1.0) if bool(advice.get("is_progress_blocked", false)) else Color(0.74, 0.82, 1.0, 1.0)
+	)
 
 
 func _on_build_relevant_state_changed() -> void:

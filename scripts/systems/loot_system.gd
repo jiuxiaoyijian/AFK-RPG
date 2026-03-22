@@ -7,10 +7,10 @@ const EQUIPMENT_ICON_PATHS := {
 	"gloves": "res://assets/generated/icons/equip_gloves.png",
 }
 const RESOURCE_ICON_PATHS := {
-	"gold": "res://assets/generated/icons/drop_store.png",
-	"scrap": "res://assets/generated/icons/drop_salvage.png",
-	"core": "res://assets/generated/icons/drop_legendary.png",
-	"legend_shard": "res://assets/generated/icons/drop_legendary.png",
+	"gold": "res://assets/generated/afk_rpg_formal/icons/resource_xianghuoqian.png",
+	"scrap": "res://assets/generated/afk_rpg_formal/icons/resource_cihui.png",
+	"core": "res://assets/generated/afk_rpg_formal/icons/resource_linghe.png",
+	"legend_shard": "res://assets/generated/afk_rpg_formal/icons/resource_zhenyi_canpian.png",
 }
 
 @onready var equipment_generator: Node = $"../EquipmentGeneratorSystem"
