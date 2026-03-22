@@ -4,19 +4,19 @@ const PLAYER_SCENE := preload("res://scenes/entities/player.tscn")
 const ENEMY_SCENE := preload("res://scenes/entities/enemy.tscn")
 const LOOT_DROP_VISUAL_SCENE := preload("res://scenes/effects/loot_drop_visual.tscn")
 const CHAPTER_BACKGROUND_PATHS := {
-	"chapter_1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_formal_candidate.png",
-	"chapter_2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_formal_candidate.png",
+	"chapter_1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2a.png",
+	"chapter_2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
 }
 const NODE_BACKGROUND_PATHS := {
-	"ch1_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_far_vista.png",
-	"ch1_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_mid_town.png",
-	"ch1_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_close_pier.png",
-	"ch1_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_formal_candidate.png",
-	"ch2_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_bird_view.png",
-	"ch2_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_field_path.png",
-	"ch2_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_shrine_gate.png",
-	"ch2_n4": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_field_path.png",
-	"ch2_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_formal_candidate.png",
+	"ch1_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2a.png",
+	"ch1_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2b.png",
+	"ch1_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2a.png",
+	"ch1_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2b.png",
+	"ch2_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
+	"ch2_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2b.png",
+	"ch2_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
+	"ch2_n4": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2b.png",
+	"ch2_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
 }
 const CHAPTER_BACKGROUND_COLORS := {
 	"chapter_1": Color(0.12, 0.11, 0.14, 1.0),

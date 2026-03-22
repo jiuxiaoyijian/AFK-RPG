@@ -11,8 +11,8 @@ const CONTENT_SECTION_ICON_PATHS := {
 	"stage_event": "res://assets/generated/afk_rpg_formal/icons/drop_event_reward.png",
 }
 const BOSS_PORTRAIT_PATHS_BY_ID := {
-	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_bust_closeup.png",
-	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_furnace_seated.png",
+	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_v2.png",
+	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_v2.png",
 }
 
 @onready var panel: Panel = $Panel

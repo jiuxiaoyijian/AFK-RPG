@@ -3,9 +3,9 @@ extends CharacterBody2D
 
 const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const HERO_PORTRAIT_PATHS := {
-	"idle": "res://assets/generated/afk_rpg_formal/characters/hero_standing_pose.png",
-	"move": "res://assets/generated/afk_rpg_formal/characters/hero_walking_hint.png",
-	"combat": "res://assets/generated/afk_rpg_formal/characters/hero_side_profile.png",
+	"idle": "res://assets/generated/afk_rpg_formal/characters/hero_idle_v2.png",
+	"move": "res://assets/generated/afk_rpg_formal/characters/hero_move_hint_v2.png",
+	"combat": "res://assets/generated/afk_rpg_formal/characters/hero_combat_pose_v2.png",
 }
 
 signal died()

@@ -5,11 +5,11 @@ const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const ENEMY_PORTRAIT_PATHS := {
 	"normal": "res://assets/generated/portraits/enemy_normal_placeholder.png",
 	"elite": "res://assets/generated/portraits/enemy_elite_placeholder.png",
-	"boss": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_battle_stance.png",
+	"boss": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_v2.png",
 }
 const ENEMY_PORTRAIT_PATHS_BY_ID := {
-	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_battle_stance.png",
-	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_staff_standing.png",
+	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_v2.png",
+	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_v2.png",
 }
 
 signal died(enemy_id: String, world_position: Vector2, enemy_type: String)
