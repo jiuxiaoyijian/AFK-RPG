@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>AFK-RPG 交互原型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg-main:#141620;--bg-title:#1f2a38;--bg-sub:#1c212e;
+  --border:#576a8f;--text:#c0c8d8;--text-dim:#8090a8;--text-hint:#606878;
+  --combat-bg:#1a1b29;--ground:#292e3d;
+  --blue:#42a5f5;--green:#4caf50;--purple:#ab47bc;--orange:#ff8f00;
+  --red:#ef5350;--cyan:#4dd0e1;--gold:#ffc107;
+  --q-common:#b0b0b0;--q-uncommon:#4caf50;--q-rare:#42a5f5;
+  --q-epic:#ab47bc;--q-legendary:#ff8f00;--q-ancient:#ef5350;
+}
+html,body{width:1280px;height:720px;overflow:hidden;background:#0a0b10;font-family:'Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;color:#e0e4ec;font-size:14px;user-select:none;}
+body{display:flex;justify-content:center;align-items:center;min-height:100vh;min-width:1280px;}
+#app{width:1280px;height:720px;position:relative;overflow:hidden;background:var(--combat-bg);}
+
+/* ===== WORLD ===== */
+#world{position:absolute;inset:0;z-index:0;}
+#world .sky{position:absolute;inset:0;background:linear-gradient(180deg,#0d1117 0%,#151a2a 40%,#1a1b29 100%);opacity:.92;}
+#world .mountains{position:absolute;bottom:160px;width:100%;height:200px;background:linear-gradient(180deg,transparent 0%,rgba(30,40,55,.6) 100%);clip-path:polygon(0 80%,8% 40%,18% 65%,28% 20%,40% 55%,50% 10%,62% 50%,72% 25%,82% 60%,92% 35%,100% 70%,100% 100%,0 100%);}
+#world .mist{position:absolute;bottom:140px;width:100%;height:60px;background:linear-gradient(180deg,transparent,rgba(120,140,160,.08));}
+#world .ground{position:absolute;bottom:0;width:100%;height:160px;background:linear-gradient(180deg,var(--ground),#1e2130);}
+#world .ground-line{position:absolute;bottom:160px;width:100%;height:1px;background:rgba(87,106,143,.25);}
+/* Characters */
+.char-area{position:absolute;bottom:160px;width:100%;height:200px;display:flex;align-items:flex-end;justify-content:center;z-index:1;}
+.hero{width:48px;height:80px;background:linear-gradient(180deg,var(--blue),#1a3a5c);border-radius:8px 8px 4px 4px;position:relative;margin-right:60px;box-shadow:0 0 20px rgba(66,165,245,.3);animation:heroIdle 2s ease-in-out infinite;}
+.hero::after{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;background:radial-gradient(circle,#e8d4a0,#c0a060);border-radius:50%;border:2px solid var(--blue);}
+.enemy{width:40px;height:64px;background:linear-gradient(180deg,var(--red),#5c1a1a);border-radius:6px 6px 4px 4px;position:relative;margin-left:20px;animation:enemyBob 1.5s ease-in-out infinite;}
+.enemy::after{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:20px;height:20px;background:radial-gradient(circle,#e06060,#802020);border-radius:50%;}
+.enemy.elite{width:48px;height:76px;background:linear-gradient(180deg,var(--purple),#3c1a4c);box-shadow:0 0 15px rgba(171,71,188,.4);}
+.enemy.elite::after{background:radial-gradient(circle,#d070e0,#602080);width:24px;height:24px;top:-12px;}
+@keyframes heroIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes enemyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+/* Loot particles */
+.loot-particle{position:absolute;width:8px;height:8px;border-radius:50%;animation:lootFloat 2s ease-out infinite;pointer-events:none;z-index:2;}
+@keyframes lootFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(0.3)}}
+
+/* ===== TOP BAR ===== */
+#topbar{position:absolute;top:12px;left:12px;right:12px;height:44px;background:rgba(28,33,46,.88);border-radius:8px;display:flex;align-items:center;padding:0 16px;z-index:10;backdrop-filter:blur(4px);}
+#topbar .res{display:flex;align-items:center;gap:6px;margin-right:18px;font-size:13px;color:var(--text);}
+#topbar .res .icon{width:16px;height:16px;border-radius:3px;display:inline-block;}
+#topbar .res .icon.gold{background:linear-gradient(135deg,#ffd54f,#ff8f00);}
+#topbar .res .icon.ash{background:linear-gradient(135deg,#90a4ae,#546e7a);}
+#topbar .res .icon.core{background:linear-gradient(135deg,#80deea,#00838f);}
+#topbar .res .icon.shard{background:linear-gradient(135deg,#ffab91,#e64a19);}
+#topbar .sep{width:1px;height:24px;background:var(--border);margin:0 12px;opacity:.5;}
+#topbar .right{margin-left:auto;font-size:13px;color:var(--text-dim);}
+
+/* ===== BATTLE CARD ===== */
+.info-card{position:absolute;background:rgba(20,22,32,.92);border-radius:10px;border:2px solid var(--border);padding:12px;z-index:10;backdrop-filter:blur(4px);}
+#battleCard{left:16px;top:72px;width:340px;}
+#battleCard .title{font-size:14px;color:#fff;margin-bottom:4px;}
+#battleCard .status{font-size:12px;color:var(--blue);margin-bottom:6px;}
+#battleCard .hp-wrap{height:8px;background:#1c212e;border-radius:4px;margin-bottom:6px;overflow:hidden;}
+#battleCard .hp-bar{height:100%;background:linear-gradient(90deg,var(--blue),#64b5f6);border-radius:4px;width:85%;transition:width .5s;}
+#battleCard .row{display:flex;justify-content:space-between;font-size:12px;color:var(--text);margin-bottom:4px;}
+#battleCard .dao{color:var(--orange);}
+#battleCard .hint{font-size:11px;color:var(--text-dim);line-height:1.5;}
+.skill-icon{width:22px;height:22px;border-radius:4px;display:inline-block;vertical-align:middle;margin-left:6px;background:linear-gradient(135deg,var(--blue),#1565c0);}
+
+/* ===== TARGET + DAILY CARDS ===== */
+#targetCard{right:16px;top:72px;width:310px;}
+#targetCard .t-title{font-size:13px;color:#fff;font-weight:bold;margin-bottom:6px;border-bottom:1px solid rgba(87,106,143,.3);padding-bottom:4px;}
+#targetCard .t-line{font-size:11px;color:var(--text);line-height:1.7;}
+#targetCard .t-line b{color:var(--orange);font-weight:normal;}
+#dailyCard{right:16px;top:230px;width:310px;}
+#dailyCard .d-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;border-bottom:1px solid rgba(87,106,143,.3);padding-bottom:4px;}
+#dailyCard .d-icon{width:18px;height:18px;background:linear-gradient(135deg,var(--gold),var(--orange));border-radius:4px;}
+#dailyCard .d-title{font-size:13px;color:#fff;font-weight:bold;}
+#dailyCard .d-line{font-size:11px;color:var(--text);line-height:1.7;}
+#dailyCard .d-line .hl{color:var(--green);}
+
+/* ===== SAFE FRAME ===== */
+#safeFrame{position:absolute;left:8px;right:8px;bottom:110px;height:180px;border:1.5px solid rgba(77,208,225,.2);border-radius:8px;background:rgba(77,208,225,.02);z-index:5;display:flex;padding:10px 16px;gap:20px;}
+#equipOverview{flex:0 0 360px;}
+#equipOverview .eq-title{font-size:12px;color:var(--text-dim);margin-bottom:8px;}
+.eq-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.eq-slot{height:60px;background:var(--bg-sub);border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:8px;cursor:pointer;transition:border-color .2s;}
+.eq-slot:hover{border-color:var(--blue);}
+.eq-slot .eq-icon{width:32px;height:32px;border-radius:4px;border:2px solid var(--q-rare);background:linear-gradient(135deg,#1a2a3a,#0d1520);}
+.eq-slot .eq-icon.epic{border-color:var(--q-epic);}
+.eq-slot .eq-icon.legendary{border-color:var(--q-legendary);}
+.eq-slot .eq-info{font-size:11px;line-height:1.4;}.eq-slot .eq-info .eq-name{color:#fff;}.eq-slot .eq-info .eq-type{color:var(--text-dim);font-size:10px;}
+#lootOverview{flex:1;}
+#lootOverview .loot-title{font-size:12px;color:var(--text-dim);margin-bottom:8px;}
+.loot-item{font-size:11px;color:var(--text);padding:3px 0;display:flex;align-items:center;gap:6px;}
+.loot-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.loot-item .loot-text{color:var(--text);}
+
+/* ===== NAV BAR ===== */
+#navbar{position:absolute;bottom:0;left:0;right:0;height:92px;background:var(--bg-main);border-top:1px solid var(--border);z-index:20;display:flex;flex-direction:column;transition:transform .3s;}
+#navbar.hidden{transform:translateY(100%);}
+.nav-buttons{display:flex;flex:1;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--text);transition:background .2s,color .15s;border-right:1px solid rgba(87,106,143,.15);}
+.nav-btn:last-child{border-right:none;}
+.nav-btn:hover{background:rgba(66,165,245,.08);color:#fff;}
+.nav-btn:active{background:rgba(66,165,245,.15);}
+.nav-btn .nav-icon{width:26px;height:26px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.nav-btn .nav-icon.inv{background:linear-gradient(135deg,#5c6bc0,#3949ab);}
+.nav-btn .nav-icon.res{background:linear-gradient(135deg,#26a69a,#00695c);}
+.nav-btn .nav-icon.cod{background:linear-gradient(135deg,#8d6e63,#4e342e);}
+.nav-btn .nav-icon.sta{background:linear-gradient(135deg,#7e57c2,#4527a0);}
+.nav-btn .nav-icon.gm{background:linear-gradient(135deg,#78909c,#37474f);}
+.nav-btn .nav-label{font-size:13px;font-weight:500;}
+.nav-btn .nav-sub{font-size:10px;color:var(--text-dim);}
+.nav-hint{height:22px;background:rgba(28,33,46,.6);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-hint);}
+
+/* ===== COMBAT HIGHLIGHT ===== */
+#combatHighlight{position:absolute;top:62px;left:50%;transform:translateX(-50%);width:420px;background:linear-gradient(135deg,rgba(171,71,188,.15),rgba(66,165,245,.1));border:1px solid rgba(171,71,188,.4);border-radius:10px;padding:12px 20px;text-align:center;z-index:11;opacity:0;pointer-events:none;transition:opacity .5s;}
+#combatHighlight.show{opacity:1;}
+#combatHighlight .ch-title{font-size:16px;color:var(--purple);font-weight:bold;}
+#combatHighlight .ch-sub{font-size:12px;color:var(--text);margin-top:4px;}
+
+/* ===== OVERLAY ===== */
+#overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s;}
+#overlay.show{opacity:1;pointer-events:auto;}
+
+/* ===== MODAL PANELS ===== */
+.modal-panel{position:absolute;top:50%;left:50%;width:1000px;height:528px;transform:translate(-50%,-50%) scale(.95);background:var(--bg-main);border-radius:10px;border:2px solid var(--border);z-index:60;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;display:flex;flex-direction:column;overflow:hidden;}
+.modal-panel.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+.modal-header{height:44px;background:var(--bg-title);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.modal-header .m-title{font-size:16px;font-weight:bold;color:#fff;}
+.modal-header .m-close{margin-left:auto;width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .2s,color .15s;}
+.modal-header .m-close:hover{background:var(--red);color:#fff;border-color:var(--red);}
+.modal-body{flex:1;overflow:hidden;display:flex;padding:12px;}
+
+/* Filter tabs */
+.filter-bar{display:flex;gap:6px;padding:0 12px 10px;flex-shrink:0;}
+.filter-btn{padding:5px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;font-size:12px;transition:all .2s;}
+.filter-btn:hover{border-color:var(--blue);color:var(--text);}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* List pane */
+.list-pane{width:360px;overflow-y:auto;border-right:1px solid rgba(87,106,143,.2);padding-right:10px;flex-shrink:0;}
+.list-pane::-webkit-scrollbar{width:4px;}.list-pane::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.list-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:background .15s;margin-bottom:2px;}
+.list-item:hover{background:rgba(66,165,245,.08);}
+.list-item.selected{background:var(--bg-title);}
+.list-item .q-bar{width:4px;height:28px;border-radius:2px;flex-shrink:0;}
+.list-item .item-name{font-size:13px;color:#fff;}
+.list-item .item-stars{font-size:11px;color:var(--text-dim);margin-left:auto;}
+
+/* Detail pane */
+.detail-pane{flex:1;padding:0 16px;overflow-y:auto;}
+.detail-pane::-webkit-scrollbar{width:4px;}.detail-pane::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.d-name{font-size:16px;font-weight:bold;margin-bottom:2px;}
+.d-slot{font-size:12px;color:var(--text-dim);margin-bottom:10px;}
+.d-divider{height:1px;background:rgba(87,106,143,.3);margin:10px 0;}
+.d-stat{font-size:14px;color:var(--text);margin-bottom:4px;}
+.d-affix{font-size:13px;margin-bottom:3px;}
+.d-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.btn{padding:7px 18px;border-radius:6px;border:2px solid;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;background:transparent;}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}.btn-primary:hover{background:#1e88e5;}
+.btn-outline{color:var(--text);border-color:var(--border);}.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.btn-danger{color:var(--red);border-color:var(--red);}.btn-danger:hover{background:rgba(239,83,80,.15);}
+.btn-gold{color:var(--orange);border-color:var(--orange);}.btn-gold:hover{background:rgba(255,143,0,.12);}
+.btn-disabled{color:var(--text-hint);border-color:rgba(87,106,143,.3);cursor:default;opacity:.5;}
+
+/* Research items */
+.research-list{flex:1;overflow-y:auto;padding:0 12px;}
+.research-list::-webkit-scrollbar{width:4px;}.research-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.research-item{background:var(--bg-sub);border-radius:8px;border:1px solid rgba(87,106,143,.3);padding:12px 16px;margin-bottom:8px;transition:border-color .2s;}
+.research-item:hover{border-color:var(--blue);}
+.ri-head{display:flex;justify-content:space-between;margin-bottom:4px;}
+.ri-name{font-size:14px;font-weight:bold;color:#fff;}
+.ri-level{font-size:13px;color:var(--orange);}
+.ri-desc{font-size:12px;color:var(--text);margin-bottom:6px;}
+.ri-desc .up{color:var(--green);}
+.ri-cost{font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.ri-cost .cost-icon{width:14px;height:14px;border-radius:3px;display:inline-block;vertical-align:middle;}
+.ri-actions{text-align:right;}
+
+/* Stats panel */
+.stats-body{flex:1;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding:0 12px;}
+.stats-body::-webkit-scrollbar{width:4px;}.stats-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.stats-overview{display:flex;justify-content:space-between;padding:10px 16px;background:var(--bg-sub);border-radius:8px;}
+.stats-overview .so-item{font-size:14px;color:var(--text);}
+.stats-overview .so-item b{color:var(--orange);font-weight:normal;}
+.stats-table{flex-shrink:0;}
+.stats-table table{width:100%;border-collapse:collapse;}
+.stats-table th{background:var(--bg-title);padding:8px 12px;text-align:left;font-size:12px;color:var(--text-dim);font-weight:normal;}
+.stats-table td{padding:8px 12px;font-size:13px;color:var(--text);border-bottom:1px solid rgba(87,106,143,.1);}
+.stats-table tr:nth-child(even) td{background:rgba(28,33,46,.5);}
+.stats-table .legendary{color:var(--q-legendary);}
+.eff-section{display:flex;gap:20px;}
+.eff-bars{flex:1;}
+.eff-row{margin-bottom:10px;}
+.eff-label{font-size:12px;color:var(--text-dim);margin-bottom:4px;display:flex;justify-content:space-between;}
+.eff-bar{height:12px;background:var(--bg-sub);border-radius:6px;overflow:hidden;}
+.eff-fill{height:100%;border-radius:6px;transition:width .5s;}
+.recent-drops{flex:1;max-height:120px;overflow-y:auto;}
+.recent-drops::-webkit-scrollbar{width:3px;}.recent-drops::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ===== POPUP (Offline/Stage) ===== */
+#popupOverlay{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:80;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+#popupOverlay.show{opacity:1;pointer-events:auto;}
+.popup-card{width:600px;min-height:400px;border-radius:12px;padding:24px 28px;position:relative;transform:scale(.92);transition:transform .3s;display:flex;flex-direction:column;}
+#popupOverlay.show .popup-card{transform:scale(1);}
+.popup-card.normal{background:linear-gradient(160deg,#1a1e2e,#141620);border:2px solid var(--border);}
+.popup-card.boss{background:linear-gradient(160deg,#2a2218,#1e1a14);border:2px solid rgba(255,143,0,.4);}
+.popup-card .pc-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.popup-card .pc-icon{width:24px;height:24px;border-radius:6px;}
+.popup-card .pc-icon.offline{background:linear-gradient(135deg,var(--blue),#1565c0);}
+.popup-card .pc-icon.event{background:linear-gradient(135deg,var(--orange),#e65100);}
+.popup-card .pc-title{font-size:17px;font-weight:bold;color:#fff;}
+.popup-card .pc-boss-portrait{position:absolute;top:16px;right:20px;width:88px;height:88px;border-radius:10px;background:linear-gradient(135deg,rgba(255,143,0,.2),rgba(239,83,80,.15));border:2px solid rgba(255,143,0,.3);display:flex;align-items:center;justify-content:center;font-size:32px;}
+.popup-card .pc-highlight{font-size:13px;color:var(--text);margin-bottom:14px;}
+.popup-card .pc-highlight .hl-rarity{font-weight:bold;}
+.popup-card .pc-section-head{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:13px;color:var(--text-dim);font-weight:bold;}
+.popup-card .pc-section-icon{width:16px;height:16px;border-radius:4px;background:linear-gradient(135deg,var(--green),#2e7d32);}
+.popup-card .pc-content{background:rgba(28,33,46,.6);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text);line-height:1.8;margin-bottom:14px;}
+.popup-card .pc-goal-head{font-size:13px;color:var(--text-dim);font-weight:bold;margin-bottom:6px;}
+.popup-card .pc-goals{background:rgba(28,33,46,.4);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);line-height:1.7;margin-bottom:16px;}
+.popup-card .pc-close-wrap{text-align:center;margin-top:auto;}
+.popup-card .pc-close{padding:8px 40px;border-radius:8px;border:none;font-size:14px;cursor:pointer;transition:all .2s;}
+.popup-card.normal .pc-close{background:var(--blue);color:#fff;}.popup-card.normal .pc-close:hover{background:#1e88e5;}
+.popup-card.boss .pc-close{background:var(--orange);color:#fff;}.popup-card.boss .pc-close:hover{background:#e65100;}
+
+/* ===== TOAST ===== */
+#dropToast{position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-20px);width:380px;padding:10px 18px;background:rgba(255,143,0,.12);border:1px solid rgba(255,143,0,.4);border-radius:8px;text-align:center;font-size:13px;color:var(--orange);z-index:15;opacity:0;pointer-events:none;transition:opacity .4s,transform .4s;}
+#dropToast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Scrollbar global */
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* GM panel specific */
+.gm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px;overflow-y:auto;flex:1;}
+.gm-section{background:var(--bg-sub);border-radius:8px;padding:12px;border:1px solid rgba(87,106,143,.2);}
+.gm-section .gs-title{font-size:13px;color:var(--text-dim);font-weight:bold;margin-bottom:8px;border-bottom:1px solid rgba(87,106,143,.15);padding-bottom:4px;}
+.gm-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:12px;color:var(--text);}
+.gm-row .gm-btn{padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:11px;transition:all .15s;}
+.gm-row .gm-btn:hover{border-color:var(--blue);color:var(--blue);}
+.gm-row .gm-btn.danger:hover{border-color:var(--red);color:var(--red);}
+.gm-input{width:60px;height:22px;border-radius:4px;border:1px solid var(--border);background:var(--bg-main);color:var(--text);text-align:center;font-size:11px;}
+
+/* Responsive wrapper for smaller screens */
+@media (max-width:1300px){body{transform-origin:top left;transform:scale(calc(100vw / 1280));}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- WORLD LAYER -->
+<div id="world">
+  <div class="sky"></div>
+  <div class="mountains"></div>
+  <div class="mist"></div>
+  <div class="ground-line"></div>
+  <div class="ground"></div>
+</div>
+<div class="char-area">
+  <div class="enemy" style="margin-right:40px;"></div>
+  <div class="enemy elite"></div>
+  <div class="hero"></div>
+  <div class="enemy" style="margin-left:50px;opacity:.7;"></div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="res"><span class="icon gold"></span>香火钱 1,200</div>
+  <div class="res"><span class="icon ash"></span>祠灰 45</div>
+  <div class="res"><span class="icon core"></span>灵核 3</div>
+  <div class="res"><span class="icon shard"></span>真意残片 0</div>
+  <div class="sep"></div>
+  <div class="res" style="color:var(--text-dim)">背包 12</div>
+  <div class="right">击杀 1 | 清图 0 | 当前节点 ch1_n1</div>
+</div>
+
+<!-- COMBAT HIGHLIGHT -->
+<div id="combatHighlight">
+  <div class="ch-title">御风回斩</div>
+  <div class="ch-sub">风刃已成形，保持贴近怪群，你满旋刃回环收益</div>
+</div>
+
+<!-- DROP TOAST -->
+<div id="dropToast">传奇发现！获得 [传奇] 真意·风眼</div>
+
+<!-- BATTLE CARD -->
+<div class="info-card" id="battleCard">
+  <div class="title">桃溪外渡 · ch1_n1 · normal</div>
+  <div class="status">状态: 第 1 波战斗中</div>
+  <div class="hp-wrap"><div class="hp-bar"></div></div>
+  <div class="row">
+    <span>生命: 136 / 160</span>
+    <span>道统: <span class="dao">御风道</span><span class="skill-icon"></span></span>
+  </div>
+  <div class="hint">掉落方向: 普通真意、基础底材、香火钱与祠灰</div>
+</div>
+
+<!-- TARGET CARD -->
+<div class="info-card" id="targetCard">
+  <div class="t-title">机缘追踪</div>
+  <div class="t-line">追踪: <b>风眼</b> → 柯下灵田/boss</div>
+  <div class="t-line">缺口: 功能词条(产量) → 度厄范围 <b>0%/16%</b></div>
+  <div class="t-line">下一件: 风眼/扩厄/静参类</div>
+  <div class="t-line">建议: 先闭关 柯下灵田/boss 补旋风范围</div>
+</div>
+
+<!-- DAILY GOAL CARD -->
+<div class="info-card" id="dailyCard">
+  <div class="d-head">
+    <div class="d-icon"></div>
+    <div class="d-title">今日机缘</div>
+  </div>
+  <div class="d-line">主机缘: 先补当前卡点</div>
+  <div class="d-line">进度: <span class="hl">0/3</span></div>
+  <div class="d-line">建议: 先刷 柯下灵田/boss，优先补 旋风范围。</div>
+  <div class="d-line" style="color:var(--text-dim)">支线: 商旅贩卖祠灰(兑换) 柯下灵田/boss (0/3)</div>
+</div>
+
+<!-- SAFE FRAME -->
+<div id="safeFrame">
+  <div id="equipOverview">
+    <div class="eq-title">装备概览</div>
+    <div class="eq-grid">
+      <div class="eq-slot"><div class="eq-icon"></div><div class="eq-info"><div class="eq-name" style="color:var(--q-rare)">残月刀</div><div class="eq-type">武器</div></div></div>
+      <div class="eq-slot"><div class="eq-icon epic"></div><div class="eq-info"><div class="eq-name" style="color:var(--q-epic)">玄铁盔</div><div class="eq-type">头盔</div></div></div>
+      <div class="eq-slot"><div class="eq-icon"></div><div class="eq-info"><div class="eq-name" style="color:var(--q-rare)">铁背甲</div><div class="eq-type">铠甲</div></div></div>
+      <div class="eq-slot"><div class="eq-icon"></div><div class="eq-info"><div class="eq-name" style="color:var(--q-uncommon)">粗布手套</div><div class="eq-type">手套</div></div></div>
+    </div>
+  </div>
+  <div id="lootOverview">
+    <div class="loot-title">最近掉落</div>
+    <div class="loot-item"><div class="loot-dot" style="background:var(--q-epic)"></div><span class="loot-text" style="color:var(--q-epic)">血劫·裂甲手 @ ch1_n2</span></div>
+    <div class="loot-item"><div class="loot-dot" style="background:var(--q-rare)"></div><span class="loot-text">御风·残月刀 @ ch1_n1</span></div>
+    <div class="loot-item"><div class="loot-dot" style="background:var(--q-uncommon)"></div><span class="loot-text">铁背护肩 @ ch1_n1</span></div>
+    <div class="loot-item"><div class="loot-dot" style="background:var(--q-common)"></div><span class="loot-text">朽木短弓 @ ch1_n1</span></div>
+  </div>
+</div>
+
+<!-- NAV BAR -->
+<div id="navbar">
+  <div class="nav-buttons">
+    <button class="nav-btn" data-panel="inventory"><div class="nav-icon inv">包</div><div class="nav-label">背包 I</div><div class="nav-sub">12件可管理</div></button>
+    <button class="nav-btn" data-panel="research"><div class="nav-icon res">悟</div><div class="nav-label">悟道 U</div><div class="nav-sub">可悟道 3 项</div></button>
+    <button class="nav-btn" data-panel="codex"><div class="nav-icon cod">闻</div><div class="nav-label">异闻录 O</div><div class="nav-sub">机缘: 风眼</div></button>
+    <button class="nav-btn" data-panel="stats"><div class="nav-icon sta">推</div><div class="nav-label">推演 P</div><div class="nav-sub">节点 4 个 | 最近 6 条</div></button>
+    <button class="nav-btn" data-panel="gm"><div class="nav-icon gm">GM</div><div class="nav-label">GM G</div><div class="nav-sub">调试入口</div></button>
+  </div>
+  <div class="nav-hint">1/2/3 切道统 &nbsp; R 重开 &nbsp; T 切机缘 &nbsp; G GM &nbsp; F5/F8 档1 &nbsp; Esc 关闭</div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay"></div>
+
+<!-- ===== INVENTORY PANEL ===== -->
+<div class="modal-panel" id="panel-inventory">
+  <div class="modal-header"><span class="m-title">背包</span><button class="m-close" onclick="closePanel()">×</button></div>
+  <div class="modal-body">
+    <div class="list-pane">
+      <div class="list-item selected"><div class="q-bar" style="background:var(--q-rare)"></div><span class="item-name">御风·残月刀</span><span class="item-stars">★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-epic)"></div><span class="item-name">血劫·裂甲手</span><span class="item-stars">★★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-rare)"></div><span class="item-name">铁背护甲</span><span class="item-stars">★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-uncommon)"></div><span class="item-name">粗布手套</span><span class="item-stars">★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-common)"></div><span class="item-name">朽木短弓</span><span class="item-stars">★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-uncommon)"></div><span class="item-name">青铜护腕</span><span class="item-stars">★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-rare)"></div><span class="item-name">寒铁护手</span><span class="item-stars">★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-legendary)"></div><span class="item-name">真意·风眼</span><span class="item-stars">★★★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-common)"></div><span class="item-name">柳木杖</span><span class="item-stars">★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-rare)"></div><span class="item-name">五雷·引电符</span><span class="item-stars">★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-epic)"></div><span class="item-name">玄铁重盔</span><span class="item-stars">★★★★</span></div>
+      <div class="list-item"><div class="q-bar" style="background:var(--q-uncommon)"></div><span class="item-name">竹编斗笠</span><span class="item-stars">★★</span></div>
+    </div>
+    <div class="detail-pane">
+      <div class="d-name" style="color:var(--q-rare)">御风·残月刀</div>
+      <div class="d-slot">武器 · 稀有</div>
+      <div class="d-divider"></div>
+      <div class="d-stat">攻击力 +15</div>
+      <div class="d-stat">攻击速度 +5%</div>
+      <div class="d-divider"></div>
+      <div class="d-affix" style="color:var(--green)">暴击率 +3.2%</div>
+      <div class="d-affix" style="color:var(--blue)">御风伤害 +5.8%</div>
+      <div class="d-affix" style="color:#fff">生命值 +22</div>
+      <div class="d-divider"></div>
+      <div class="d-actions">
+        <button class="btn btn-primary">装备</button>
+        <button class="btn btn-outline">锁定</button>
+        <button class="btn btn-danger">分解</button>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-dim);cursor:pointer;">自动分解: <span style="color:var(--orange)">稀有以下</span> &nbsp;(点击切换)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESEARCH PANEL ===== -->
+<div class="modal-panel" id="panel-research">
+  <div class="modal-header"><span class="m-title">悟道</span><button class="m-close" onclick="closePanel()">×</button></div>
+  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="filter-bar" style="padding-top:10px;">
+      <button class="filter-btn active">全部</button>
+      <button class="filter-btn">战法</button>
+      <button class="filter-btn">闭关</button>
+      <button class="filter-btn">机缘</button>
+    </div>
+    <div class="research-list">
+      <div class="research-item"><div class="ri-head"><span class="ri-name">御风·破阵</span><span class="ri-level">Lv.3 → Lv.4</span></div><div class="ri-desc">效果: 御风道伤害 +12% → <span class="up">+16%</span></div><div class="ri-cost"><span class="cost-icon" style="background:linear-gradient(135deg,#90a4ae,#546e7a)"></span> 祠灰 200 <span class="cost-icon" style="background:linear-gradient(135deg,#80deea,#00838f)"></span> 灵核 5</div><div class="ri-actions"><button class="btn btn-primary" style="padding:4px 14px;font-size:12px;">悟道</button></div></div>
+      <div class="research-item"><div class="ri-head"><span class="ri-name">闭关·时流</span><span class="ri-level">Lv.1 → Lv.2</span></div><div class="ri-desc">效果: 闭关效率 +10% → <span class="up">+15%</span></div><div class="ri-cost"><span class="cost-icon" style="background:linear-gradient(135deg,#90a4ae,#546e7a)"></span> 祠灰 100</div><div class="ri-actions"><button class="btn btn-primary" style="padding:4px 14px;font-size:12px;">悟道</button></div></div>
+      <div class="research-item"><div class="ri-head"><span class="ri-name">机缘·拾遗</span><span class="ri-level">Lv.0 → Lv.1</span></div><div class="ri-desc">效果: 掉落率 +0% → <span class="up">+3%</span></div><div class="ri-cost"><span class="cost-icon" style="background:linear-gradient(135deg,#90a4ae,#546e7a)"></span> 祠灰 80 <span class="cost-icon" style="background:linear-gradient(135deg,#80deea,#00838f)"></span> 灵核 2</div><div class="ri-actions"><button class="btn btn-primary" style="padding:4px 14px;font-size:12px;">悟道</button></div></div>
+      <div class="research-item"><div class="ri-head"><span class="ri-name">血劫·噬命</span><span class="ri-level">Lv.2 → Lv.3</span></div><div class="ri-desc">效果: 流血伤害 +8% → <span class="up">+12%</span></div><div class="ri-cost"><span class="cost-icon" style="background:linear-gradient(135deg,#90a4ae,#546e7a)"></span> 祠灰 300 <span class="cost-icon" style="background:linear-gradient(135deg,#80deea,#00838f)"></span> 灵核 8</div><div class="ri-actions"><button class="btn btn-disabled" style="padding:4px 14px;font-size:12px;">资源不足</button></div></div>
+      <div class="research-item"><div class="ri-head"><span class="ri-name">五雷·引天</span><span class="ri-level">Lv.1 → Lv.2</span></div><div class="ri-desc">效果: 连锁数量 +1 → <span class="up">+2</span></div><div class="ri-cost"><span class="cost-icon" style="background:linear-gradient(135deg,#90a4ae,#546e7a)"></span> 祠灰 150 <span class="cost-icon" style="background:linear-gradient(135deg,#80deea,#00838f)"></span> 灵核 3</div><div class="ri-actions"><button class="btn btn-primary" style="padding:4px 14px;font-size:12px;">悟道</button></div></div>
+      <div class="research-item"><div class="ri-head"><span class="ri-name">闭关·灵泉</span><span class="ri-level">Lv.0 → Lv.1</span></div><div class="ri-desc">效果: 离线灵核概率 +0% → <span class="up">+5%</span></div><div class="ri-cost"><span class="cost-icon" style="background:linear-gradient(135deg,#90a4ae,#546e7a)"></span> 祠灰 200 <span class="cost-icon" style="background:linear-gradient(135deg,#80deea,#00838f)"></span> 灵核 4</div><div class="ri-actions"><button class="btn btn-primary" style="padding:4px 14px;font-size:12px;">悟道</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CODEX PANEL ===== -->
+<div class="modal-panel" id="panel-codex">
+  <div class="modal-header"><span class="m-title">异闻录</span><button class="m-close" onclick="closePanel()">×</button></div>
+  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="filter-bar" style="padding-top:10px;">
+      <button class="filter-btn active">全部</button>
+      <button class="filter-btn">底材</button>
+      <button class="filter-btn">词条</button>
+      <button class="filter-btn">异宝</button>
+    </div>
+    <div class="modal-body" style="padding-top:0;">
+      <div class="list-pane">
+        <div class="list-item selected"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name">残月刀</span></div>
+        <div class="list-item"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name">寒铁护手</span></div>
+        <div class="list-item"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name">暴击词条</span></div>
+        <div class="list-item"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name">御风伤害词条</span></div>
+        <div class="list-item"><div style="color:var(--text-hint);width:16px;text-align:center;">?</div><span class="item-name" style="color:var(--text-hint)">未发现</span></div>
+        <div class="list-item"><div style="color:var(--text-hint);width:16px;text-align:center;">?</div><span class="item-name" style="color:var(--text-hint)">未发现</span></div>
+        <div class="list-item"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name" style="color:var(--q-legendary)">真意·风眼</span></div>
+        <div class="list-item"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name">流血词条</span></div>
+        <div class="list-item"><div style="color:var(--text-hint);width:16px;text-align:center;">?</div><span class="item-name" style="color:var(--text-hint)">未发现</span></div>
+        <div class="list-item"><div style="color:var(--green);width:16px;text-align:center;">✓</div><span class="item-name">铁背甲</span></div>
+      </div>
+      <div class="detail-pane">
+        <div class="d-name" style="color:var(--q-rare)">残月刀</div>
+        <div class="d-slot">底材 · 武器类</div>
+        <div class="d-divider"></div>
+        <div class="d-stat">首次发现: ch1_n2</div>
+        <div class="d-stat">掉落节点: ch1_n1, ch1_n2, ch1_n3</div>
+        <div class="d-stat">基础掉落率: ~12%</div>
+        <div class="d-divider"></div>
+        <div class="d-stat" style="color:var(--text-dim);line-height:1.6;">残月映照桃溪水面，刀刃隐有微光。据说锻造此刀的匠人在桃溪边见到了不该见的东西，此后再未踏足溪畔半步。</div>
+        <div class="d-divider"></div>
+        <div class="d-actions"><button class="btn btn-gold">设为机缘追踪</button></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-hint);">按 T 快速切换追踪目标</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATS PANEL ===== -->
+<div class="modal-panel" id="panel-stats">
+  <div class="modal-header"><span class="m-title">机缘推演</span><button class="m-close" onclick="closePanel()">×</button></div>
+  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="stats-body" style="padding-top:12px;">
+      <div class="stats-overview">
+        <div class="so-item">当前节点: <b>ch1_n1 (桃溪外渡·远眺)</b></div>
+        <div class="so-item">推荐机缘: <b>ch1_n3 (桃溪外渡·近岸)</b></div>
+      </div>
+      <div class="stats-table"><table><thead><tr><th>节点</th><th>清图次数</th><th>装备产出</th><th>传奇产出</th></tr></thead><tbody>
+        <tr><td>ch1_n1 桃溪外渡·远眺</td><td>12次</td><td>23件</td><td>0件</td></tr>
+        <tr><td>ch1_n2 桃溪外渡·镇中</td><td>8次</td><td>15件</td><td class="legendary">1件</td></tr>
+        <tr><td>ch1_n3 桃溪外渡·近岸</td><td>5次</td><td>11件</td><td>0件</td></tr>
+        <tr><td>ch1_boss 桃溪外渡·渡口</td><td>3次</td><td>8件</td><td>0件</td></tr>
+        <tr><td>ch2_n1 祠下灵田·鸟瞰</td><td>2次</td><td>5件</td><td>0件</td></tr>
+        <tr><td>ch2_n2 祠下灵田·田径</td><td>1次</td><td>3件</td><td>0件</td></tr>
+      </tbody></table></div>
+      <div class="eff-section">
+        <div class="eff-bars">
+          <div class="eff-row"><div class="eff-label"><span>装备/轮</span><span>2.3件</span></div><div class="eff-bar"><div class="eff-fill" style="width:76%;background:var(--blue);"></div></div></div>
+          <div class="eff-row"><div class="eff-label"><span>稀有+/轮</span><span>0.8件</span></div><div class="eff-bar"><div class="eff-fill" style="width:32%;background:var(--purple);"></div></div></div>
+          <div class="eff-row"><div class="eff-label"><span>传奇/轮</span><span>0.1件</span></div><div class="eff-bar"><div class="eff-fill" style="width:8%;background:var(--orange);"></div></div></div>
+        </div>
+        <div class="recent-drops" style="flex:0 0 280px;">
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:bold;">最近掉落</div>
+          <div class="loot-item"><div class="loot-dot" style="background:var(--q-epic)"></div><span style="color:var(--q-epic)">血劫·裂甲手</span><span style="color:var(--text-dim);margin-left:auto;font-size:10px;">@ ch1_n2</span></div>
+          <div class="loot-item"><div class="loot-dot" style="background:var(--q-rare)"></div><span style="color:var(--q-rare)">御风·残月刀</span><span style="color:var(--text-dim);margin-left:auto;font-size:10px;">@ ch1_n1</span></div>
+          <div class="loot-item"><div class="loot-dot" style="background:var(--q-legendary)"></div><span style="color:var(--q-legendary)">真意·风眼</span><span style="color:var(--text-dim);margin-left:auto;font-size:10px;">@ ch1_boss</span></div>
+          <div class="loot-item"><div class="loot-dot" style="background:var(--q-uncommon)"></div><span>铁背护肩</span><span style="color:var(--text-dim);margin-left:auto;font-size:10px;">@ ch1_n1</span></div>
+          <div class="loot-item"><div class="loot-dot" style="background:var(--q-rare)"></div><span style="color:var(--q-rare)">五雷·引电符</span><span style="color:var(--text-dim);margin-left:auto;font-size:10px;">@ ch1_n3</span></div>
+          <div class="loot-item"><div class="loot-dot" style="background:var(--q-common)"></div><span>朽木短弓</span><span style="color:var(--text-dim);margin-left:auto;font-size:10px;">@ ch1_n1</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GM PANEL ===== -->
+<div class="modal-panel" id="panel-gm">
+  <div class="modal-header"><span class="m-title">GM 调试面板</span><button class="m-close" onclick="closePanel()">×</button></div>
+  <div class="modal-body">
+    <div class="gm-grid">
+      <div class="gm-section"><div class="gs-title">资源操作</div>
+        <div class="gm-row">香火钱 <input class="gm-input" value="10000"> <button class="gm-btn">添加</button><button class="gm-btn">设置</button></div>
+        <div class="gm-row">祠灰 <input class="gm-input" value="500"> <button class="gm-btn">添加</button><button class="gm-btn">设置</button></div>
+        <div class="gm-row">灵核 <input class="gm-input" value="50"> <button class="gm-btn">添加</button><button class="gm-btn">设置</button></div>
+        <div class="gm-row">真意残片 <input class="gm-input" value="10"> <button class="gm-btn">添加</button><button class="gm-btn">设置</button></div>
+      </div>
+      <div class="gm-section"><div class="gs-title">物品操作</div>
+        <div class="gm-row">品质 <select class="gm-input" style="width:80px;"><option>普通</option><option>精良</option><option selected>稀有</option><option>史诗</option><option>传奇</option></select> <button class="gm-btn">生成装备</button></div>
+        <div class="gm-row">数量 <input class="gm-input" value="5"> <button class="gm-btn">批量生成</button></div>
+      </div>
+      <div class="gm-section"><div class="gs-title">进度操作</div>
+        <div class="gm-row">跳转节点 <select class="gm-input" style="width:100px;"><option>ch1_n1</option><option>ch1_n2</option><option>ch1_n3</option><option>ch1_boss</option><option>ch2_n1</option></select> <button class="gm-btn">跳转</button></div>
+        <div class="gm-row"><button class="gm-btn">解锁全部悟道</button> <button class="gm-btn">解锁全部异闻录</button></div>
+      </div>
+      <div class="gm-section"><div class="gs-title">清理 / 存档</div>
+        <div class="gm-row"><button class="gm-btn danger">清空背包</button> <button class="gm-btn danger">清空掉落统计</button></div>
+        <div class="gm-row"><button class="gm-btn danger">全部系统重置</button></div>
+        <div style="border-top:1px solid rgba(87,106,143,.15);margin:6px 0;"></div>
+        <div class="gm-row">存档 <select class="gm-input" style="width:60px;"><option>槽1</option><option>槽2</option><option>槽3</option></select> <button class="gm-btn">保存</button> <button class="gm-btn">读取</button> <button class="gm-btn danger">删除</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POPUP OVERLAY ===== -->
+<div id="popupOverlay">
+  <div class="popup-card normal" id="popupCard">
+    <div class="pc-header">
+      <div class="pc-icon offline"></div>
+      <div class="pc-title">闭关所得</div>
+    </div>
+    <div class="pc-highlight">高光收益: 获得 <span class="hl-rarity" style="color:var(--q-epic)">[史诗] 血劫·裂甲手</span></div>
+    <div class="pc-section-head"><div class="pc-section-icon"></div> 本次闭关所得</div>
+    <div class="pc-content">
+      香火钱 +1,200<br>
+      祠灰 +45<br>
+      灵核 +1<br>
+      装备 ×3 (1史诗, 1稀有, 1普通)<br>
+    </div>
+    <div class="pc-goal-head">今日机缘进度</div>
+    <div class="pc-goals">
+      主目标: 清图 3 次 (1/3)<br>
+      支线: 分解装备 5 件 (2/5)
+    </div>
+    <div class="pc-close-wrap"><button class="pc-close" onclick="closePopup()">确认</button></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+let currentPanel = null;
+const overlay = document.getElementById('overlay');
+const navbar = document.getElementById('navbar');
+const popupOverlay = document.getElementById('popupOverlay');
+const popupCard = document.getElementById('popupCard');
+
+function openPanel(id) {
+  if (currentPanel === id) { closePanel(); return; }
+  if (currentPanel) document.getElementById('panel-' + currentPanel).classList.remove('show');
+  currentPanel = id;
+  document.getElementById('panel-' + id).classList.add('show');
+  overlay.classList.add('show');
+  navbar.classList.add('hidden');
+}
+function closePanel() {
+  if (!currentPanel) return;
+  document.getElementById('panel-' + currentPanel).classList.remove('show');
+  overlay.classList.remove('show');
+  navbar.classList.remove('hidden');
+  currentPanel = null;
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => openPanel(btn.dataset.panel));
+});
+overlay.addEventListener('click', closePanel);
+
+document.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (k === 'escape') { closePanel(); closePopup(); }
+  if (k === 'i') openPanel('inventory');
+  if (k === 'u') openPanel('research');
+  if (k === 'o') openPanel('codex');
+  if (k === 'p') openPanel('stats');
+  if (k === 'g') openPanel('gm');
+});
+
+function showPopup(mode) {
+  const card = popupCard;
+  if (mode === 'boss') {
+    card.className = 'popup-card boss';
+    card.querySelector('.pc-icon').className = 'pc-icon event';
+    card.querySelector('.pc-title').textContent = '首领高光结算';
+    card.querySelector('.pc-highlight').innerHTML = '击败 <span class="hl-rarity" style="color:var(--q-legendary)">斧刺·山君</span>，首杀达成！';
+    card.querySelector('.pc-content').innerHTML = '香火钱 +3,500<br>祠灰 +120<br>灵核 +5<br>真意残片 +1<br>装备 ×5 (1传奇, 2史诗, 2稀有)';
+    card.querySelector('.pc-goals').innerHTML = '主目标: 击败Boss (1/1) ✓<br>支线: 收集传奇装备 (1/1) ✓';
+    if (!card.querySelector('.pc-boss-portrait')) {
+      const bp = document.createElement('div');
+      bp.className = 'pc-boss-portrait';
+      bp.textContent = '👹';
+      card.appendChild(bp);
+    }
+    card.querySelector('.pc-boss-portrait').style.display = 'flex';
+  } else {
+    card.className = 'popup-card normal';
+    card.querySelector('.pc-icon').className = 'pc-icon offline';
+    card.querySelector('.pc-title').textContent = '闭关所得';
+    card.querySelector('.pc-highlight').innerHTML = '高光收益: 获得 <span class="hl-rarity" style="color:var(--q-epic)">[史诗] 血劫·裂甲手</span>';
+    card.querySelector('.pc-content').innerHTML = '香火钱 +1,200<br>祠灰 +45<br>灵核 +1<br>装备 ×3 (1史诗, 1稀有, 1普通)';
+    card.querySelector('.pc-goals').innerHTML = '主目标: 清图 3 次 (1/3)<br>支线: 分解装备 5 件 (2/5)';
+    const bp = card.querySelector('.pc-boss-portrait');
+    if (bp) bp.style.display = 'none';
+  }
+  popupOverlay.classList.add('show');
+}
+function closePopup() { popupOverlay.classList.remove('show'); }
+
+// List item click
+document.querySelectorAll('.list-item').forEach(item => {
+  item.addEventListener('click', () => {
+    item.closest('.list-pane').querySelectorAll('.list-item').forEach(i => i.classList.remove('selected'));
+    item.classList.add('selected');
+  });
+});
+// Filter buttons
+document.querySelectorAll('.filter-bar').forEach(bar => {
+  bar.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+// Demo: auto-show combat highlight
+let hlVisible = false;
+setInterval(() => {
+  hlVisible = !hlVisible;
+  document.getElementById('combatHighlight').classList.toggle('show', hlVisible);
+}, 4000);
+
+// Demo: flash toast
+let toastTimer = null;
+function flashToast() {
+  const t = document.getElementById('dropToast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+setTimeout(flashToast, 2000);
+setTimeout(flashToast, 12000);
+
+// HP bar animation
+let hpDir = -1;
+setInterval(() => {
+  const bar = document.querySelector('#battleCard .hp-bar');
+  let w = parseFloat(bar.style.width) || 85;
+  w += hpDir * (Math.random() * 5 + 1);
+  if (w < 30) hpDir = 1;
+  if (w > 95) hpDir = -1;
+  bar.style.width = w + '%';
+}, 2000);
+
+// Demo popup on first load
+setTimeout(() => showPopup('offline'), 800);
+
+// Add popup demo buttons as floating controls
+const demoBar = document.createElement('div');
+demoBar.style.cssText = 'position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;';
+demoBar.innerHTML = `
+  <button onclick="showPopup('offline')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:rgba(20,22,32,.9);color:var(--text);cursor:pointer;font-size:11px;">演示: 闭关所得</button>
+  <button onclick="showPopup('boss')" style="padding:4px 10px;border-radius:4px;border:1px solid rgba(255,143,0,.4);background:rgba(30,26,20,.9);color:var(--orange);cursor:pointer;font-size:11px;">演示: 破局要闻</button>
+  <button onclick="flashToast()" style="padding:4px 10px;border-radius:4px;border:1px solid rgba(255,143,0,.4);background:rgba(30,26,20,.9);color:var(--gold);cursor:pointer;font-size:11px;">演示: 掉落提示</button>
+`;
+document.getElementById('app').appendChild(demoBar);
+</script>
+</body>
+</html>
