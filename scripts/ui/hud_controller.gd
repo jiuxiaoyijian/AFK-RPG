@@ -27,12 +27,7 @@ const LOOT_ICON_PATHS := {
 	"store": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
 	"salvage": "res://assets/generated/icons/drop_salvage.png",
 }
-const SAFE_FRAME_SIDE_MARGIN := 8.0
-const SAFE_FRAME_BOTTOM_GAP := 18.0
-const SAFE_FRAME_HEIGHT := 210.0
-const CARD_TO_FRAME_GAP := 18.0
 const CARD_SIDE_MARGIN := 16.0
-const CARD_MIN_TOP_GAP := 18.0
 
 @onready var resource_label: Label = $TopBar/ResourceLabel
 @onready var run_label: Label = $TopBar/RunLabel
@@ -93,6 +88,8 @@ var combat_highlight_tween: Tween
 
 
 func _ready() -> void:
+	target_card.visible = false
+	battle_safe_frame.visible = false
 	_apply_card_art()
 	_apply_slot_icons()
 	_apply_battle_safe_frame_style()
@@ -375,26 +372,10 @@ func _apply_battle_safe_frame_style() -> void:
 func _apply_hud_layout() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	combat_highlight_panel.position = Vector2((viewport_size.x - combat_highlight_panel.size.x) * 0.5, 66.0)
-	var nav_top: float = main_nav_bar.position.y if main_nav_bar != null else viewport_size.y - 92.0
-	var safe_frame_bottom: float = nav_top - SAFE_FRAME_BOTTOM_GAP
-	var safe_frame_top: float = safe_frame_bottom - SAFE_FRAME_HEIGHT
-	battle_safe_frame.position = Vector2(SAFE_FRAME_SIDE_MARGIN, safe_frame_top)
-	battle_safe_frame.size = Vector2(viewport_size.x - SAFE_FRAME_SIDE_MARGIN * 2.0, SAFE_FRAME_HEIGHT)
-	daily_goal_card.position = Vector2(target_card.position.x, target_card.position.y + target_card.size.y + 12.0)
-	daily_goal_card.size.x = target_card.size.x
-
-	var reference_top: float = maxf(
-		maxf(
-			battle_card.position.y + battle_card.size.y,
-			target_card.position.y + target_card.size.y
-		),
-		daily_goal_card.position.y + daily_goal_card.size.y
-	) + CARD_MIN_TOP_GAP
-	var desired_card_y: float = safe_frame_top - equip_card.size.y - CARD_TO_FRAME_GAP
-	var card_y: float = maxf(reference_top, desired_card_y)
-
-	equip_card.position = Vector2(CARD_SIDE_MARGIN, card_y)
-	loot_card.position = Vector2(viewport_size.x - loot_card.size.x - CARD_SIDE_MARGIN, card_y)
+	equip_card.position = Vector2(CARD_SIDE_MARGIN, battle_card.position.y + battle_card.size.y + 16.0)
+	loot_card.position = Vector2(viewport_size.x - loot_card.size.x - CARD_SIDE_MARGIN, 72.0)
+	daily_goal_card.position = Vector2(loot_card.position.x, loot_card.position.y + loot_card.size.y + 12.0)
+	daily_goal_card.size.x = loot_card.size.x
 	drop_toast_base_position = Vector2(
 		(viewport_size.x - drop_toast.size.x) * 0.5,
 		64.0
