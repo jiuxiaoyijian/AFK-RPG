@@ -281,7 +281,7 @@ func _update_equipped_slot(slot: String, label: Label) -> void:
 		label.add_theme_color_override("font_color", Color(0.52, 0.54, 0.58, 1.0))
 		return
 	var rarity: String = String(item.get("rarity", "common"))
-	var rarity_display: String = GameManager.get_rarity_display_name(rarity)
+	var _rarity_display: String = GameManager.get_rarity_display_name(rarity)
 	label.text = "%s: %s" % [display_name, String(item.get("name", "--"))]
 	label.add_theme_color_override("font_color", GameManager.get_rarity_color(rarity))
 
@@ -482,6 +482,7 @@ func _apply_slot_icons() -> void:
 	for idx in GameManager.EQUIPMENT_SLOT_ORDER.size():
 		var slot_id: String = GameManager.EQUIPMENT_SLOT_ORDER[idx]
 		var col: int = idx % columns
+		@warning_ignore("integer_division")
 		var row: int = idx / columns
 		var slot_label := Label.new()
 		slot_label.name = "EqLabel_%s" % slot_id
