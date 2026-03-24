@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
+
 @onready var ui_dimmer: ColorRect = $UIDimmer
 @onready var inventory_panel: Control = $InventoryPanel
 @onready var research_panel: Control = $ResearchPanel
@@ -107,60 +109,59 @@ func _show_panel(panel: Control) -> void:
 func _apply_popup_panel_styles() -> void:
 	for panel_root in [inventory_panel, research_panel, codex_panel, drop_stats_panel, gm_panel, offline_report_popup]:
 		if panel_root != null:
-			_apply_panel_style_recursive(panel_root)
-			_apply_compact_typography_recursive(panel_root)
+			_apply_modal_theme_recursive(panel_root)
 
 
-func _apply_panel_style_recursive(node: Node) -> void:
+func _apply_modal_theme_recursive(node: Node) -> void:
 	if node is Panel:
 		var panel_node: Panel = node
-		panel_node.add_theme_stylebox_override("panel", _build_panel_style(panel_node.name))
-	for child in node.get_children():
-		_apply_panel_style_recursive(child)
-
-
-func _build_panel_style(panel_name: String) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.34, 0.42, 0.56, 1.0)
-	match panel_name:
-		"Panel":
-			style.bg_color = Color(0.08, 0.10, 0.14, 1.0)
-		"HeaderBar":
-			style.bg_color = Color(0.12, 0.16, 0.22, 1.0)
-		_:
-			style.bg_color = Color(0.11, 0.13, 0.18, 1.0)
-	return style
-
-
-func _apply_compact_typography_recursive(node: Node) -> void:
-	if node is Label:
-		var label_node: Label = node
-		label_node.add_theme_font_size_override("font_size", 14)
-	elif node is RichTextLabel:
-		var rich_text_node: RichTextLabel = node
-		rich_text_node.add_theme_font_size_override("normal_font_size", 14)
-	elif node is Button:
-		var button_node: Button = node
-		button_node.add_theme_font_size_override("font_size", 14)
+		UI_STYLE.style_panel(panel_node, panel_node.name)
 	elif node is OptionButton:
 		var option_button: OptionButton = node
-		option_button.add_theme_font_size_override("font_size", 14)
+		UI_STYLE.style_option_button(option_button, UI_STYLE.COLOR_BLUE)
 	elif node is CheckBox:
 		var check_box: CheckBox = node
-		check_box.add_theme_font_size_override("font_size", 14)
+		UI_STYLE.style_check_box(check_box, UI_STYLE.COLOR_GOLD)
+	elif node is Button:
+		var button_node: Button = node
+		UI_STYLE.style_button(button_node, _get_button_accent(button_node.name), button_node.disabled)
 	elif node is ItemList:
 		var item_list: ItemList = node
-		item_list.add_theme_font_size_override("font_size", 14)
+		UI_STYLE.style_item_list(item_list)
+	elif node is ProgressBar:
+		var progress_bar: ProgressBar = node
+		UI_STYLE.style_progress_bar(progress_bar, UI_STYLE.COLOR_BLUE)
+	elif node is RichTextLabel:
+		var rich_text: RichTextLabel = node
+		UI_STYLE.style_rich_text(rich_text)
+	elif node is Label:
+		var label_node: Label = node
+		UI_STYLE.style_label(label_node, _get_label_role(label_node.name))
 	for child in node.get_children():
-		_apply_compact_typography_recursive(child)
+		_apply_modal_theme_recursive(child)
+
+func _get_button_accent(button_name: String) -> Color:
+	if button_name.contains("Close"):
+		return UI_STYLE.COLOR_TEXT_MUTED
+	if button_name.contains("Salvage") or button_name.contains("Reset") or button_name.contains("Clear"):
+		return UI_STYLE.COLOR_RED
+	if button_name.contains("Track") or button_name.contains("Recommended") or button_name.contains("Upgrade"):
+		return UI_STYLE.COLOR_GOLD
+	if button_name.contains("Lock") or button_name.contains("Current") or button_name.contains("Save") or button_name.contains("Load"):
+		return UI_STYLE.COLOR_BLUE
+	if button_name.contains("Equip") or button_name.contains("Add") or button_name.contains("Unlock") or button_name.contains("Jump") or button_name.contains("Resource"):
+		return UI_STYLE.COLOR_GREEN
+	return UI_STYLE.COLOR_BLUE
+
+
+func _get_label_role(label_name: String) -> String:
+	if label_name.contains("Title"):
+		return "title"
+	if label_name.contains("Hint"):
+		return "muted"
+	if label_name.contains("Summary"):
+		return "accent"
+	return "body"
 
 
 func _show_offline_report(report_text: String) -> void:

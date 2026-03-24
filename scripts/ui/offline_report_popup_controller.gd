@@ -1,5 +1,6 @@
 extends Control
 
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const RESULT_CARD_PATH := "res://assets/generated/afk_rpg_formal/ui/result_card_template_common.png"
 const RESULT_BOSS_PATH := "res://assets/generated/afk_rpg_formal/ui/result_card_template_rare.png"
 const POPUP_MODE_ICON_PATHS := {
@@ -38,6 +39,7 @@ func _ready() -> void:
 	card_art.texture = _load_runtime_texture(RESULT_CARD_PATH)
 	boss_banner.texture = _load_runtime_texture(RESULT_BOSS_PATH)
 	card_art.modulate = Color(0.94, 0.95, 0.98, 1.0)
+	_apply_review_style()
 
 
 func show_report(report_text: String) -> void:
@@ -159,6 +161,7 @@ func _apply_popup_visuals(mode: String, use_boss_style: bool) -> void:
 	var boss_portrait_path: String = _get_active_boss_portrait_path() if use_boss_style else ""
 	boss_portrait.texture = _load_runtime_texture(boss_portrait_path) if not boss_portrait_path.is_empty() else null
 	boss_portrait.visible = boss_portrait.texture != null
+	UI_STYLE.style_button(close_button, UI_STYLE.COLOR_TEXT_DIM, false)
 
 
 func _get_active_boss_portrait_path() -> String:
@@ -174,3 +177,15 @@ func _get_active_boss_portrait_path() -> String:
 
 func _load_runtime_texture(resource_path: String) -> Texture2D:
 	return RuntimeTextureLoader.load_texture(resource_path)
+
+
+func _apply_review_style() -> void:
+	UIStyle.style_panel(panel, "Panel")
+	UI_STYLE.style_button(close_button, UI_STYLE.COLOR_TEXT_DIM, false)
+	UI_STYLE.style_rich_text(content_label)
+	UI_STYLE.style_rich_text(goal_label)
+	UI_STYLE.style_label(title_label, "title")
+	UI_STYLE.style_label(highlight_label, "warning")
+	UI_STYLE.style_label(content_title_label, "heading")
+	UI_STYLE.style_label(goal_title_label, "heading")
+	$Dimmer.color = Color(0, 0, 0, 0.5)

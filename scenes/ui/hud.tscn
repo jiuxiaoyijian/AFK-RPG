@@ -128,14 +128,12 @@ offset_bottom = 154.0
 text = "掉落方向: --"
 
 [node name="BattleSafeFrame" type="Panel" parent="."]
-visible = false
 offset_left = 8.0
 offset_top = 394.0
 offset_right = 1272.0
-offset_bottom = 594.0
+offset_bottom = 604.0
 
 [node name="TargetCard" type="Panel" parent="."]
-visible = false
 offset_left = 936.0
 offset_top = 118.0
 offset_right = 1264.0
@@ -242,15 +240,15 @@ text = "回来先做什么: --"
 
 [node name="EquipCard" type="Panel" parent="."]
 offset_left = 16.0
-offset_top = 254.0
-offset_right = 388.0
-offset_bottom = 350.0
+offset_top = 412.0
+offset_right = 420.0
+offset_bottom = 510.0
 
 [node name="CardArt" type="TextureRect" parent="EquipCard"]
 offset_left = 0.0
 offset_top = 0.0
-offset_right = 372.0
-offset_bottom = 96.0
+offset_right = 404.0
+offset_bottom = 98.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
@@ -412,15 +410,15 @@ text = "--"
 
 [node name="LootCard" type="Panel" parent="."]
 offset_left = 936.0
-offset_top = 72.0
+offset_top = 412.0
 offset_right = 1264.0
-offset_bottom = 168.0
+offset_bottom = 510.0
 
 [node name="CardArt" type="TextureRect" parent="LootCard"]
 offset_left = 0.0
 offset_top = 0.0
-offset_right = 388.0
-offset_bottom = 96.0
+offset_right = 328.0
+offset_bottom = 98.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6

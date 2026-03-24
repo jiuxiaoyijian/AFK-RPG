@@ -1,5 +1,7 @@
 extends Control
 
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
+
 @onready var title_label: Label = $Panel/TitleLabel
 @onready var summary_label: Label = $Panel/SummaryLabel
 @onready var filter_section_label: Label = $Panel/FilterSectionLabel
@@ -38,7 +40,7 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	title_label.text = "悟道与长期成长"
+	title_label.text = "悟道"
 	filter_section_label.text = "悟道分支"
 	list_section_label.text = "悟道节点"
 	detail_section_label.text = "悟道详情"
@@ -213,15 +215,16 @@ func _get_tree_type_color(tree_type: String) -> Color:
 
 
 func _apply_visual_style() -> void:
-	title_label.add_theme_color_override("font_color", Color(0.98, 0.92, 0.72, 1.0))
-	summary_label.add_theme_color_override("font_color", Color(0.80, 0.86, 0.98, 1.0))
-	filter_section_label.add_theme_color_override("font_color", Color(0.66, 0.82, 1.0, 1.0))
-	list_section_label.add_theme_color_override("font_color", Color(0.66, 0.82, 1.0, 1.0))
-	detail_section_label.add_theme_color_override("font_color", Color(0.74, 0.90, 1.0, 1.0))
-	action_section_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54, 1.0))
-	action_hint_label.add_theme_color_override("font_color", Color(0.78, 0.82, 0.88, 1.0))
-	_update_button_style(close_button, Color(0.50, 0.50, 0.56, 1.0))
+	UI_STYLE.style_label(title_label, "title")
+	UI_STYLE.style_label(summary_label, "accent")
+	UI_STYLE.style_label(filter_section_label, "heading")
+	UI_STYLE.style_label(list_section_label, "heading")
+	UI_STYLE.style_label(detail_section_label, "heading")
+	UI_STYLE.style_label(action_section_label, "warning")
+	UI_STYLE.style_label(action_hint_label, "muted")
+	UI_STYLE.style_item_list(node_list)
+	_update_button_style(close_button, UI_STYLE.COLOR_TEXT_DIM)
 
 
 func _update_button_style(button: Button, color: Color) -> void:
-	button.self_modulate = color
+	UI_STYLE.style_button(button, color, button.disabled)

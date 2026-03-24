@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFK-RPG UI 评审展示页</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #090c12;
+  --panel: rgba(19, 24, 35, 0.92);
+  --panel-soft: rgba(28, 33, 46, 0.86);
+  --panel-strong: rgba(14, 18, 27, 0.96);
+  --border: rgba(87, 106, 143, 0.75);
+  --border-soft: rgba(87, 106, 143, 0.28);
+  --text: #c6cedd;
+  --text-dim: #7f8ca5;
+  --white: #edf3ff;
+  --teal: #4dd0c8;
+  --blue: #42a5f5;
+  --green: #66bb6a;
+  --orange: #ff8f00;
+  --gold: #f3c775;
+  --red: #ef5350;
+  --pink: #d7a2af;
+  --ink: #0b0f16;
+  --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+html, body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(211, 169, 178, 0.11), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(77, 208, 200, 0.08), transparent 20%),
+    linear-gradient(180deg, #090c12 0%, #0f1420 38%, #0d1118 100%);
+  color: var(--text);
+  font: 14px/1.6 "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  padding: 48px 28px 80px;
+}
+
+.page {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(215, 162, 175, 0.18);
+  border-radius: 28px;
+  padding: 36px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(215, 162, 175, 0.12), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(77, 208, 200, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(24, 30, 41, 0.94), rgba(14, 18, 27, 0.98));
+  box-shadow: var(--shadow-lg);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -40px -80px auto;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(243, 199, 117, 0.15), rgba(215, 162, 175, 0.06) 48%, transparent 68%);
+  filter: blur(4px);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--pink);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  gap: 28px;
+  margin-top: 20px;
+}
+
+.hero h1 {
+  color: var(--white);
+  font-size: 40px;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+
+.hero p {
+  max-width: 760px;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.chip-row,
+.mini-grid,
+.meta-grid,
+.legend-grid,
+.note-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.chip strong {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.summary-panel {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.summary-panel h2 {
+  color: var(--white);
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.summary-panel ul {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.summary-panel li {
+  padding-left: 16px;
+  position: relative;
+  color: var(--text);
+}
+
+.summary-panel li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.section {
+  margin-top: 34px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.section-head h2 {
+  color: var(--white);
+  font-size: 26px;
+}
+
+.section-head p {
+  max-width: 720px;
+  color: var(--text-dim);
+}
+
+.artboard {
+  overflow: hidden;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(19, 24, 35, 0.95), rgba(12, 16, 24, 0.98));
+  border: 1px solid rgba(87, 106, 143, 0.42);
+  box-shadow: var(--shadow-md);
+}
+
+.artboard-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(87, 106, 143, 0.22);
+  background: linear-gradient(180deg, rgba(33, 41, 58, 0.86), rgba(22, 29, 41, 0.8));
+}
+
+.artboard-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.artboard-top h3 {
+  color: var(--white);
+  font-size: 18px;
+}
+
+.artboard-top p {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.artboard-body {
+  padding: 18px;
+}
+
+.canvas {
+  position: relative;
+  width: 100%;
+  min-height: 720px;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background:
+    radial-gradient(circle at 50% 12%, rgba(243, 199, 117, 0.12), transparent 16%),
+    radial-gradient(circle at 25% 18%, rgba(215, 162, 175, 0.12), transparent 22%),
+    linear-gradient(180deg, #0d1118 0%, #151a27 42%, #181c2a 100%);
+}
+
+.canvas::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 190px;
+  background: linear-gradient(180deg, rgba(20, 26, 37, 0), rgba(41, 46, 61, 0.92));
+}
+
+.topbar,
+.battle-card,
+.target-stack,
+.safe-frame,
+.nav-bar,
+.highlight-banner,
+.review-card,
+.review-panel,
+.popup-card,
+.stage-card,
+.legend-card {
+  position: absolute;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: var(--panel);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.topbar {
+  left: 20px;
+  right: 20px;
+  top: 16px;
+  height: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px;
+  background: rgba(28, 33, 46, 0.82);
+}
+
+.resource-row,
+.status-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.resource-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(243, 199, 117, 0.92), rgba(175, 115, 37, 0.8));
+}
+
+.dot.ash { background: linear-gradient(180deg, #bcc4d4, #717b90); }
+.dot.core { background: linear-gradient(180deg, #4dd0c8, #2f8c87); }
+.dot.trace { background: linear-gradient(180deg, #d7a2af, #8b5463); }
+
+.highlight-banner {
+  left: 50%;
+  top: 78px;
+  transform: translateX(-50%);
+  width: 430px;
+  padding: 14px 18px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(40, 48, 66, 0.92), rgba(18, 24, 35, 0.94));
+}
+
+.highlight-title {
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.highlight-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.battle-card {
+  left: 18px;
+  top: 98px;
+  width: 350px;
+  padding: 16px;
+}
+
+.battle-card h4,
+.small-title,
+.panel-title,
+.popup-title,
+.legend-title {
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.hp-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin: 12px 0 10px;
+}
+
+.hp-fill {
+  width: 78%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(66, 165, 245, 0.92), rgba(77, 208, 200, 0.82));
+}
+
+.info-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.world-silhouette {
+  position: absolute;
+  left: 50%;
+  bottom: 184px;
+  width: 220px;
+  height: 210px;
+  transform: translateX(-50%);
+}
+
+.world-silhouette::before {
+  content: "";
+  position: absolute;
+  inset: 34px 34px 0;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(180deg, rgba(48, 37, 36, 0.96), rgba(20, 17, 18, 0.98));
+  box-shadow: inset 0 -20px 36px rgba(0, 0, 0, 0.34);
+}
+
+.world-silhouette::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 74px;
+  clip-path: polygon(4% 100%, 12% 26%, 50% 0, 88% 26%, 96% 100%);
+  background: linear-gradient(180deg, rgba(82, 62, 55, 0.98), rgba(36, 29, 28, 0.98));
+}
+
+.ground-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 94px;
+  height: 214px;
+  background:
+    radial-gradient(circle at 50% 0, rgba(215, 162, 175, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(30, 35, 46, 0), rgba(41, 46, 61, 0.92));
+}
+
+.fighter,
+.enemy {
+  position: absolute;
+  bottom: 146px;
+  width: 92px;
+  height: 124px;
+  border-radius: 24px 24px 12px 12px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.24);
+}
+
+.fighter {
+  left: calc(50% - 78px);
+  background: linear-gradient(180deg, rgba(83, 130, 181, 0.9), rgba(26, 36, 54, 0.98));
+}
+
+.fighter::after,
+.enemy::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: -28px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(214, 222, 238, 0.9);
+}
+
+.enemy {
+  background: linear-gradient(180deg, rgba(98, 74, 86, 0.94), rgba(36, 24, 30, 0.98));
+}
+
+.enemy.one { left: calc(50% + 110px); }
+.enemy.two {
+  left: calc(50% + 228px);
+  width: 84px;
+  height: 108px;
+}
+
+.drop-pill {
+  position: absolute;
+  bottom: 196px;
+  min-width: 120px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--white);
+  background: rgba(16, 20, 31, 0.88);
+  border: 1px solid rgba(255, 143, 0, 0.36);
+}
+
+.drop-pill.left { left: calc(50% - 230px); }
+.drop-pill.right {
+  left: calc(50% + 42px);
+  border-color: rgba(66, 165, 245, 0.42);
+}
+
+.target-stack {
+  right: 18px;
+  top: 118px;
+  width: 310px;
+  display: grid;
+  gap: 12px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.trace-card,
+.goal-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: var(--panel);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24);
+}
+
+.trace-list,
+.goal-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.goal-main {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 143, 0, 0.1);
+  border: 1px solid rgba(255, 143, 0, 0.18);
+}
+
+.safe-frame {
+  left: 18px;
+  right: 18px;
+  bottom: 100px;
+  height: 178px;
+  padding: 18px;
+  background: rgba(14, 18, 27, 0.46);
+  border-color: rgba(77, 208, 200, 0.22);
+}
+
+.safe-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr;
+  gap: 16px;
+  height: 100%;
+}
+
+.safe-box {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+}
+
+.equip-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.equip-slot {
+  min-height: 78px;
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 143, 0, 0.2);
+  font-size: 11px;
+}
+
+.loot-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.loot-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+}
+
+.nav-bar {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 92px;
+  padding: 12px 18px 10px;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  background: rgba(20, 22, 32, 0.98);
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.nav-item {
+  min-height: 54px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+}
+
+.nav-item strong {
+  display: block;
+  color: var(--white);
+  font-size: 13px;
+}
+
+.nav-item span {
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.shortcut {
+  margin-top: 8px;
+  text-align: center;
+  color: #667287;
+  font-size: 11px;
+}
+
+.annotation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.annotation {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.annotation h4 {
+  color: var(--white);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.annotation p {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: 1.06fr 0.94fr;
+  gap: 18px;
+}
+
+.review-card {
+  inset: auto;
+  position: relative;
+  padding: 18px;
+  min-height: 720px;
+}
+
+.review-card .canvas {
+  min-height: 650px;
+}
+
+.panel-column {
+  display: grid;
+  gap: 18px;
+}
+
+.review-panel {
+  inset: auto;
+  position: relative;
+  padding: 18px;
+}
+
+.panel-frame {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(87, 106, 143, 0.28);
+  background: rgba(15, 19, 29, 0.94);
+}
+
+.panel-head {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(31, 42, 56, 0.94);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.panel-body {
+  padding: 18px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filter {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.filter.active {
+  background: rgba(66, 165, 245, 0.16);
+  border-color: rgba(66, 165, 245, 0.34);
+  color: var(--white);
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr;
+  gap: 14px;
+}
+
+.list-box,
+.detail-box,
+.stats-box,
+.popup-block,
+.legend-block {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+}
+
+.item-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.item-line:last-child {
+  border-bottom: 0;
+}
+
+.quality {
+  width: 4px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.q-blue { background: #42a5f5; }
+.q-purple { background: #ab47bc; }
+.q-green { background: #4caf50; }
+.q-orange { background: #ff8f00; }
+
+.detail-box h4 {
+  font-size: 18px;
+  color: var(--orange);
+}
+
+.detail-box .meta {
+  color: var(--text-dim);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.detail-box ul {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.detail-box li {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 98px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  font-size: 13px;
+}
+
+.btn.primary {
+  background: rgba(66, 165, 245, 0.2);
+  border-color: rgba(66, 165, 245, 0.34);
+}
+
+.btn.warn {
+  background: rgba(239, 83, 80, 0.12);
+  border-color: rgba(239, 83, 80, 0.24);
+}
+
+.research-card,
+.codex-card,
+.stats-line {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 10px;
+}
+
+.stats-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.popup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.popup-card,
+.stage-card,
+.legend-card {
+  inset: auto;
+  position: relative;
+  padding: 20px;
+}
+
+.popup-card {
+  min-height: 420px;
+}
+
+.popup-card.event {
+  border-color: rgba(255, 143, 0, 0.28);
+}
+
+.popup-title {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.popup-sub {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.popup-block-title,
+.legend-block h4 {
+  color: var(--white);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.note-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.note-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.note-card h4 {
+  color: var(--white);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.note-card p {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.footer {
+  margin-top: 36px;
+  padding: 22px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+
+.footer p {
+  color: var(--text-dim);
+  max-width: 820px;
+}
+
+.footer a {
+  color: var(--gold);
+  text-decoration: none;
+}
+
+@media (max-width: 1180px) {
+  body {
+    padding: 24px 16px 60px;
+  }
+
+  .hero-grid,
+  .review-grid,
+  .popup-grid,
+  .annotation-grid,
+  .note-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas {
+    min-height: 640px;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">AFK-RPG UI Review</div>
+      <div class="hero-grid">
+        <div>
+          <h1>反桃花源修真 UI 评审展示页</h1>
+          <p>
+            这份静态展示稿用于快速评审当前主界面、模态面板和结果卡方向。它不强调交互切换，而是把
+            “玩家第一眼看到什么、信息层怎么分区、题材气质有没有立住” 整理成一组适合开会讨论的评审板。
+          </p>
+          <div class="chip-row" style="margin-top:18px;">
+            <div class="chip"><strong>画布</strong>1280 × 720 横屏</div>
+            <div class="chip"><strong>题材</strong>反桃花源修真</div>
+            <div class="chip"><strong>目标</strong>越好看越不对劲</div>
+            <div class="chip"><strong>结构</strong>HUD + 5 面板 + 2 弹窗</div>
+          </div>
+        </div>
+        <aside class="summary-panel">
+          <h2>评审重点</h2>
+          <ul>
+            <li>首页是否同时讲清战斗、构筑目标、今日机缘三层信息。</li>
+            <li>模态面板是否统一在同一套“深色祠堂 UI” 语气下展开。</li>
+            <li>闭关所得与破局要闻是否具备“可截图传播”的结果卡气质。</li>
+            <li>术语与世界观是否已经从文档层真正落到画面里。</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>01. 主界面评审板</h2>
+          <p>聚焦玩家挂机时最常驻的一屏，重点看信息密度、视线流向和“机缘追踪 / 今日机缘”的前台化程度。</p>
+        </div>
+      </div>
+      <div class="artboard">
+        <div class="artboard-top">
+          <div class="artboard-label">
+            <div class="badge">01</div>
+            <div>
+              <h3>主战斗 HUD 总览</h3>
+              <p>TopBar + BattleCard + 中央战斗区 + 右侧双卡 + BattleSafeFrame + MainNavBar</p>
+            </div>
+          </div>
+          <div class="chip-row">
+            <div class="chip">挂机观感优先</div>
+            <div class="chip">卡点信息前置</div>
+            <div class="chip">底部安全区保留</div>
+          </div>
+        </div>
+        <div class="artboard-body">
+          <div class="canvas">
+            <div class="topbar">
+              <div class="resource-row">
+                <div class="resource-pill"><span class="dot"></span>香火钱 1,240</div>
+                <div class="resource-pill"><span class="dot ash"></span>祠灰 455</div>
+                <div class="resource-pill"><span class="dot core"></span>灵核 6</div>
+                <div class="resource-pill"><span class="dot trace"></span>真意残片 2</div>
+                <div class="resource-pill">背包 12</div>
+              </div>
+              <div class="status-row">
+                <span>击杀 136</span>
+                <span>清图 18</span>
+                <span>节点 ch1_n3</span>
+              </div>
+            </div>
+
+            <div class="highlight-banner">
+              <div class="highlight-title">破局高光 · 伏祠山君现身</div>
+              <div class="highlight-sub">风眼真意掉落池开启，建议优先补旋风范围与功能词条</div>
+            </div>
+
+            <div class="battle-card">
+              <h4>桃溪外渡 · ch1_n3 · normal</h4>
+              <div class="muted" style="margin-top:6px;">第 3 波战斗中 · 山雾加深，香火味异常</div>
+              <div class="hp-track"><div class="hp-fill"></div></div>
+              <div class="info-line">
+                <span>生命 160 / 160</span>
+                <span style="color:var(--gold);">道统 · 御风道</span>
+              </div>
+              <div class="info-line">
+                <span>掉落方向</span>
+                <span class="muted">基础底材 / 真意残片 / 风眼</span>
+              </div>
+            </div>
+
+            <div class="world-silhouette"></div>
+            <div class="ground-band"></div>
+            <div class="fighter"></div>
+            <div class="enemy one"></div>
+            <div class="enemy two"></div>
+            <div class="drop-pill left">[史诗] 残月刀</div>
+            <div class="drop-pill right">机缘追踪 +1</div>
+
+            <div class="target-stack">
+              <div class="trace-card">
+                <div class="small-title">机缘追踪</div>
+                <div class="trace-list">
+                  <div>追踪：风眼 → 祠下灵田 / Boss</div>
+                  <div>缺口：旋风范围 0 / 16%</div>
+                  <div>下一件：风眼 / 扩厄 / 静参类</div>
+                  <div style="color:var(--gold);">建议：先补当前卡点，再回头推进灵田</div>
+                </div>
+              </div>
+              <div class="goal-card">
+                <div class="small-title">今日机缘</div>
+                <div class="goal-main" style="margin-top:10px;">
+                  主目标：先补当前卡点<br>
+                  进度：1 / 3
+                </div>
+                <div class="goal-list">
+                  <div>支线一：悟道 1 次，优先补旋风范围</div>
+                  <div>支线二：刷祠下灵田 / Boss 3 次</div>
+                  <div style="color:var(--text-dim);">回来先做什么：先开悟道，再补一轮掉落池</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="safe-frame">
+              <div class="safe-grid">
+                <div class="safe-box">
+                  <div class="small-title">装备概览</div>
+                  <div class="equip-row">
+                    <div class="equip-slot">武器<br><span class="muted">残月刀 · 史诗</span></div>
+                    <div class="equip-slot">头盔<br><span class="muted">寒铁冠 · 稀有</span></div>
+                    <div class="equip-slot">铠甲<br><span class="muted">旧祠法衣 · 稀有</span></div>
+                    <div class="equip-slot">手套<br><span class="muted">裂甲手 · 史诗</span></div>
+                  </div>
+                </div>
+                <div class="safe-box">
+                  <div class="small-title">最近掉落</div>
+                  <div class="loot-list">
+                    <div class="loot-item"><span>[传奇] 风眼真意</span><span style="color:var(--gold);">祠下灵田 / Boss</span></div>
+                    <div class="loot-item"><span>[史诗] 度厄扩厄戒</span><span>桃溪外渡 · 近岸</span></div>
+                    <div class="loot-item"><span>[稀有] 旋风残月刀</span><span>普通掉落池</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="nav-bar">
+              <div class="nav-grid">
+                <div class="nav-item"><strong>背包 I</strong><span>0 件可管理</span></div>
+                <div class="nav-item"><strong>悟道 U</strong><span>可悟道 2 项</span></div>
+                <div class="nav-item"><strong>异闻录 O</strong><span>机缘：风眼</span></div>
+                <div class="nav-item"><strong>推演 P</strong><span>节点 6 个 | 最近 18 条</span></div>
+                <div class="nav-item"><strong>GM G</strong><span>调试入口</span></div>
+              </div>
+              <div class="shortcut">1 / 2 / 3 切道统　R 重开　T 切机缘　G GM　Esc 关闭</div>
+            </div>
+          </div>
+
+          <div class="annotation-grid">
+            <div class="annotation">
+              <h4>视线流向</h4>
+              <p>玩家从中央战斗高光看进度，再向右读取“为什么卡”“今天做什么”，最后回到底部安全框看掉落和装备状态。</p>
+            </div>
+            <div class="annotation">
+              <h4>题材气质</h4>
+              <p>主体依旧是深色挂机 HUD，但加入祠堂、灯火、山雾、枯桃粉和香火金，让首页更像“伪仙境里的修行现场”。</p>
+            </div>
+            <div class="annotation">
+              <h4>评审问题</h4>
+              <p>右侧双卡是否还需要更强层级差异，以及底部安全框在真机里是否还应再轻一点，避免抢走战斗区注意力。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>02. 模态面板评审板</h2>
+          <p>这一板关注二级系统是否进入统一视觉体系，以及背包 / 悟道 / 异闻录 / 推演是否能在一套组件规范下展开。</p>
+        </div>
+      </div>
+      <div class="review-grid">
+        <div class="artboard review-card">
+          <div class="artboard-top">
+            <div class="artboard-label">
+              <div class="badge">02</div>
+              <div>
+                <h3>背包面板</h3>
+                <p>左列表、右详情、底部操作键，强调品质层级与可管理感</p>
+              </div>
+            </div>
+          </div>
+          <div class="artboard-body">
+            <div class="panel-frame">
+              <div class="panel-head">
+                <div class="panel-title">背包</div>
+                <div class="muted">关闭 ×</div>
+              </div>
+              <div class="panel-body">
+                <div class="inventory-grid">
+                  <div class="list-box">
+                    <div class="small-title" style="margin-bottom:10px;">物品列表</div>
+                    <div class="item-line"><span class="quality q-blue"></span><span>御风·残月刀 ★★★</span></div>
+                    <div class="item-line"><span class="quality q-purple"></span><span>血劫·裂甲手 ★★★★</span></div>
+                    <div class="item-line"><span class="quality q-green"></span><span>铁背护肩 ★★</span></div>
+                    <div class="item-line"><span class="quality q-orange"></span><span>风眼真意 · 传奇</span></div>
+                  </div>
+                  <div class="detail-box">
+                    <h4>风眼 · 残月刀</h4>
+                    <div class="meta">武器 · 追踪目标 / 当前 Build 核心</div>
+                    <div>基础属性：攻击力 +15，暴击率 +3%</div>
+                    <ul>
+                      <li>御风伤害 +5%</li>
+                      <li>旋风范围 +8%</li>
+                      <li>处决后恢复 6 点精力</li>
+                    </ul>
+                    <div class="button-row">
+                      <div class="btn primary">装备</div>
+                      <div class="btn">锁定</div>
+                      <div class="btn warn">分解</div>
+                    </div>
+                    <div class="muted" style="margin-top:14px;">自动分解：稀有以下</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-column">
+          <div class="artboard review-panel">
+            <div class="artboard-top">
+              <div class="artboard-label">
+                <div class="badge">03</div>
+                <div>
+                  <h3>悟道面板</h3>
+                  <p>强调“当前可悟道什么”而不是抽象天赋树</p>
+                </div>
+              </div>
+            </div>
+            <div class="artboard-body">
+              <div class="panel-frame">
+                <div class="panel-head">
+                  <div class="panel-title">悟道</div>
+                  <div class="muted">关闭 ×</div>
+                </div>
+                <div class="panel-body">
+                  <div class="filter-row">
+                    <div class="filter active">全部</div>
+                    <div class="filter">战法</div>
+                    <div class="filter">闭关</div>
+                    <div class="filter">机缘</div>
+                  </div>
+                  <div class="research-card">
+                    <div class="small-title">御风 · 破阵　Lv.3 → Lv.4</div>
+                    <div class="muted" style="margin-top:6px;">御风道伤害 +12% → +16%</div>
+                    <div class="info-line"><span>消耗：祠灰 200 + 灵核 5</span><span style="color:var(--blue);">可悟道</span></div>
+                  </div>
+                  <div class="research-card">
+                    <div class="small-title">闭关 · 时流　Lv.1 → Lv.2</div>
+                    <div class="muted" style="margin-top:6px;">闭关效率 +10% → +15%</div>
+                    <div class="info-line"><span>消耗：祠灰 100</span><span style="color:var(--gold);">建议优先</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="artboard review-panel">
+            <div class="artboard-top">
+              <div class="artboard-label">
+                <div class="badge">04</div>
+                <div>
+                  <h3>异闻录 / 机缘推演</h3>
+                  <p>分别承担“收藏追踪”和“刷图效率建议”两类信息任务</p>
+                </div>
+              </div>
+            </div>
+            <div class="artboard-body">
+              <div class="panel-frame" style="margin-bottom:14px;">
+                <div class="panel-head">
+                  <div class="panel-title">异闻录</div>
+                  <div class="muted">机缘追踪入口</div>
+                </div>
+                <div class="panel-body">
+                  <div class="filter-row">
+                    <div class="filter active">全部</div>
+                    <div class="filter">底材</div>
+                    <div class="filter">词条</div>
+                    <div class="filter">异宝</div>
+                  </div>
+                  <div class="codex-card">
+                    <div class="small-title">风眼 · 异宝真意</div>
+                    <div class="muted" style="margin-top:6px;">首次发现：祠下灵田 / Boss　掉落池：风系 Build 核心件</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-frame">
+                <div class="panel-head">
+                  <div class="panel-title">机缘推演</div>
+                  <div class="muted">推荐机缘：祠下灵田 / Boss</div>
+                </div>
+                <div class="panel-body">
+                  <div class="stats-box">
+                    <div class="stats-line"><span>ch1_n1</span><span>清图 12 / 装备 23 / 传奇 0</span></div>
+                    <div class="stats-line"><span>ch1_n2</span><span>清图 8 / 装备 15 / 传奇 1</span></div>
+                    <div class="stats-line"><span>ch1_n3</span><span>清图 18 / 装备 31 / 传奇 2</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>03. 结果卡与术语评审板</h2>
+          <p>最后一板把“挂机结束后要传播什么”和“这套题材是不是已经成体系”放在一起看，方便讨论产品包装是否立住。</p>
+        </div>
+      </div>
+      <div class="popup-grid">
+        <div class="artboard popup-card">
+          <div class="artboard-top">
+            <div class="artboard-label">
+              <div class="badge">05</div>
+              <div>
+                <h3>闭关所得</h3>
+                <p>强调“回来先做什么”，而不是只报账</p>
+              </div>
+            </div>
+          </div>
+          <div class="artboard-body">
+            <div class="popup-title">闭关所得</div>
+            <div class="popup-sub">你在香火弥漫的旧祠外停留了一夜，醒来时雾更浓了。</div>
+            <div class="popup-block">
+              <div class="popup-block-title">本次闭关所得</div>
+              香火钱 +1,200<br>
+              祠灰 +45<br>
+              灵核 +1<br>
+              装备 ×3（1 史诗，1 稀有，1 普通）
+            </div>
+            <div class="popup-block" style="margin-top:12px;">
+              <div class="popup-block-title">回来先做什么</div>
+              先补当前卡点，优先刷桃溪外渡 · 近岸，补旋风范围后再回头推进灵田。<br>
+              今日机缘进度：主目标 1 / 3，支线 2 / 5。
+            </div>
+          </div>
+        </div>
+
+        <div class="artboard popup-card event">
+          <div class="artboard-top">
+            <div class="artboard-label">
+              <div class="badge">06</div>
+              <div>
+                <h3>破局要闻</h3>
+                <p>更偏“可截图传播”的阶段事件卡</p>
+              </div>
+            </div>
+          </div>
+          <div class="artboard-body">
+            <div class="popup-title">破局要闻</div>
+            <div class="popup-sub">首领“伏祠山君”已伏诛，新的掉落池与章节路径已显现。</div>
+            <div class="popup-block">
+              <div class="popup-block-title">本次破局</div>
+              首杀完成：伏祠山君<br>
+              新解锁：祠下灵田<br>
+              新掉落：风眼真意、扩厄类异宝
+            </div>
+            <div class="popup-block" style="margin-top:12px;">
+              <div class="popup-block-title">后续建议</div>
+              先进入祠下灵田查看新掉落池，再把机缘追踪切到风眼或扩厄类真意。<br>
+              今日机缘：首领首杀已完成。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note-grid">
+        <div class="note-card">
+          <h4>术语基线</h4>
+          <p>悟道、异闻录、机缘推演、今日机缘、闭关所得、破局要闻，已经能组成一套一致的游戏内语言系统。</p>
+        </div>
+        <div class="note-card">
+          <h4>配色判断</h4>
+          <p>主体仍保持 Godot 内易实现的深色框架，但高光要更多交给枯桃粉、香火金和血朱来形成“漂亮但不安”的氛围。</p>
+        </div>
+        <div class="note-card">
+          <h4>评审切入点</h4>
+          <p>可以先讨论首页信息负荷，再讨论面板统一性，最后讨论结果卡和对外展示是否具备传播感。</p>
+        </div>
+        <div class="note-card">
+          <h4>后续衔接</h4>
+          <p>这套静态展示页适合作为下一轮把网页稿拆回 Godot HUD / Panel 资源清单时的视觉基线。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>
+        相关文件：
+        <a href="./index.html">交互原型 index.html</a> ·
+        <a href="../Figma_交互设计简介.md">Figma 交互设计简介</a> ·
+        <a href="../Figma_分阶段提示词.md">Figma 分阶段提示词</a>
+      </p>
+      <div class="chip">静态评审稿 v1</div>
+    </footer>
+  </div>
+</body>
+</html>

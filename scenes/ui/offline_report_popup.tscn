@@ -26,6 +26,18 @@ offset_top = 120.0
 offset_right = 960.0
 offset_bottom = 600.0
 
+[node name="ContentSection" type="Panel" parent="Panel"]
+offset_left = 18.0
+offset_top = 112.0
+offset_right = 620.0
+offset_bottom = 286.0
+
+[node name="GoalSection" type="Panel" parent="Panel"]
+offset_left = 18.0
+offset_top = 324.0
+offset_right = 620.0
+offset_bottom = 410.0
+
 [node name="CardArt" type="TextureRect" parent="Panel"]
 offset_right = 640.0
 offset_bottom = 480.0
@@ -94,10 +106,10 @@ offset_bottom = 106.0
 text = "本次闭关所得"
 
 [node name="ContentLabel" type="RichTextLabel" parent="Panel"]
-offset_left = 18.0
-offset_top = 112.0
-offset_right = 620.0
-offset_bottom = 286.0
+offset_left = 28.0
+offset_top = 122.0
+offset_right = 610.0
+offset_bottom = 276.0
 autowrap_mode = 2
 text = "暂无闭关所得"
 scroll_active = true
@@ -110,17 +122,17 @@ offset_bottom = 318.0
 text = "回来先做什么"
 
 [node name="GoalLabel" type="RichTextLabel" parent="Panel"]
-offset_left = 18.0
-offset_top = 324.0
-offset_right = 620.0
-offset_bottom = 410.0
+offset_left = 28.0
+offset_top = 334.0
+offset_right = 610.0
+offset_bottom = 400.0
 autowrap_mode = 2
 text = "今日机缘建议"
 scroll_active = true
 
 [node name="CloseButton" type="Button" parent="Panel"]
-offset_left = 500.0
+offset_left = 470.0
 offset_top = 420.0
-offset_right = 620.0
+offset_right = 590.0
 offset_bottom = 456.0
 text = "关闭"

@@ -1,5 +1,6 @@
 extends Control
 
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const NAV_ICON_PATHS := {
 	"inventory": "res://assets/generated/icons/nav_inventory.png",
 	"research": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
@@ -13,6 +14,7 @@ const NAV_ICON_PATHS := {
 @onready var stats_button: Button = $Panel/StatsButton
 @onready var gm_button: Button = $Panel/GMButton
 @onready var hint_label: Label = $Panel/HintLabel
+@onready var panel: Panel = $Panel
 
 var active_panel_id: String = ""
 
@@ -30,7 +32,7 @@ func _ready() -> void:
 	EventBus.ui_state_changed.connect(_on_ui_state_changed)
 
 	_apply_button_icons()
-	_apply_compact_typography()
+	_apply_review_style()
 	_refresh()
 
 
@@ -59,6 +61,7 @@ func _update_button_states() -> void:
 	codex_button.disabled = active_panel_id == "codex"
 	stats_button.disabled = active_panel_id == "drop_stats"
 	gm_button.disabled = active_panel_id == "gm"
+	_style_nav_buttons()
 
 
 func _get_research_button_summary() -> String:
@@ -124,3 +127,31 @@ func _apply_font_size_recursive(node: Node) -> void:
 		button_node.add_theme_font_size_override("font_size", 13)
 	for child in node.get_children():
 		_apply_font_size_recursive(child)
+
+
+func _apply_review_style() -> void:
+	UI_STYLE.style_panel(panel, "Panel")
+	panel.add_theme_stylebox_override("panel", _build_nav_panel_style())
+	hint_label.add_theme_font_size_override("font_size", 11)
+	hint_label.add_theme_color_override("font_color", Color(0.40, 0.45, 0.52, 1.0))
+	_apply_compact_typography()
+	_style_nav_buttons()
+
+
+func _style_nav_buttons() -> void:
+	UI_STYLE.style_button(inventory_button, UI_STYLE.COLOR_BLUE, inventory_button.disabled)
+	UI_STYLE.style_button(research_button, UI_STYLE.COLOR_GOLD, research_button.disabled)
+	UI_STYLE.style_button(codex_button, UI_STYLE.COLOR_TEAL, codex_button.disabled)
+	UI_STYLE.style_button(stats_button, UI_STYLE.COLOR_PEACH, stats_button.disabled)
+	UI_STYLE.style_button(gm_button, UI_STYLE.COLOR_TEXT_DIM, gm_button.disabled)
+
+
+func _build_nav_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.09, 0.13, 0.98)
+	style.border_color = Color(0.34, 0.42, 0.56, 0.72)
+	style.border_width_top = 1
+	style.border_width_bottom = 0
+	style.border_width_left = 0
+	style.border_width_right = 0
+	return style

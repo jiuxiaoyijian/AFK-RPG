@@ -1,5 +1,6 @@
 extends Control
 
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const CORE_SKILL_ICON_PATHS := {
 	"core_whirlwind": "res://assets/generated/afk_rpg_formal/icons/school_yufengdao_highlight.png",
 	"core_deep_wound": "res://assets/generated/afk_rpg_formal/icons/school_xuejiedao_highlight.png",
@@ -31,6 +32,7 @@ const CARD_SIDE_MARGIN := 16.0
 
 @onready var resource_label: Label = $TopBar/ResourceLabel
 @onready var run_label: Label = $TopBar/RunLabel
+@onready var top_bar: Panel = $TopBar
 @onready var combat_highlight_panel: Panel = $CombatHighlightPanel
 @onready var combat_highlight_title: Label = $CombatHighlightPanel/CombatHighlightTitle
 @onready var combat_highlight_subtitle: Label = $CombatHighlightPanel/CombatHighlightSubtitle
@@ -88,11 +90,11 @@ var combat_highlight_tween: Tween
 
 
 func _ready() -> void:
-	target_card.visible = false
-	battle_safe_frame.visible = false
+	target_card.visible = true
+	battle_safe_frame.visible = true
 	_apply_card_art()
 	_apply_slot_icons()
-	_apply_battle_safe_frame_style()
+	_apply_review_visual_style()
 	_apply_compact_typography()
 	get_viewport().size_changed.connect(_apply_hud_layout)
 	EventBus.node_changed.connect(_on_node_changed)
@@ -355,27 +357,19 @@ func _apply_compact_typography() -> void:
 
 
 func _apply_battle_safe_frame_style() -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.10, 0.18, 0.26, 0.05)
-	style.border_color = Color(0.54, 0.76, 0.96, 0.36)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
-	battle_safe_frame.add_theme_stylebox_override("panel", style)
+	UIStyle.style_panel(battle_safe_frame, "BattleSafeFrame")
 
 
 func _apply_hud_layout() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	combat_highlight_panel.position = Vector2((viewport_size.x - combat_highlight_panel.size.x) * 0.5, 66.0)
-	equip_card.position = Vector2(CARD_SIDE_MARGIN, battle_card.position.y + battle_card.size.y + 16.0)
-	loot_card.position = Vector2(viewport_size.x - loot_card.size.x - CARD_SIDE_MARGIN, 72.0)
-	daily_goal_card.position = Vector2(loot_card.position.x, loot_card.position.y + loot_card.size.y + 12.0)
-	daily_goal_card.size.x = loot_card.size.x
+	target_card.position = Vector2(viewport_size.x - target_card.size.x - CARD_SIDE_MARGIN, 118.0)
+	daily_goal_card.position = Vector2(target_card.position.x, target_card.position.y + target_card.size.y + 12.0)
+	daily_goal_card.size.x = target_card.size.x
+	battle_safe_frame.position = Vector2(8.0, viewport_size.y - 302.0)
+	battle_safe_frame.size = Vector2(viewport_size.x - 16.0, 196.0)
+	equip_card.position = battle_safe_frame.position + Vector2(8.0, 12.0)
+	loot_card.position = battle_safe_frame.position + Vector2(battle_safe_frame.size.x - loot_card.size.x - 8.0, 12.0)
 	drop_toast_base_position = Vector2(
 		(viewport_size.x - drop_toast.size.x) * 0.5,
 		64.0
@@ -399,32 +393,21 @@ func _apply_font_size_recursive(node: Node) -> void:
 
 
 func _apply_daily_goal_typography() -> void:
-	for label in [
-		daily_goal_title_label,
-		primary_goal_label,
-		primary_goal_progress_label,
-		primary_goal_cta_label,
-		side_goals_label,
-		next_step_label,
-	]:
+	UIStyle.style_label(daily_goal_title_label, "title")
+	for label in [primary_goal_label, primary_goal_progress_label, primary_goal_cta_label, side_goals_label, next_step_label]:
 		label.add_theme_font_size_override("font_size", 12)
 
 
 func _apply_target_card_typography() -> void:
-	for label in [
-		target_label,
-		build_gap_label,
-		next_target_label,
-		codex_label,
-	]:
-		label.add_theme_font_size_override("font_size", 11)
+	for label in [target_label, build_gap_label, next_target_label, codex_label]:
+		label.add_theme_font_size_override("font_size", 12)
 
 
 func _apply_combat_highlight_style() -> void:
 	combat_highlight_title.add_theme_font_size_override("font_size", 20)
 	combat_highlight_subtitle.add_theme_font_size_override("font_size", 14)
 	combat_highlight_detail.add_theme_font_size_override("font_size", 12)
-	_apply_panel_tint(combat_highlight_panel, Color(0.18, 0.22, 0.30, 0.92))
+	UIStyle.style_panel(combat_highlight_panel, "CombatHighlightPanel")
 	combat_highlight_panel.visible = false
 
 
@@ -636,3 +619,47 @@ func _load_runtime_texture(resource_path: String) -> Texture2D:
 
 func get_resource_collect_target() -> Vector2:
 	return resource_label.get_global_rect().get_center()
+
+
+func _apply_review_visual_style() -> void:
+	UI_STYLE.style_panel(top_bar, "TopBar")
+	UI_STYLE.style_panel(battle_card, "BattleCard")
+	UI_STYLE.style_panel(target_card, "TargetCard")
+	UI_STYLE.style_panel(daily_goal_card, "DailyGoalCard")
+	UI_STYLE.style_panel(equip_card, "EquipCard")
+	UI_STYLE.style_panel(loot_card, "LootCard")
+	UI_STYLE.style_panel(drop_toast, "DropToast")
+	UI_STYLE.style_panel($BattleCard/SkillIconPanel, "SkillIconPanel")
+	_apply_battle_safe_frame_style()
+
+	UI_STYLE.style_label(resource_label, "muted")
+	UI_STYLE.style_label(run_label, "muted")
+	run_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	UI_STYLE.style_label(node_label, "heading")
+	UI_STYLE.style_label(state_label, "accent")
+	UI_STYLE.style_label(hp_label, "muted")
+	UI_STYLE.style_label(skill_label, "warning")
+	UI_STYLE.style_label(focus_label, "muted")
+	UI_STYLE.style_label($TargetCard/TargetTitleLabel, "title")
+	UI_STYLE.style_label($LootCard/LootTitleLabel, "title")
+	UI_STYLE.style_label($EquipCard/EquipTitleLabel, "title")
+	UI_STYLE.style_label($DropToast/ToastTitle, "title")
+	UI_STYLE.style_progress_bar(hp_bar, UI_STYLE.COLOR_BLUE)
+
+	for slot_title in [
+		$EquipCard/WeaponSlot/Title,
+		$EquipCard/HelmetSlot/Title,
+		$EquipCard/ArmorSlot/Title,
+		$EquipCard/GlovesSlot/Title,
+	]:
+		UI_STYLE.style_label(slot_title, "tiny")
+
+	for slot_value in [weapon_label, helmet_label, armor_label, gloves_label]:
+		slot_value.add_theme_font_size_override("font_size", 11)
+		slot_value.add_theme_color_override("font_color", UI_STYLE.COLOR_TEXT)
+
+	highlight_label.add_theme_color_override("font_color", UI_STYLE.COLOR_GOLD)
+	loot_label.add_theme_color_override("font_color", UI_STYLE.COLOR_TEXT_DIM)
+	toast_title.add_theme_font_size_override("font_size", 14)
+	toast_label.add_theme_font_size_override("font_size", 12)
+	toast_label.add_theme_color_override("font_color", UIStyle.COLOR_TEXT)
