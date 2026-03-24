@@ -1,7 +1,5 @@
 extends Control
 
-const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
-
 @onready var title_label: Label = $Panel/TitleLabel
 @onready var threshold_button: Button = $Panel/ThresholdButton
 @onready var summary_label: Label = $Panel/SummaryLabel
@@ -37,7 +35,7 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	title_label.text = "背包"
+	title_label.text = "背包与装备管理"
 	threshold_button.text = GameManager.get_auto_salvage_label()
 	summary_label.text = _build_inventory_summary()
 
@@ -138,8 +136,9 @@ func _find_selected_item() -> Dictionary:
 
 
 func _format_item_short(item: Dictionary) -> String:
+	var rarity_display: String = GameManager.get_rarity_display_name(String(item.get("rarity", "common")))
 	return "[%s] %s (%.1f)" % [
-		String(item.get("rarity", "common")),
+		rarity_display,
 		String(item.get("name", "未知装备")),
 		float(item.get("score", 0.0)),
 	]
@@ -154,11 +153,11 @@ func _build_inventory_summary() -> String:
 			locked_count += 1
 
 	var equipped_count: int = 0
-	for slot in ["weapon", "helmet", "armor", "gloves"]:
+	for slot in GameManager.EQUIPMENT_SLOT_ORDER:
 		if not GameManager.get_equipped_item(slot).is_empty():
 			equipped_count += 1
 
-	return "库存 %d 件 | 锁定 %d 件 | 已装备 %d/4\n当前刷图关注: %s" % [
+	return "库存 %d 件 | 锁定 %d 件 | 已装备 %d/9\n当前刷图关注: %s" % [
 		inventory_items.size(),
 		locked_count,
 		equipped_count,
@@ -193,27 +192,18 @@ func _get_action_hint_color(item: Dictionary) -> Color:
 
 
 func _get_rarity_color(rarity: String) -> Color:
-	match rarity:
-		"legendary":
-			return Color(1.0, 0.72, 0.28, 1.0)
-		"epic":
-			return Color(0.84, 0.52, 1.0, 1.0)
-		"rare":
-			return Color(0.46, 0.74, 1.0, 1.0)
-		_:
-			return Color(0.88, 0.90, 0.94, 1.0)
+	return GameManager.get_rarity_color(rarity)
 
 
 func _apply_visual_style() -> void:
-	UI_STYLE.style_label(title_label, "title")
-	UI_STYLE.style_label(summary_label, "accent")
-	UI_STYLE.style_label(list_section_label, "heading")
-	UI_STYLE.style_label(detail_section_label, "heading")
-	UI_STYLE.style_label(action_section_label, "warning")
-	UI_STYLE.style_label(action_hint_label, "muted")
-	UI_STYLE.style_item_list(inventory_list)
-	_update_button_style(close_button, UI_STYLE.COLOR_TEXT_DIM)
+	title_label.add_theme_color_override("font_color", Color(0.98, 0.92, 0.72, 1.0))
+	summary_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.96, 1.0))
+	list_section_label.add_theme_color_override("font_color", Color(0.66, 0.82, 1.0, 1.0))
+	detail_section_label.add_theme_color_override("font_color", Color(0.72, 0.90, 1.0, 1.0))
+	action_section_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54, 1.0))
+	action_hint_label.add_theme_color_override("font_color", Color(0.78, 0.82, 0.88, 1.0))
+	_update_button_style(close_button, Color(0.50, 0.50, 0.56, 1.0))
 
 
 func _update_button_style(button: Button, color: Color) -> void:
-	UI_STYLE.style_button(button, color, button.disabled)
+	button.self_modulate = color

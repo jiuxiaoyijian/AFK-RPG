@@ -3,6 +3,7 @@ extends Node
 const SAVE_SLOT_COUNT := 3
 const DEFAULT_SAVE_SLOT := 1
 const SAVE_PATH_TEMPLATE := "user://desktop_idle_save_%d.json"
+const CURRENT_SAVE_VERSION := 2
 
 
 func _ready() -> void:
@@ -27,6 +28,7 @@ func save_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	if not _is_valid_slot(slot):
 		return false
 	var payload: Dictionary = {
+		"save_version": CURRENT_SAVE_VERSION,
 		"current_chapter_id": GameManager.current_chapter_id,
 		"current_node_id": GameManager.current_node_id,
 		"stable_node_id": GameManager.stable_node_id,
@@ -67,6 +69,12 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	if not payload is Dictionary:
 		return false
 
+	var saved_version: int = int(payload.get("save_version", 0))
+	if saved_version < CURRENT_SAVE_VERSION:
+		push_warning("SaveManager: 检测到旧版存档 (v%d < v%d)，执行清空重置" % [saved_version, CURRENT_SAVE_VERSION])
+		_wipe_save(slot)
+		return false
+
 	GameManager.current_chapter_id = String(payload.get("current_chapter_id", GameManager.current_chapter_id))
 	GameManager.current_node_id = String(payload.get("current_node_id", GameManager.current_node_id))
 	GameManager.stable_node_id = String(payload.get("stable_node_id", GameManager.stable_node_id))
@@ -74,7 +82,15 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	GameManager.current_run_kills = int(payload.get("current_run_kills", GameManager.current_run_kills))
 	GameManager.current_run_clears = int(payload.get("current_run_clears", GameManager.current_run_clears))
 	GameManager.inventory = payload.get("inventory", GameManager.inventory)
-	GameManager.equipped_items = payload.get("equipped_items", GameManager.equipped_items)
+
+	var loaded_equip: Variant = payload.get("equipped_items", null)
+	if loaded_equip is Dictionary:
+		for slot_key in GameManager.EQUIPMENT_SLOT_ORDER:
+			if loaded_equip.has(slot_key):
+				GameManager.equipped_items[slot_key] = loaded_equip[slot_key]
+			else:
+				GameManager.equipped_items[slot_key] = {}
+
 	MetaProgressionSystem.load_save_data(payload)
 	LootCodexSystem.load_save_data(payload)
 	DailyGoalSystem.load_save_data(payload)
@@ -117,3 +133,10 @@ func _get_save_path(slot: int) -> String:
 
 func _is_valid_slot(slot: int) -> bool:
 	return slot >= 1 and slot <= SAVE_SLOT_COUNT
+
+
+func _wipe_save(slot: int) -> void:
+	var path: String = _get_save_path(slot)
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	push_warning("SaveManager: 已删除档位 %d 的旧版存档" % slot)

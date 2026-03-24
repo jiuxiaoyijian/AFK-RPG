@@ -30,6 +30,7 @@ var bleed_dot_bonus_percent: float = 0.0
 var execute_threshold: float = 0.0
 var chain_count_bonus: int = 0
 var chain_damage_bonus_percent: float = 0.0
+var combat_params: Dictionary = {}
 
 var core_skill_id: String = "core_whirlwind"
 var core_skill_name: String = "御风道"
@@ -113,6 +114,18 @@ func setup_from_skill(skill_data: Dictionary) -> void:
 	chain_count_bonus = int(round(float(bonuses.get("chain_count_bonus", 0.0))))
 	chain_damage_bonus_percent = float(bonuses.get("chain_damage_percent", 0.0))
 
+	combat_params = {
+		"weapon_damage": maxf(attack, float(bonuses.get("weapon_damage", 0.0)) + attack),
+		"primary_stat": float(bonuses.get("primary_stat", 0.0)),
+		"crit_rate": float(bonuses.get("crit_rate", 0.0)),
+		"crit_damage": float(bonuses.get("crit_damage", 0.5)),
+		"skill_damage_percent": float(bonuses.get("skill_damage_percent", 0.0)),
+		"elemental_damage_percent": float(bonuses.get("elemental_damage_percent", 0.0)),
+		"set_bonus_percent": float(bonuses.get("set_bonus_percent", 0.0)),
+		"legendary_effect_percent": float(bonuses.get("legendary_effect_percent", 0.0)),
+		"elite_damage_percent": float(bonuses.get("elite_damage_percent", 0.0)),
+	}
+
 	current_hp = max_hp
 	hp_bar.max_value = max_hp
 	hp_bar.value = current_hp
@@ -161,8 +174,15 @@ func _physics_process(delta: float) -> void:
 
 
 func _basic_attack(enemy: Node) -> void:
-	var raw_damage: float = DamageResolverScript.build_damage(attack, 1.0)
-	enemy.take_damage(raw_damage, [], {"source": "basic"})
+	var params: Dictionary = combat_params.duplicate()
+	params["weapon_damage"] = attack
+	var is_crit: bool = DamageResolverScript.is_critical_hit(params.get("crit_rate", 0.0))
+	var raw_damage: float
+	if is_crit:
+		raw_damage = DamageResolverScript.build_damage(attack, 1.0) * (1.0 + float(params.get("crit_damage", 0.5)))
+	else:
+		raw_damage = DamageResolverScript.build_damage(attack, 1.0)
+	enemy.take_damage(raw_damage, [], {"source": "basic", "is_crit": is_crit})
 
 
 func _cast_core_skill() -> void:
@@ -175,7 +195,7 @@ func _cast_core_skill() -> void:
 			if target and is_instance_valid(target):
 				_show_cast_feedback("裂伤!")
 				_emit_core_highlight("血劫断命", "血线与断命线同步抬升", "观察目标是否已经进入断命时机")
-				var raw_damage: float = DamageResolverScript.build_damage(attack, 1.6, core_bonus_percent + core_damage_bonus_percent)
+				var raw_damage: float = _calc_core_damage(1.6)
 				target.take_damage(raw_damage, ["bleed"], {
 					"source": "bleed",
 					"bleed_dot_percent": bleed_dot_bonus_percent,
@@ -191,7 +211,7 @@ func _cast_core_skill() -> void:
 			_cast_chain_lightning()
 		_:
 			if target and is_instance_valid(target):
-				var raw_damage: float = DamageResolverScript.build_damage(attack, 1.3, core_bonus_percent + core_damage_bonus_percent)
+				var raw_damage: float = _calc_core_damage(1.3)
 				target.take_damage(raw_damage, [], {"source": "core"})
 
 
@@ -200,7 +220,7 @@ func _cast_whirlwind() -> void:
 	for node in enemies:
 		if is_instance_valid(node):
 			if global_position.distance_to(node.global_position) <= whirlwind_radius:
-				var raw_damage: float = DamageResolverScript.build_damage(attack, 1.2, core_bonus_percent + core_damage_bonus_percent)
+				var raw_damage: float = _calc_core_damage(1.2)
 				node.take_damage(raw_damage, [], {"source": "whirlwind"})
 
 
@@ -217,9 +237,15 @@ func _cast_chain_lightning() -> void:
 	var remaining_hits: int = mini(3 + chain_count_bonus, enemies.size())
 	for i in remaining_hits:
 		var enemy: Node = enemies[i]
-		var multiplier: float = (1.4 - (float(i) * 0.2)) * (1.0 + chain_damage_bonus_percent + core_damage_bonus_percent)
-		var raw_damage: float = DamageResolverScript.build_damage(attack, multiplier, core_bonus_percent)
+		var chain_mult: float = 1.4 - (float(i) * 0.2)
+		var raw_damage: float = _calc_core_damage(chain_mult * (1.0 + chain_damage_bonus_percent))
 		enemy.take_damage(raw_damage, [], {"source": "chain_lightning"})
+
+
+func _calc_core_damage(skill_multiplier: float) -> float:
+	var params: Dictionary = combat_params.duplicate()
+	params["weapon_damage"] = attack * skill_multiplier * (1.0 + core_bonus_percent + core_damage_bonus_percent)
+	return DamageResolverScript.calculate_damage(params)
 
 
 func take_damage(raw_damage: float, attacker_defense: float = 0.0) -> void:

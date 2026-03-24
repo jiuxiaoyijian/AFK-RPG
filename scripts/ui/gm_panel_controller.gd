@@ -1,8 +1,7 @@
 extends Control
 
-const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const RESOURCE_IDS := ["gold", "scrap", "core", "legend_shard"]
-const RARITY_IDS := ["common", "uncommon", "rare", "epic", "legendary", "ancient"]
+const RARITY_IDS := ["common", "uncommon", "rare", "epic", "set", "legendary", "ancient"]
 
 @onready var equipment_generator: Node = $"../../Systems/EquipmentGeneratorSystem"
 @onready var title_label: Label = $Panel/TitleLabel
@@ -25,13 +24,13 @@ const RARITY_IDS := ["common", "uncommon", "rare", "epic", "legendary", "ancient
 @onready var unlock_codex_button: Button = $Panel/ProgressSection/UnlockCodexButton
 @onready var unlock_all_button: Button = $Panel/ProgressSection/UnlockAllButton
 @onready var max_resources_button: Button = $Panel/ProgressSection/MaxResourcesButton
-@onready var reset_resources_button: Button = $Panel/ResetResourcesButton
-@onready var clear_inventory_button: Button = $Panel/ClearInventoryButton
-@onready var clear_drop_stats_button: Button = $Panel/ClearDropStatsButton
-@onready var save_slot_option: OptionButton = $Panel/SaveSlotOption
-@onready var save_button: Button = $Panel/SaveButton
-@onready var load_button: Button = $Panel/LoadButton
-@onready var slot_hint_label: Label = $Panel/SlotHintLabel
+@onready var reset_resources_button: Button = $Panel/ProgressSection/ResetResourcesButton
+@onready var clear_inventory_button: Button = $Panel/ProgressSection/ClearInventoryButton
+@onready var clear_drop_stats_button: Button = $Panel/ProgressSection/ClearDropStatsButton
+@onready var save_slot_option: OptionButton = $Panel/ProgressSection/SaveSlotOption
+@onready var save_button: Button = $Panel/ProgressSection/SaveButton
+@onready var load_button: Button = $Panel/ProgressSection/LoadButton
+@onready var slot_hint_label: Label = $Panel/ProgressSection/SlotHintLabel
 @onready var action_log_label: Label = $Panel/ActionLogLabel
 
 
@@ -75,7 +74,7 @@ func open_panel() -> void:
 
 
 func _refresh(_unused: Variant = null) -> void:
-	title_label.text = "GM 调试"
+	title_label.text = "GM 调试面板"
 	summary_label.text = "节点 %s | 库存 %d 件 | 香火钱 %d | 祠灰 %d | 灵核 %d | 真意残片 %d" % [
 		GameManager.current_node_id,
 		GameManager.get_inventory_count(),
@@ -301,16 +300,10 @@ func _push_action_log(text: String) -> void:
 
 
 func _apply_visual_style() -> void:
-	UI_STYLE.style_label(title_label, "title")
-	UI_STYLE.style_label(summary_label, "accent")
-	UI_STYLE.style_label(action_log_label, "success")
-	UI_STYLE.style_label(slot_hint_label, "muted")
-	UI_STYLE.style_option_button(resource_option, UI_STYLE.COLOR_BLUE)
-	UI_STYLE.style_option_button(base_option, UI_STYLE.COLOR_BLUE)
-	UI_STYLE.style_option_button(rarity_option, UI_STYLE.COLOR_GOLD)
-	UI_STYLE.style_option_button(node_option, UI_STYLE.COLOR_BLUE)
-	UI_STYLE.style_option_button(save_slot_option, UI_STYLE.COLOR_TEXT_DIM)
-	UI_STYLE.style_check_box(force_legendary_check, UI_STYLE.COLOR_GOLD)
+	title_label.add_theme_color_override("font_color", Color(0.98, 0.92, 0.72, 1.0))
+	summary_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.96, 1.0))
+	action_log_label.add_theme_color_override("font_color", Color(0.56, 0.96, 0.70, 1.0))
+	slot_hint_label.add_theme_color_override("font_color", Color(0.82, 0.86, 0.96, 1.0))
 	for button in [
 		close_button,
 		resource_add_button,
@@ -328,16 +321,4 @@ func _apply_visual_style() -> void:
 		save_button,
 		load_button,
 	]:
-		UI_STYLE.style_button(button, _get_button_accent(button.name), button.disabled)
-
-
-func _get_button_accent(button_name: String) -> Color:
-	if button_name.contains("Close"):
-		return UI_STYLE.COLOR_TEXT_DIM
-	if button_name.contains("Reset") or button_name.contains("Clear"):
-		return UI_STYLE.COLOR_RED
-	if button_name.contains("Unlock") or button_name.contains("Max"):
-		return UI_STYLE.COLOR_GOLD
-	if button_name.contains("Save") or button_name.contains("Load") or button_name.contains("Jump") or button_name.contains("Restart"):
-		return UI_STYLE.COLOR_BLUE
-	return UI_STYLE.COLOR_GREEN
+		button.self_modulate = Color(0.34, 0.50, 0.84, 1.0)

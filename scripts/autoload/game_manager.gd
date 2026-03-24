@@ -139,12 +139,36 @@ var equipped_items: Dictionary = {
 	"helmet": {},
 	"armor": {},
 	"gloves": {},
+	"legs": {},
+	"boots": {},
+	"accessory1": {},
+	"accessory2": {},
+	"belt": {},
+}
+const EQUIPMENT_SLOT_ORDER := ["weapon", "helmet", "armor", "gloves", "legs", "boots", "accessory1", "accessory2", "belt"]
+const RARITY_DISPLAY_NAMES := {
+	"common": "凡品",
+	"uncommon": "灵品",
+	"rare": "玄品",
+	"epic": "真意",
+	"set": "道统",
+	"legendary": "远古真意",
+	"ancient": "天道真意",
+}
+const RARITY_COLORS := {
+	"common": Color(0.62, 0.62, 0.62),
+	"uncommon": Color(0.12, 0.72, 0.12),
+	"rare": Color(0.24, 0.48, 1.0),
+	"epic": Color(1.0, 0.55, 0.0),
+	"set": Color(0.0, 0.85, 0.35),
+	"legendary": Color(1.0, 0.84, 0.0),
+	"ancient": Color(1.0, 0.2, 0.2),
 }
 var research_levels: Dictionary = {}
 var auto_salvage_below_rarity: String = "rare"
 var last_loot_summary: String = "暂无掉落"
 var last_loot_highlight: Dictionary = {}
-const SALVAGE_THRESHOLDS := ["common", "uncommon", "rare", "epic", "legendary"]
+const SALVAGE_THRESHOLDS := ["common", "uncommon", "rare", "epic", "set", "legendary", "ancient"]
 const RESEARCH_META_KEYS := {
 	"offline_efficiency_bonus": 0.0,
 	"max_offline_seconds_bonus": 0.0,
@@ -207,16 +231,35 @@ func get_rarity_rank(rarity: String) -> int:
 			return 3
 		"epic":
 			return 4
-		"legendary":
+		"set":
 			return 5
-		"ancient":
+		"legendary":
 			return 6
+		"ancient":
+			return 7
 		_:
 			return 0
 
 
+func get_rarity_display_name(rarity: String) -> String:
+	return RARITY_DISPLAY_NAMES.get(rarity, rarity)
+
+
+func get_rarity_color(rarity: String) -> Color:
+	return RARITY_COLORS.get(rarity, Color.WHITE)
+
+
 func get_total_combat_bonuses() -> Dictionary:
 	var totals: Dictionary = {
+		"weapon_damage": 0.0,
+		"primary_stat": 0.0,
+		"crit_rate": 0.0,
+		"crit_damage": 0.5,
+		"skill_damage_percent": 0.0,
+		"elemental_damage_percent": 0.0,
+		"set_bonus_percent": 0.0,
+		"legendary_effect_percent": 0.0,
+		"elite_damage_percent": 0.0,
 		"attack_flat": 0.0,
 		"hp_flat": 0.0,
 		"defense_flat": 0.0,
@@ -229,6 +272,11 @@ func get_total_combat_bonuses() -> Dictionary:
 		"execute_threshold": 0.0,
 		"chain_count_bonus": 0.0,
 		"chain_damage_percent": 0.0,
+		"all_resist": 0.0,
+		"armor_flat": 0.0,
+		"life_regen": 0.0,
+		"move_speed_percent": 0.0,
+		"resource_cost_reduction": 0.0,
 	}
 
 	for item in equipped_items.values():
@@ -400,16 +448,17 @@ func process_loot_item(item: Dictionary) -> Dictionary:
 		"item_name": _format_item_name(item),
 	}
 	var slot: String = String(item.get("slot", ""))
+	var target_slot: String = _resolve_equip_slot(slot, item)
 	var should_equip: bool = false
 
-	if equipped_items.has(slot):
-		var equipped_item: Dictionary = equipped_items[slot]
+	if equipped_items.has(target_slot):
+		var equipped_item: Dictionary = equipped_items[target_slot]
 		if equipped_item.is_empty() or _get_item_score(item) > _get_item_score(equipped_item):
 			should_equip = true
 
 	if should_equip:
-		var old_item: Dictionary = equipped_items.get(slot, {})
-		equipped_items[slot] = item
+		var old_item: Dictionary = equipped_items.get(target_slot, {})
+		equipped_items[target_slot] = item
 		result["action"] = "equip"
 		if not old_item.is_empty():
 			_store_or_salvage_item(old_item, result)
@@ -425,9 +474,25 @@ func process_loot_item(item: Dictionary) -> Dictionary:
 	return result
 
 
+func _resolve_equip_slot(slot: String, item: Dictionary) -> String:
+	if slot == "accessory":
+		var a1: Dictionary = equipped_items.get("accessory1", {})
+		var a2: Dictionary = equipped_items.get("accessory2", {})
+		if a1.is_empty():
+			return "accessory1"
+		if a2.is_empty():
+			return "accessory2"
+		if _get_item_score(item) > _get_item_score(a1) and _get_item_score(a1) <= _get_item_score(a2):
+			return "accessory1"
+		if _get_item_score(item) > _get_item_score(a2):
+			return "accessory2"
+		return "accessory1"
+	return slot
+
+
 func get_equipment_summary() -> String:
 	var lines: Array[String] = []
-	for slot in ["weapon", "helmet", "armor", "gloves"]:
+	for slot in EQUIPMENT_SLOT_ORDER:
 		var item: Dictionary = equipped_items.get(slot, {})
 		if item.is_empty():
 			lines.append("%s: --" % slot)
@@ -519,8 +584,9 @@ func equip_inventory_item(item_id: String) -> void:
 			continue
 
 		var slot: String = String(item.get("slot", ""))
-		var old_item: Dictionary = equipped_items.get(slot, {})
-		equipped_items[slot] = item
+		var target_slot: String = _resolve_equip_slot(slot, item)
+		var old_item: Dictionary = equipped_items.get(target_slot, {})
+		equipped_items[target_slot] = item
 		inventory.remove_at(i)
 		if not old_item.is_empty():
 			inventory.append(old_item)
@@ -660,7 +726,9 @@ func _get_item_score(item: Dictionary) -> float:
 
 
 func _format_item_name(item: Dictionary) -> String:
-	return "[%s] %s" % [String(item.get("rarity", "common")), String(item.get("name", "未知装备"))]
+	var rarity_key: String = String(item.get("rarity", "common"))
+	var display_rarity: String = RARITY_DISPLAY_NAMES.get(rarity_key, rarity_key)
+	return "[%s] %s" % [display_rarity, String(item.get("name", "未知装备"))]
 
 
 func record_kill() -> void:

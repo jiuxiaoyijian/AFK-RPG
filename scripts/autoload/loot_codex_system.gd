@@ -595,7 +595,7 @@ func _get_affix_detail_text(affix_id: String) -> String:
 	lines.append(String(affix.get("name", affix_id)))
 	lines.append("分类: 真意")
 	lines.append("状态: %s" % ("已发现" if discovered_affix_ids.has(affix_id) else "未发现"))
-	lines.append("真意类型: %s" % String(affix.get("affix_type", "")))
+	lines.append("乘区分类: %s" % String(affix.get("bucket", affix.get("affix_type", ""))))
 	lines.append("适配道统: %s" % _format_array(affix.get("archetype_tags", []), "通用"))
 	lines.append("作用属性: %s" % String(affix.get("stat_key", "")))
 	lines.append("数值范围: %.2f - %.2f" % [float(affix.get("value_min", 0.0)), float(affix.get("value_max", 0.0))])
@@ -680,8 +680,7 @@ func _score_recommendation_node(
 ) -> float:
 	var equipment_rules: Dictionary = drop_profile.get("equipment_rules", {})
 	var score: float = float(drop_profile.get("equipment_rolls", 1)) * float(drop_profile.get("equipment_chance", 0.0)) * 100.0
-	score += float(int(equipment_rules.get("max_affix_count", 1))) * 6.0
-	score += float(int(equipment_rules.get("item_level_max", 1))) * 2.0
+	score += float(int(equipment_rules.get("item_level_max", 1))) * 4.0
 	if bool(equipment_rules.get("guaranteed_legendary_affix", false)):
 		score += 30.0
 	if bool(equipment_rules.get("prefer_current_build", false)):
@@ -868,14 +867,13 @@ func _estimate_legendary_probability_per_item(target_legendary: Dictionary, drop
 
 
 func _get_expected_affix_hit_probability(drop_profile: Dictionary, single_roll_probability: float) -> float:
-	var equipment_rules: Dictionary = drop_profile.get("equipment_rules", {})
-	var max_affix_count: int = int(equipment_rules.get("max_affix_count", 1))
+	var rarity_affix_counts: Dictionary = {"common": 1, "uncommon": 2, "rare": 3, "epic": 4, "set": 4, "legendary": 5, "ancient": 6}
 	var rarity_probabilities: Dictionary = _get_allowed_rarity_probabilities(drop_profile)
 	var expected_probability: float = 0.0
 	for rarity_key in rarity_probabilities.keys():
 		var rarity: String = String(rarity_key)
 		var rarity_probability: float = float(rarity_probabilities.get(rarity_key, 0.0))
-		var affix_count: int = mini(max_affix_count, 1 + int(GameManager.get_rarity_rank(rarity) / 2.0))
+		var affix_count: int = int(rarity_affix_counts.get(rarity, 1))
 		expected_probability += rarity_probability * (1.0 - pow(1.0 - single_roll_probability, affix_count))
 	return clampf(expected_probability, 0.0, 1.0)
 
@@ -887,9 +885,10 @@ func _get_allowed_rarity_probabilities(drop_profile: Dictionary) -> Dictionary:
 		"common": 50.0,
 		"uncommon": 30.0,
 		"rare": 14.0,
-		"epic": 5.0,
+		"epic": 4.0,
+		"set": 1.0,
 		"legendary": 1.0,
-		"ancient": 1.0,
+		"ancient": 0.5,
 	}
 	var probabilities: Dictionary = {}
 	var total_weight: float = 0.0

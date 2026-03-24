@@ -1,6 +1,5 @@
 extends Control
 
-const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const CORE_SKILL_ICON_PATHS := {
 	"core_whirlwind": "res://assets/generated/afk_rpg_formal/icons/school_yufengdao_highlight.png",
 	"core_deep_wound": "res://assets/generated/afk_rpg_formal/icons/school_xuejiedao_highlight.png",
@@ -12,6 +11,22 @@ const EQUIPMENT_ICON_PATHS := {
 	"helmet": "res://assets/generated/icons/equip_helmet.png",
 	"armor": "res://assets/generated/icons/equip_armor.png",
 	"gloves": "res://assets/generated/icons/equip_gloves.png",
+	"legs": "res://assets/generated/icons/equip_armor.png",
+	"boots": "res://assets/generated/icons/equip_gloves.png",
+	"accessory1": "res://assets/generated/icons/equip_weapon.png",
+	"accessory2": "res://assets/generated/icons/equip_weapon.png",
+	"belt": "res://assets/generated/icons/equip_armor.png",
+}
+const SLOT_DISPLAY_NAMES := {
+	"weapon": "兵器",
+	"helmet": "头冠",
+	"armor": "护甲",
+	"gloves": "手套",
+	"legs": "腿甲",
+	"boots": "靴子",
+	"accessory1": "佩饰1",
+	"accessory2": "佩饰2",
+	"belt": "腰带",
 }
 const HUD_RESULT_CARD_PATH := "res://assets/generated/afk_rpg_formal/ui/result_card_template_common.png"
 const HUD_RARITY_FRAME_PATHS := {
@@ -19,6 +34,7 @@ const HUD_RARITY_FRAME_PATHS := {
 	"uncommon": "res://assets/generated/ui/frame_common.png",
 	"rare": "res://assets/generated/ui/frame_rare.png",
 	"epic": "res://assets/generated/ui/frame_epic.png",
+	"set": "res://assets/generated/ui/frame_epic.png",
 	"legendary": "res://assets/generated/ui/frame_legendary.png",
 	"ancient": "res://assets/generated/ui/frame_ancient.png",
 }
@@ -32,7 +48,6 @@ const CARD_SIDE_MARGIN := 16.0
 
 @onready var resource_label: Label = $TopBar/ResourceLabel
 @onready var run_label: Label = $TopBar/RunLabel
-@onready var top_bar: Panel = $TopBar
 @onready var combat_highlight_panel: Panel = $CombatHighlightPanel
 @onready var combat_highlight_title: Label = $CombatHighlightPanel/CombatHighlightTitle
 @onready var combat_highlight_subtitle: Label = $CombatHighlightPanel/CombatHighlightSubtitle
@@ -61,18 +76,8 @@ const CARD_SIDE_MARGIN := 16.0
 @onready var next_step_label: Label = $DailyGoalCard/NextStepLabel
 @onready var equip_card: Panel = $EquipCard
 @onready var equip_card_art: TextureRect = $EquipCard/CardArt
-@onready var weapon_icon: TextureRect = $EquipCard/WeaponSlot/Icon
-@onready var weapon_frame: TextureRect = $EquipCard/WeaponSlot/Frame
-@onready var helmet_icon: TextureRect = $EquipCard/HelmetSlot/Icon
-@onready var helmet_frame: TextureRect = $EquipCard/HelmetSlot/Frame
-@onready var armor_icon: TextureRect = $EquipCard/ArmorSlot/Icon
-@onready var armor_frame: TextureRect = $EquipCard/ArmorSlot/Frame
-@onready var gloves_icon: TextureRect = $EquipCard/GlovesSlot/Icon
-@onready var gloves_frame: TextureRect = $EquipCard/GlovesSlot/Frame
-@onready var weapon_label: Label = $EquipCard/WeaponSlot/Value
-@onready var helmet_label: Label = $EquipCard/HelmetSlot/Value
-@onready var armor_label: Label = $EquipCard/ArmorSlot/Value
-@onready var gloves_label: Label = $EquipCard/GlovesSlot/Value
+var equip_slot_labels: Dictionary = {}
+var equip_slot_nodes: Dictionary = {}
 @onready var loot_card: Panel = $LootCard
 @onready var loot_card_art: TextureRect = $LootCard/CardArt
 @onready var loot_icon: TextureRect = $LootCard/LootIcon
@@ -90,11 +95,11 @@ var combat_highlight_tween: Tween
 
 
 func _ready() -> void:
-	target_card.visible = true
-	battle_safe_frame.visible = true
+	target_card.visible = false
+	battle_safe_frame.visible = false
 	_apply_card_art()
 	_apply_slot_icons()
-	_apply_review_visual_style()
+	_apply_battle_safe_frame_style()
 	_apply_compact_typography()
 	get_viewport().size_changed.connect(_apply_hud_layout)
 	EventBus.node_changed.connect(_on_node_changed)
@@ -227,10 +232,9 @@ func _on_daily_goals_changed() -> void:
 
 
 func _on_equipment_changed() -> void:
-	_update_equipped_slot("weapon", weapon_label)
-	_update_equipped_slot("helmet", helmet_label)
-	_update_equipped_slot("armor", armor_label)
-	_update_equipped_slot("gloves", gloves_label)
+	for slot_id in GameManager.EQUIPMENT_SLOT_ORDER:
+		if equip_slot_labels.has(slot_id):
+			_update_equipped_slot(slot_id, equip_slot_labels[slot_id])
 	_refresh_target_card()
 
 
@@ -271,37 +275,19 @@ func _on_combat_highlight_requested(highlight_data: Dictionary) -> void:
 
 func _update_equipped_slot(slot: String, label: Label) -> void:
 	var item: Dictionary = GameManager.get_equipped_item(slot)
-	var frame: TextureRect = _get_slot_frame(slot)
+	var display_name: String = SLOT_DISPLAY_NAMES.get(slot, slot)
 	if item.is_empty():
-		label.text = "--"
-		label.add_theme_color_override("font_color", Color(0.72, 0.74, 0.78, 1.0))
-		if frame != null:
-			frame.texture = _load_runtime_texture(HUD_RARITY_FRAME_PATHS["common"])
+		label.text = "%s: --" % display_name
+		label.add_theme_color_override("font_color", Color(0.52, 0.54, 0.58, 1.0))
 		return
-	label.text = "%s\n%.1f" % [
-		String(item.get("name", "--")),
-		float(item.get("score", 0.0)),
-	]
 	var rarity: String = String(item.get("rarity", "common"))
-	label.add_theme_color_override("font_color", _get_rarity_color(rarity))
-	if frame != null:
-		frame.texture = _load_runtime_texture(String(HUD_RARITY_FRAME_PATHS.get(rarity, HUD_RARITY_FRAME_PATHS["common"])))
+	var rarity_display: String = GameManager.get_rarity_display_name(rarity)
+	label.text = "%s: %s" % [display_name, String(item.get("name", "--"))]
+	label.add_theme_color_override("font_color", GameManager.get_rarity_color(rarity))
 
 
 func _get_rarity_color(rarity: String) -> Color:
-	match rarity:
-		"uncommon":
-			return Color(0.48, 0.9, 0.46, 1.0)
-		"rare":
-			return Color(0.42, 0.7, 1.0, 1.0)
-		"epic":
-			return Color(0.8, 0.52, 1.0, 1.0)
-		"legendary":
-			return Color(1.0, 0.74, 0.28, 1.0)
-		"ancient":
-			return Color(1.0, 0.46, 0.3, 1.0)
-		_:
-			return Color(0.88, 0.88, 0.9, 1.0)
+	return GameManager.get_rarity_color(rarity)
 
 
 func _get_skill_color(skill_id: String) -> Color:
@@ -357,19 +343,28 @@ func _apply_compact_typography() -> void:
 
 
 func _apply_battle_safe_frame_style() -> void:
-	UIStyle.style_panel(battle_safe_frame, "BattleSafeFrame")
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.10, 0.18, 0.26, 0.05)
+	style.border_color = Color(0.54, 0.76, 0.96, 0.36)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	battle_safe_frame.add_theme_stylebox_override("panel", style)
 
 
 func _apply_hud_layout() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	combat_highlight_panel.position = Vector2((viewport_size.x - combat_highlight_panel.size.x) * 0.5, 66.0)
-	target_card.position = Vector2(viewport_size.x - target_card.size.x - CARD_SIDE_MARGIN, 118.0)
-	daily_goal_card.position = Vector2(target_card.position.x, target_card.position.y + target_card.size.y + 12.0)
-	daily_goal_card.size.x = target_card.size.x
-	battle_safe_frame.position = Vector2(8.0, viewport_size.y - 302.0)
-	battle_safe_frame.size = Vector2(viewport_size.x - 16.0, 196.0)
-	equip_card.position = battle_safe_frame.position + Vector2(8.0, 12.0)
-	loot_card.position = battle_safe_frame.position + Vector2(battle_safe_frame.size.x - loot_card.size.x - 8.0, 12.0)
+	equip_card.size = Vector2(350.0, 100.0)
+	equip_card.position = Vector2(CARD_SIDE_MARGIN, battle_card.position.y + battle_card.size.y + 16.0)
+	loot_card.position = Vector2(viewport_size.x - loot_card.size.x - CARD_SIDE_MARGIN, 72.0)
+	daily_goal_card.position = Vector2(loot_card.position.x, loot_card.position.y + loot_card.size.y + 12.0)
+	daily_goal_card.size.x = loot_card.size.x
 	drop_toast_base_position = Vector2(
 		(viewport_size.x - drop_toast.size.x) * 0.5,
 		64.0
@@ -393,21 +388,32 @@ func _apply_font_size_recursive(node: Node) -> void:
 
 
 func _apply_daily_goal_typography() -> void:
-	UIStyle.style_label(daily_goal_title_label, "title")
-	for label in [primary_goal_label, primary_goal_progress_label, primary_goal_cta_label, side_goals_label, next_step_label]:
+	for label in [
+		daily_goal_title_label,
+		primary_goal_label,
+		primary_goal_progress_label,
+		primary_goal_cta_label,
+		side_goals_label,
+		next_step_label,
+	]:
 		label.add_theme_font_size_override("font_size", 12)
 
 
 func _apply_target_card_typography() -> void:
-	for label in [target_label, build_gap_label, next_target_label, codex_label]:
-		label.add_theme_font_size_override("font_size", 12)
+	for label in [
+		target_label,
+		build_gap_label,
+		next_target_label,
+		codex_label,
+	]:
+		label.add_theme_font_size_override("font_size", 11)
 
 
 func _apply_combat_highlight_style() -> void:
 	combat_highlight_title.add_theme_font_size_override("font_size", 20)
 	combat_highlight_subtitle.add_theme_font_size_override("font_size", 14)
 	combat_highlight_detail.add_theme_font_size_override("font_size", 12)
-	UIStyle.style_panel(combat_highlight_panel, "CombatHighlightPanel")
+	_apply_panel_tint(combat_highlight_panel, Color(0.18, 0.22, 0.30, 0.92))
 	combat_highlight_panel.visible = false
 
 
@@ -455,24 +461,38 @@ func _build_side_goals_text(goals: Array) -> String:
 
 
 func _apply_slot_icons() -> void:
-	weapon_icon.texture = _load_runtime_texture(EQUIPMENT_ICON_PATHS["weapon"])
-	helmet_icon.texture = _load_runtime_texture(EQUIPMENT_ICON_PATHS["helmet"])
-	armor_icon.texture = _load_runtime_texture(EQUIPMENT_ICON_PATHS["armor"])
-	gloves_icon.texture = _load_runtime_texture(EQUIPMENT_ICON_PATHS["gloves"])
+	for old_slot_name in ["WeaponSlot", "HelmetSlot", "ArmorSlot", "GlovesSlot"]:
+		var old_node: Node = equip_card.get_node_or_null(old_slot_name)
+		if old_node:
+			old_node.queue_free()
+	var title_label_node: Node = equip_card.get_node_or_null("EquipTitleLabel")
+	if title_label_node and title_label_node is Label:
+		title_label_node.text = "装备概览 (9槽)"
 
+	equip_slot_labels.clear()
+	equip_slot_nodes.clear()
+	var columns := 3
+	var cell_w := 110.0
+	var cell_h := 22.0
+	var gap_x := 4.0
+	var gap_y := 2.0
+	var start_x := 8.0
+	var start_y := 28.0
 
-func _get_slot_frame(slot: String) -> TextureRect:
-	match slot:
-		"weapon":
-			return weapon_frame
-		"helmet":
-			return helmet_frame
-		"armor":
-			return armor_frame
-		"gloves":
-			return gloves_frame
-		_:
-			return null
+	for idx in GameManager.EQUIPMENT_SLOT_ORDER.size():
+		var slot_id: String = GameManager.EQUIPMENT_SLOT_ORDER[idx]
+		var col: int = idx % columns
+		var row: int = idx / columns
+		var slot_label := Label.new()
+		slot_label.name = "EqLabel_%s" % slot_id
+		slot_label.text = "%s: --" % SLOT_DISPLAY_NAMES.get(slot_id, slot_id)
+		slot_label.position = Vector2(start_x + col * (cell_w + gap_x), start_y + row * (cell_h + gap_y))
+		slot_label.size = Vector2(cell_w, cell_h)
+		slot_label.add_theme_font_size_override("font_size", 11)
+		slot_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.92))
+		slot_label.clip_text = true
+		equip_card.add_child(slot_label)
+		equip_slot_labels[slot_id] = slot_label
 
 
 func _apply_loot_icon() -> void:
@@ -619,47 +639,3 @@ func _load_runtime_texture(resource_path: String) -> Texture2D:
 
 func get_resource_collect_target() -> Vector2:
 	return resource_label.get_global_rect().get_center()
-
-
-func _apply_review_visual_style() -> void:
-	UI_STYLE.style_panel(top_bar, "TopBar")
-	UI_STYLE.style_panel(battle_card, "BattleCard")
-	UI_STYLE.style_panel(target_card, "TargetCard")
-	UI_STYLE.style_panel(daily_goal_card, "DailyGoalCard")
-	UI_STYLE.style_panel(equip_card, "EquipCard")
-	UI_STYLE.style_panel(loot_card, "LootCard")
-	UI_STYLE.style_panel(drop_toast, "DropToast")
-	UI_STYLE.style_panel($BattleCard/SkillIconPanel, "SkillIconPanel")
-	_apply_battle_safe_frame_style()
-
-	UI_STYLE.style_label(resource_label, "muted")
-	UI_STYLE.style_label(run_label, "muted")
-	run_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	UI_STYLE.style_label(node_label, "heading")
-	UI_STYLE.style_label(state_label, "accent")
-	UI_STYLE.style_label(hp_label, "muted")
-	UI_STYLE.style_label(skill_label, "warning")
-	UI_STYLE.style_label(focus_label, "muted")
-	UI_STYLE.style_label($TargetCard/TargetTitleLabel, "title")
-	UI_STYLE.style_label($LootCard/LootTitleLabel, "title")
-	UI_STYLE.style_label($EquipCard/EquipTitleLabel, "title")
-	UI_STYLE.style_label($DropToast/ToastTitle, "title")
-	UI_STYLE.style_progress_bar(hp_bar, UI_STYLE.COLOR_BLUE)
-
-	for slot_title in [
-		$EquipCard/WeaponSlot/Title,
-		$EquipCard/HelmetSlot/Title,
-		$EquipCard/ArmorSlot/Title,
-		$EquipCard/GlovesSlot/Title,
-	]:
-		UI_STYLE.style_label(slot_title, "tiny")
-
-	for slot_value in [weapon_label, helmet_label, armor_label, gloves_label]:
-		slot_value.add_theme_font_size_override("font_size", 11)
-		slot_value.add_theme_color_override("font_color", UI_STYLE.COLOR_TEXT)
-
-	highlight_label.add_theme_color_override("font_color", UI_STYLE.COLOR_GOLD)
-	loot_label.add_theme_color_override("font_color", UI_STYLE.COLOR_TEXT_DIM)
-	toast_title.add_theme_font_size_override("font_size", 14)
-	toast_label.add_theme_font_size_override("font_size", 12)
-	toast_label.add_theme_color_override("font_color", UIStyle.COLOR_TEXT)
