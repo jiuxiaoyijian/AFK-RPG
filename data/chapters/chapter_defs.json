@@ -18,6 +18,16 @@
       "unlock_rule": { "type": "clear_chapter", "chapter_id": "chapter_1" },
       "node_ids": ["ch2_n1", "ch2_n2", "ch2_n3", "ch2_n4", "ch2_boss"],
       "background_id": "bg_scorched_mine",
+      "next_chapter_id": "chapter_3"
+    },
+    {
+      "id": "chapter_3",
+      "order": 3,
+      "name": "铁锁镇",
+      "recommended_power": 460,
+      "unlock_rule": { "type": "clear_chapter", "chapter_id": "chapter_2" },
+      "node_ids": ["ch3_n1", "ch3_n2", "ch3_n3", "ch3_n4", "ch3_boss"],
+      "background_id": "bg_tiesuo_town",
       "next_chapter_id": ""
     }
   ],
@@ -25,6 +35,7 @@
     {
       "id": "ch1_n1",
       "chapter_id": "chapter_1",
+      "name": "溪桥口",
       "node_type": "normal",
       "enemy_pool_id": "pool_ch1_normal",
       "wave_count": 2,
@@ -39,6 +50,7 @@
     {
       "id": "ch1_n2",
       "chapter_id": "chapter_1",
+      "name": "渡口栈道",
       "node_type": "normal",
       "enemy_pool_id": "pool_ch1_mixed",
       "wave_count": 3,
@@ -53,6 +65,7 @@
     {
       "id": "ch1_n3",
       "chapter_id": "chapter_1",
+      "name": "芦棚哨岗",
       "node_type": "elite",
       "enemy_pool_id": "pool_ch1_elite",
       "wave_count": 2,
@@ -67,6 +80,7 @@
     {
       "id": "ch1_boss",
       "chapter_id": "chapter_1",
+      "name": "桃瘴深潭",
       "node_type": "boss",
       "enemy_pool_id": "pool_ch1_boss",
       "wave_count": 1,
@@ -81,6 +95,7 @@
     {
       "id": "ch2_n1",
       "chapter_id": "chapter_2",
+      "name": "荒祠田埂",
       "node_type": "normal",
       "enemy_pool_id": "pool_ch2_raiders",
       "wave_count": 3,
@@ -96,6 +111,7 @@
     {
       "id": "ch2_n2",
       "chapter_id": "chapter_2",
+      "name": "焚香谷口",
       "node_type": "normal",
       "enemy_pool_id": "pool_ch2_hounds",
       "wave_count": 3,
@@ -111,6 +127,7 @@
     {
       "id": "ch2_n3",
       "chapter_id": "chapter_2",
+      "name": "炼灰外场",
       "node_type": "elite",
       "enemy_pool_id": "pool_ch2_elite_forge",
       "wave_count": 2,
@@ -126,6 +143,7 @@
     {
       "id": "ch2_n4",
       "chapter_id": "chapter_2",
+      "name": "断碑祭坪",
       "node_type": "elite",
       "enemy_pool_id": "pool_ch2_elite_shock",
       "wave_count": 2,
@@ -141,6 +159,7 @@
     {
       "id": "ch2_boss",
       "chapter_id": "chapter_2",
+      "name": "祭炉地宫",
       "node_type": "boss",
       "enemy_pool_id": "pool_ch2_boss",
       "wave_count": 1,
@@ -152,6 +171,89 @@
         { "item_id": "legend_shard", "count": 2 }
       ],
       "repeat_rewards_profile_id": "drop_boss_ch2",
+      "next_node_id": ""
+    },
+    {
+      "id": "ch3_n1",
+      "chapter_id": "chapter_3",
+      "name": "铜铃街口",
+      "node_type": "normal",
+      "enemy_pool_id": "pool_ch3_market",
+      "wave_count": 3,
+      "time_limit": 125,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 120 },
+        { "item_id": "scrap", "count": 24 },
+        { "item_id": "core", "count": 4 }
+      ],
+      "repeat_rewards_profile_id": "drop_normal_ch3",
+      "next_node_id": "ch3_n2"
+    },
+    {
+      "id": "ch3_n2",
+      "chapter_id": "chapter_3",
+      "name": "乌篷码头",
+      "node_type": "normal",
+      "enemy_pool_id": "pool_ch3_docks",
+      "wave_count": 3,
+      "time_limit": 132,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 138 },
+        { "item_id": "scrap", "count": 28 },
+        { "item_id": "core", "count": 5 }
+      ],
+      "repeat_rewards_profile_id": "drop_normal_ch3",
+      "next_node_id": "ch3_n3"
+    },
+    {
+      "id": "ch3_n3",
+      "chapter_id": "chapter_3",
+      "name": "锁街暗巷",
+      "node_type": "elite",
+      "enemy_pool_id": "pool_ch3_elite_lane",
+      "wave_count": 2,
+      "time_limit": 148,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 168 },
+        { "item_id": "scrap", "count": 34 },
+        { "item_id": "core", "count": 6 },
+        { "item_id": "legend_shard", "count": 1 }
+      ],
+      "repeat_rewards_profile_id": "drop_elite_ch3",
+      "next_node_id": "ch3_n4"
+    },
+    {
+      "id": "ch3_n4",
+      "chapter_id": "chapter_3",
+      "name": "黑旗货栈",
+      "node_type": "elite",
+      "enemy_pool_id": "pool_ch3_elite_wharf",
+      "wave_count": 2,
+      "time_limit": 156,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 184 },
+        { "item_id": "scrap", "count": 38 },
+        { "item_id": "core", "count": 7 },
+        { "item_id": "legend_shard", "count": 1 }
+      ],
+      "repeat_rewards_profile_id": "drop_elite_ch3",
+      "next_node_id": "ch3_boss"
+    },
+    {
+      "id": "ch3_boss",
+      "chapter_id": "chapter_3",
+      "name": "银钩赌坊",
+      "node_type": "boss",
+      "enemy_pool_id": "pool_ch3_boss",
+      "wave_count": 1,
+      "time_limit": 228,
+      "first_clear_rewards": [
+        { "item_id": "gold", "count": 260 },
+        { "item_id": "scrap", "count": 56 },
+        { "item_id": "core", "count": 10 },
+        { "item_id": "legend_shard", "count": 3 }
+      ],
+      "repeat_rewards_profile_id": "drop_boss_ch3",
       "next_node_id": ""
     }
   ],
@@ -199,6 +301,31 @@
     {
       "id": "pool_ch2_boss",
       "enemy_ids": ["boss_magma_overseer"],
+      "enemies_per_wave": 1
+    },
+    {
+      "id": "pool_ch3_market",
+      "enemy_ids": ["enemy_chain_thug", "enemy_gambler_blade"],
+      "enemies_per_wave": 3
+    },
+    {
+      "id": "pool_ch3_docks",
+      "enemy_ids": ["enemy_hook_boatman", "enemy_chain_thug", "enemy_gambler_blade"],
+      "enemies_per_wave": 3
+    },
+    {
+      "id": "pool_ch3_elite_lane",
+      "enemy_ids": ["elite_lock_patrol", "enemy_gambler_blade"],
+      "enemies_per_wave": 2
+    },
+    {
+      "id": "pool_ch3_elite_wharf",
+      "enemy_ids": ["elite_hook_guard", "enemy_hook_boatman"],
+      "enemies_per_wave": 2
+    },
+    {
+      "id": "pool_ch3_boss",
+      "enemy_ids": ["boss_silver_hook_elder"],
       "enemies_per_wave": 1
     }
   ]

@@ -1,0 +1,25 @@
+{
+  "gems": [
+    {
+      "id": "gem_wind_echo",
+      "name": "风回石",
+      "slot_tags": ["accessory"],
+      "max_level": 100,
+      "effect_summary": "旋风类伤害与范围成长"
+    },
+    {
+      "id": "gem_blood_oath",
+      "name": "血盟石",
+      "slot_tags": ["accessory"],
+      "max_level": 100,
+      "effect_summary": "流血与处决收益成长"
+    },
+    {
+      "id": "gem_thunder_vein",
+      "name": "雷脉石",
+      "slot_tags": ["accessory"],
+      "max_level": 100,
+      "effect_summary": "连锁次数与雷伤成长"
+    }
+  ]
+}

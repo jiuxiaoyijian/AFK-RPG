@@ -4,6 +4,7 @@ const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 
 @onready var ui_dimmer: ColorRect = $UIDimmer
 @onready var inventory_panel: Control = $InventoryPanel
+@onready var cube_panel: Control = $CubePanel
 @onready var research_panel: Control = $ResearchPanel
 @onready var codex_panel: Control = $CodexPanel
 @onready var drop_stats_panel: Control = $DropStatsPanel
@@ -32,6 +33,8 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_inventory"):
 		_toggle_panel("inventory")
+	elif event.is_action_pressed("ui_cube"):
+		_toggle_panel("cube")
 	elif event.is_action_pressed("ui_research"):
 		_toggle_panel("research")
 	elif event.is_action_pressed("ui_codex"):
@@ -65,6 +68,8 @@ func _open_panel(panel_id: String) -> void:
 	match panel_id:
 		"inventory":
 			_show_panel(inventory_panel)
+		"cube":
+			_show_panel(cube_panel)
 		"research":
 			_show_panel(research_panel)
 		"codex":
@@ -93,7 +98,7 @@ func _close_active_panel() -> void:
 
 
 func _close_regular_panels() -> void:
-	for panel in [inventory_panel, research_panel, codex_panel, drop_stats_panel, gm_panel]:
+	for panel in [inventory_panel, cube_panel, research_panel, codex_panel, drop_stats_panel, gm_panel]:
 		if panel != null:
 			panel.visible = false
 
@@ -107,7 +112,7 @@ func _show_panel(panel: Control) -> void:
 
 
 func _apply_popup_panel_styles() -> void:
-	for panel_root in [inventory_panel, research_panel, codex_panel, drop_stats_panel, gm_panel, offline_report_popup]:
+	for panel_root in [inventory_panel, cube_panel, research_panel, codex_panel, drop_stats_panel, gm_panel, offline_report_popup]:
 		if panel_root != null:
 			_apply_modal_theme_recursive(panel_root)
 

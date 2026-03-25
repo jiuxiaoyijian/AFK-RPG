@@ -1,0 +1,48 @@
+{
+  "set_defs": [
+    {
+      "id": "set_wind",
+      "name": "御风传承",
+      "theme": "持续旋风与范围清场",
+      "piece_slots": ["weapon", "helmet", "armor", "gloves", "legs", "boots"],
+      "bonuses": [
+        {"pieces": 2, "summary": "御风刀范围 +30%", "stat_key": "whirlwind_radius_percent", "value": 0.30},
+        {"pieces": 4, "summary": "命中获得风势，每层攻速 +5%，最多 10 层", "stat_key": "attack_speed_percent", "value": 0.05},
+        {"pieces": 6, "summary": "御风刀伤害 +400%", "stat_key": "set_bonus_percent", "value": 4.00}
+      ]
+    },
+    {
+      "id": "set_blood",
+      "name": "血劫传承",
+      "theme": "流血叠加与处决爆发",
+      "piece_slots": ["weapon", "helmet", "armor", "gloves", "legs", "belt"],
+      "bonuses": [
+        {"pieces": 2, "summary": "流血持续 +3 秒", "stat_key": "bleed_dot_percent", "value": 0.18},
+        {"pieces": 4, "summary": "流血目标受伤 +80%", "stat_key": "legendary_effect_percent", "value": 0.80},
+        {"pieces": 6, "summary": "血劫手与流血伤害 +350%", "stat_key": "set_bonus_percent", "value": 3.50}
+      ]
+    },
+    {
+      "id": "set_thunder",
+      "name": "五雷传承",
+      "theme": "连锁弹射与群体覆盖",
+      "piece_slots": ["weapon", "helmet", "armor", "gloves", "boots", "accessory1"],
+      "bonuses": [
+        {"pieces": 2, "summary": "五雷掌连锁 +2", "stat_key": "chain_count_bonus", "value": 2.0},
+        {"pieces": 4, "summary": "被雷击敌人额外承受 60% 雷伤", "stat_key": "chain_damage_percent", "value": 0.60},
+        {"pieces": 6, "summary": "五雷掌伤害 +350%", "stat_key": "set_bonus_percent", "value": 3.50}
+      ]
+    },
+    {
+      "id": "set_iron",
+      "name": "铁壁传承",
+      "theme": "格挡反击与蓄势爆发",
+      "piece_slots": ["helmet", "armor", "gloves", "legs", "boots", "belt"],
+      "bonuses": [
+        {"pieces": 2, "summary": "格挡率 +15%", "stat_key": "all_resist", "value": 0.15},
+        {"pieces": 4, "summary": "格挡成功反弹伤害", "stat_key": "legendary_effect_percent", "value": 2.00},
+        {"pieces": 6, "summary": "蓄势满后释放 500% 爆发攻击", "stat_key": "set_bonus_percent", "value": 5.00}
+      ]
+    }
+  ]
+}

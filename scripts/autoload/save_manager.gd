@@ -1,9 +1,12 @@
 extends Node
 
+const ParagonSystem = preload("res://scripts/systems/paragon_system.gd")
+const SeasonSystem = preload("res://scripts/systems/season_system.gd")
+
 const SAVE_SLOT_COUNT := 3
 const DEFAULT_SAVE_SLOT := 1
 const SAVE_PATH_TEMPLATE := "user://desktop_idle_save_%d.json"
-const CURRENT_SAVE_VERSION := 2
+const CURRENT_SAVE_VERSION := 3
 
 
 func _ready() -> void:
@@ -40,6 +43,12 @@ func save_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 		"auto_salvage_below_rarity": GameManager.auto_salvage_below_rarity,
 		"last_loot_summary": GameManager.last_loot_summary,
 		"last_loot_highlight": GameManager.last_loot_highlight,
+		"martial_codex_state": GameManager.martial_codex_state,
+		"set_summary": GameManager.set_summary,
+		"rift_state": GameManager.rift_state,
+		"gem_state": GameManager.gem_state,
+		"paragon_state": GameManager.paragon_state,
+		"season_state": GameManager.season_state,
 		"saved_unix_time": Time.get_unix_time_from_system(),
 	}
 	payload.merge(MetaProgressionSystem.build_save_data(), true)
@@ -98,17 +107,15 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	GameManager.auto_salvage_below_rarity = String(payload.get("auto_salvage_below_rarity", GameManager.auto_salvage_below_rarity))
 	GameManager.last_loot_summary = String(payload.get("last_loot_summary", GameManager.last_loot_summary))
 	GameManager.last_loot_highlight = payload.get("last_loot_highlight", GameManager.last_loot_highlight)
+	GameManager.martial_codex_state = payload.get("martial_codex_state", GameManager.martial_codex_state)
+	GameManager.set_summary = payload.get("set_summary", GameManager.set_summary)
+	GameManager.rift_state = payload.get("rift_state", GameManager.rift_state)
+	GameManager.gem_state = payload.get("gem_state", GameManager.gem_state)
+	GameManager.paragon_state = payload.get("paragon_state", GameManager.paragon_state)
+	GameManager.season_state = payload.get("season_state", GameManager.season_state)
 	var saved_unix_time: int = int(payload.get("saved_unix_time", 0))
-	EventBus.node_changed.emit(GameManager.current_node_id)
-	EventBus.core_skill_changed.emit(GameManager.selected_core_skill_id)
-	EventBus.resources_changed.emit()
-	EventBus.equipment_changed.emit()
-	EventBus.loot_summary_changed.emit(GameManager.last_loot_summary)
-	EventBus.inventory_changed.emit()
-	EventBus.research_changed.emit()
-	EventBus.codex_changed.emit()
-	EventBus.loot_target_changed.emit()
-	EventBus.daily_goals_changed.emit()
+	GameManager.refresh_build_state(false)
+	_emit_loaded_state()
 	OfflineSystem.process_saved_timestamp(saved_unix_time)
 	return true
 
@@ -140,3 +147,20 @@ func _wipe_save(slot: int) -> void:
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	push_warning("SaveManager: 已删除档位 %d 的旧版存档" % slot)
+
+
+func _emit_loaded_state() -> void:
+	EventBus.node_changed.emit(GameManager.current_node_id)
+	EventBus.core_skill_changed.emit(GameManager.selected_core_skill_id)
+	EventBus.resources_changed.emit()
+	EventBus.equipment_changed.emit()
+	EventBus.loot_summary_changed.emit(GameManager.last_loot_summary)
+	EventBus.inventory_changed.emit()
+	EventBus.research_changed.emit()
+	EventBus.codex_changed.emit()
+	EventBus.loot_target_changed.emit()
+	EventBus.daily_goals_changed.emit()
+	EventBus.set_bonus_changed.emit(GameManager.set_summary)
+	EventBus.martial_codex_changed.emit(GameManager.get_martial_codex_runtime_state())
+	EventBus.paragon_changed.emit(ParagonSystem.build_runtime_summary(GameManager.paragon_state))
+	EventBus.season_reborn.emit(SeasonSystem.build_runtime_summary(GameManager.season_state, GameManager._build_progression_context()))

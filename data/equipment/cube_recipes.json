@@ -1,0 +1,39 @@
+{
+  "cube_recipes": [
+    {
+      "id": "extract",
+      "name": "萃取武学",
+      "input_rarity_min": "epic",
+      "costs": [{"resource_id": "scrap", "amount": 50}, {"resource_id": "legend_shard", "amount": 10}],
+      "result": "unlock_legendary_effect"
+    },
+    {
+      "id": "upgrade_rare",
+      "name": "精钢化真",
+      "input_rarity": "rare",
+      "costs": [{"resource_id": "scrap", "amount": 80}, {"resource_id": "core", "amount": 30}],
+      "result": "upgrade_to_epic"
+    },
+    {
+      "id": "reforge",
+      "name": "回炉重铸",
+      "input_rarity_min": "epic",
+      "costs": [{"resource_id": "gold", "amount": 12000}, {"resource_id": "legend_shard", "amount": 20}],
+      "result": "reroll_full_item"
+    },
+    {
+      "id": "convert_set",
+      "name": "传承互转",
+      "input_rarity": "set",
+      "costs": [{"resource_id": "scrap", "amount": 120}, {"resource_id": "core", "amount": 40}],
+      "result": "swap_same_set_slot"
+    },
+    {
+      "id": "refine_affix",
+      "name": "淬火精炼",
+      "input_rarity_min": "epic",
+      "costs": [{"resource_id": "gold", "amount": 8000}, {"resource_id": "legend_shard", "amount": 8}],
+      "result": "reroll_single_affix"
+    }
+  ]
+}

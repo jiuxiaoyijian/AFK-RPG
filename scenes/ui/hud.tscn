@@ -137,7 +137,7 @@ offset_bottom = 604.0
 offset_left = 936.0
 offset_top = 118.0
 offset_right = 1264.0
-offset_bottom = 238.0
+offset_bottom = 262.0
 
 [node name="TargetTitleLabel" type="Label" parent="TargetCard"]
 offset_left = 18.0
@@ -174,9 +174,17 @@ text = "下一件: --"
 offset_left = 18.0
 offset_top = 84.0
 offset_right = 304.0
-offset_bottom = 110.0
+offset_bottom = 106.0
 autowrap_mode = 2
 text = "推荐: --"
+
+[node name="SetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
+offset_left = 18.0
+offset_top = 108.0
+offset_right = 304.0
+offset_bottom = 134.0
+autowrap_mode = 2
+text = "传承: 当前未激活"
 
 [node name="DailyGoalCard" type="Panel" parent="."]
 offset_left = 936.0

@@ -66,6 +66,7 @@ const CARD_SIDE_MARGIN := 16.0
 @onready var build_gap_label: Label = $TargetCard/BuildGapLabel
 @onready var next_target_label: Label = $TargetCard/NextTargetLabel
 @onready var codex_label: Label = $TargetCard/CodexLabel
+@onready var set_label: Label = $TargetCard/SetLabel
 @onready var daily_goal_card: Panel = $DailyGoalCard
 @onready var daily_goal_icon: TextureRect = $DailyGoalCard/DailyGoalIcon
 @onready var daily_goal_title_label: Label = $DailyGoalCard/DailyGoalTitleLabel
@@ -114,6 +115,8 @@ func _ready() -> void:
 	EventBus.loot_target_changed.connect(_on_target_changed)
 	EventBus.daily_goals_changed.connect(_on_daily_goals_changed)
 	EventBus.research_changed.connect(_on_build_relevant_state_changed)
+	EventBus.set_bonus_changed.connect(_on_build_relevant_state_changed)
+	EventBus.martial_codex_changed.connect(_on_build_relevant_state_changed)
 
 	_on_node_changed(GameManager.current_node_id)
 	_on_state_changed("准备中")
@@ -138,8 +141,8 @@ func _on_node_changed(node_id: String) -> void:
 	var chapter_data: Dictionary = ConfigDB.get_chapter(chapter_id)
 	node_label.text = "%s  ·  %s  ·  %s" % [
 		String(chapter_data.get("name", chapter_id)),
-		String(node_data.get("id", node_id)),
-		String(node_data.get("node_type", "--")),
+		ConfigDB.get_chapter_node_name(node_id),
+		ConfigDB.get_node_type_display_name(String(node_data.get("node_type", "--"))),
 	]
 	_on_focus_changed()
 	_refresh_target_card()
@@ -172,7 +175,7 @@ func _on_resources_changed() -> void:
 	run_label.text = "击杀 %d  |  清图 %d  |  当前节点 %s" % [
 		GameManager.current_run_kills,
 		GameManager.current_run_clears,
-		GameManager.current_node_id,
+		ConfigDB.get_chapter_node_short_label(GameManager.current_node_id),
 	]
 
 
@@ -405,6 +408,7 @@ func _apply_target_card_typography() -> void:
 		build_gap_label,
 		next_target_label,
 		codex_label,
+		set_label,
 	]:
 		label.add_theme_font_size_override("font_size", 11)
 
@@ -424,6 +428,7 @@ func _refresh_target_card() -> void:
 		build_gap_label.text = "缺口: --"
 		next_target_label.text = "下一件: --"
 		codex_label.text = LootCodexSystem.get_codex_summary_text()
+		set_label.text = _build_set_summary_line()
 		return
 
 	target_label.text = String(advice.get("tracked_target_line", "追踪: --"))
@@ -433,6 +438,7 @@ func _refresh_target_card() -> void:
 		"stall_summary",
 		String(advice.get("recommendation_line", LootCodexSystem.get_codex_summary_text()))
 	))
+	set_label.text = _build_set_summary_line()
 
 	target_label.add_theme_color_override("font_color", Color(0.92, 0.86, 1.0, 1.0))
 	build_gap_label.add_theme_color_override("font_color", Color(0.98, 0.84, 0.54, 1.0))
@@ -441,10 +447,30 @@ func _refresh_target_card() -> void:
 		"font_color",
 		Color(0.98, 0.78, 0.52, 1.0) if bool(advice.get("is_progress_blocked", false)) else Color(0.74, 0.82, 1.0, 1.0)
 	)
+	set_label.add_theme_color_override("font_color", Color(0.62, 0.92, 0.70, 1.0))
 
 
-func _on_build_relevant_state_changed() -> void:
+func _on_build_relevant_state_changed(_payload: Variant = null) -> void:
 	_refresh_target_card()
+
+
+func _build_set_summary_line() -> String:
+	var primary_set: Dictionary = GameManager.set_summary.get("primary_active_set", {})
+	if primary_set.is_empty():
+		return "传承: 当前未激活"
+	var piece_count: int = int(primary_set.get("piece_count", 0))
+	var bonus_segments: Array[String] = []
+	for bonus_variant in primary_set.get("active_bonuses", []):
+		var bonus: Dictionary = bonus_variant
+		bonus_segments.append("%d件: %s" % [
+			int(bonus.get("pieces", 0)),
+			String(bonus.get("summary", "")),
+		])
+	return "传承: %s %d/6 | %s" % [
+		String(primary_set.get("name", "传承")),
+		piece_count,
+		" | ".join(bonus_segments),
+	]
 
 
 func _build_side_goals_text(goals: Array) -> String:

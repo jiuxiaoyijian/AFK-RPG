@@ -1,0 +1,8 @@
+{
+  "rift_scaling": [
+    {"level": 1, "enemy_hp_multiplier": 1.0, "enemy_damage_multiplier": 1.0, "reward_multiplier": 1.0},
+    {"level": 10, "enemy_hp_multiplier": 2.4, "enemy_damage_multiplier": 1.6, "reward_multiplier": 1.8},
+    {"level": 20, "enemy_hp_multiplier": 5.6, "enemy_damage_multiplier": 2.4, "reward_multiplier": 2.8},
+    {"level": 50, "enemy_hp_multiplier": 22.0, "enemy_damage_multiplier": 5.5, "reward_multiplier": 6.5}
+  ]
+}

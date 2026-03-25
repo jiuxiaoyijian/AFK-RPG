@@ -16,26 +16,27 @@ const RESOURCE_ICON_PATHS := {
 @onready var equipment_generator: Node = $"../EquipmentGeneratorSystem"
 
 
-func process_node_loot(node_data: Dictionary) -> Dictionary:
+func process_node_loot(node_data: Dictionary, context: Dictionary = {}) -> Dictionary:
 	var summary_lines: Array[String] = []
 	var dropped_items: Array = []
 	var best_highlight: Dictionary = {}
 	var material_rewards: Array = []
+	var reward_multiplier: float = maxf(1.0, float(context.get("reward_multiplier", 1.0)))
 	var profile_id: String = String(node_data.get("repeat_rewards_profile_id", ""))
 	var drop_profile: Dictionary = ConfigDB.get_drop_profile(profile_id)
 	if drop_profile.is_empty():
 		GameManager.update_loot_summary(["未配置掉落表"])
 		return {}
 
-	var material_result: Dictionary = _generate_materials(drop_profile)
+	var material_result: Dictionary = _generate_materials(drop_profile, reward_multiplier)
 	var material_lines: Array[String] = material_result.get("lines", [])
 	material_rewards = material_result.get("rewards", [])
 	summary_lines.append_array(material_lines)
 
-	var equipment_rolls: int = int(drop_profile.get("equipment_rolls", 1))
+	var equipment_rolls: int = int(drop_profile.get("equipment_rolls", 1)) + int(floor((reward_multiplier - 1.0) / 2.0))
 	var dropped_any_equipment := false
 	for _i in range(equipment_rolls):
-		var equipment_chance: float = float(drop_profile.get("equipment_chance", 0.0))
+		var equipment_chance: float = minf(1.0, float(drop_profile.get("equipment_chance", 0.0)) * (1.0 + (reward_multiplier - 1.0) * 0.12))
 		if randf() > equipment_chance:
 			continue
 		var generated_item: Dictionary = generate_equipment_for_profile(drop_profile)
@@ -66,6 +67,26 @@ func process_node_loot(node_data: Dictionary) -> Dictionary:
 	if not dropped_any_equipment:
 		summary_lines.append("未掉落装备")
 
+	for reward_item_variant in context.get("extra_dropped_items", []):
+		var reward_item: Dictionary = reward_item_variant
+		if reward_item.is_empty():
+			continue
+		dropped_items.append(reward_item)
+		var reward_result := {
+			"item_name": "[%s] %s" % [
+				GameManager.get_rarity_display_name(String(reward_item.get("rarity", "common"))),
+				String(reward_item.get("name", "秘境赠礼")),
+			],
+			"action": "store",
+		}
+		best_highlight = _pick_better_highlight(best_highlight, reward_item, reward_result, "秘境赠礼! ")
+
+	for extra_line_variant in context.get("extra_summary_lines", []):
+		var extra_line: String = String(extra_line_variant).strip_edges()
+		if extra_line.is_empty():
+			continue
+		summary_lines.append(extra_line)
+
 	if summary_lines.is_empty():
 		summary_lines.append("本次未获得额外奖励")
 
@@ -86,14 +107,14 @@ func generate_equipment_for_profile(drop_profile: Dictionary) -> Dictionary:
 	return equipment_generator.generate_equipment_for_profile(drop_profile)
 
 
-func _generate_materials(drop_profile: Dictionary) -> Dictionary:
+func _generate_materials(drop_profile: Dictionary, reward_multiplier: float = 1.0) -> Dictionary:
 	var lines: Array[String] = []
 	var rewards: Array = []
 	for entry in drop_profile.get("material_entries", []):
 		var item_id: String = String(entry.get("item_id", ""))
 		var min_count: int = int(entry.get("min_count", 1))
 		var max_count: int = int(entry.get("max_count", min_count))
-		var base_count: int = randi_range(min_count, max_count)
+		var base_count: int = maxi(1, int(round(float(randi_range(min_count, max_count)) * reward_multiplier)))
 		var applied_entries: Array = MetaProgressionSystem.grant_rewards([{"item_id": item_id, "count": base_count}])
 		var count: int = base_count
 		if not applied_entries.is_empty():

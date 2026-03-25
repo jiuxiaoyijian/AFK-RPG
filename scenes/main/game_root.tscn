@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://desktop_idle_root"]
+[gd_scene load_steps=14 format=3 uid="uid://desktop_idle_root"]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/systems/combat_system.gd" id="2_combat"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/main_nav_bar.tscn" id="10_nav"]
 [ext_resource type="Script" path="res://scripts/ui/ui_overlay_manager.gd" id="11_ui_manager"]
 [ext_resource type="PackedScene" path="res://scenes/ui/gm_panel.tscn" id="12_gm"]
+[ext_resource type="PackedScene" path="res://scenes/ui/cube_panel.tscn" id="13_cube"]
 
 [node name="GameRoot" type="Node2D"]
 
@@ -61,6 +62,8 @@ visible = false
 [node name="InventoryPanel" parent="UILayer" instance=ExtResource("4_inventory")]
 
 [node name="OfflineReportPopup" parent="UILayer" instance=ExtResource("5_offline_popup")]
+
+[node name="CubePanel" parent="UILayer" instance=ExtResource("13_cube")]
 
 [node name="ResearchPanel" parent="UILayer" instance=ExtResource("6_research")]
 

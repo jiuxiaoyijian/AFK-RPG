@@ -1,5 +1,8 @@
 extends Node
 
+const ParagonSystem = preload("res://scripts/systems/paragon_system.gd")
+const SeasonSystem = preload("res://scripts/systems/season_system.gd")
+
 var gold: int = 0
 var scrap: int = 0
 var core: int = 0
@@ -14,6 +17,8 @@ const RESEARCH_META_KEYS := {
 	"core_gain_percent": 0.0,
 	"legend_shard_gain_percent": 0.0,
 	"salvage_scrap_percent": 0.0,
+	"paragon_exp_gain_percent": 0.0,
+	"drop_quality_bonus": 0.0,
 }
 
 
@@ -132,6 +137,16 @@ func get_meta_progression_bonuses() -> Dictionary:
 			var value_per_level: float = float(bonus_entry.get("value_per_level", 0.0))
 			if totals.has(stat_key):
 				totals[stat_key] += value_per_level * float(level)
+	var paragon_meta_bonuses: Dictionary = ParagonSystem.build_meta_bonuses(GameManager.paragon_state)
+	for stat_key_variant in paragon_meta_bonuses.keys():
+		var stat_key: String = String(stat_key_variant)
+		if totals.has(stat_key):
+			totals[stat_key] += float(paragon_meta_bonuses.get(stat_key_variant, 0.0))
+	var season_meta_bonuses: Dictionary = SeasonSystem.build_meta_bonuses(GameManager.season_state)
+	for stat_key_variant in season_meta_bonuses.keys():
+		var season_key: String = String(stat_key_variant)
+		if totals.has(season_key):
+			totals[season_key] += float(season_meta_bonuses.get(stat_key_variant, 0.0))
 	return totals
 
 

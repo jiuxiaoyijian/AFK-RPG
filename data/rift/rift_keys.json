@@ -1,0 +1,6 @@
+{
+  "rift_keys": [
+    {"id": "rift_key_common", "name": "试剑令", "required_level": 1, "reward_weight": 1.0},
+    {"id": "rift_key_greater", "name": "上品试剑令", "required_level": 15, "reward_weight": 1.4}
+  ]
+}
