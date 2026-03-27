@@ -12,125 +12,232 @@ grow_vertical = 2
 script = ExtResource("1_inventory")
 
 [node name="Panel" type="Panel" parent="."]
-offset_left = 140.0
-offset_top = 96.0
-offset_right = 1140.0
-offset_bottom = 624.0
+offset_left = 76.0
+offset_top = 52.0
+offset_right = 1204.0
+offset_bottom = 684.0
 
 [node name="HeaderBar" type="Panel" parent="Panel"]
-offset_left = 12.0
-offset_top = 8.0
-offset_right = 988.0
-offset_bottom = 48.0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 1114.0
+offset_bottom = 62.0
 
 [node name="TitleLabel" type="Label" parent="Panel"]
-offset_left = 20.0
-offset_top = 12.0
-offset_right = 320.0
-offset_bottom = 34.0
-text = "背包与装备管理"
-
-[node name="ListSection" type="Panel" parent="Panel"]
-offset_left = 20.0
-offset_top = 96.0
-offset_right = 392.0
-offset_bottom = 508.0
-
-[node name="ListSectionLabel" type="Label" parent="Panel"]
-offset_left = 32.0
-offset_top = 106.0
-offset_right = 180.0
-offset_bottom = 124.0
-text = "物品列表"
-
-[node name="DetailSection" type="Panel" parent="Panel"]
-offset_left = 412.0
-offset_top = 96.0
-offset_right = 980.0
-offset_bottom = 416.0
-
-[node name="DetailSectionLabel" type="Label" parent="Panel"]
-offset_left = 428.0
-offset_top = 106.0
-offset_right = 520.0
-offset_bottom = 124.0
-text = "装备详情"
-
-[node name="ActionSection" type="Panel" parent="Panel"]
-offset_left = 412.0
-offset_top = 430.0
-offset_right = 980.0
-offset_bottom = 508.0
-
-[node name="ActionSectionLabel" type="Label" parent="Panel"]
-offset_left = 428.0
-offset_top = 440.0
-offset_right = 520.0
-offset_bottom = 458.0
-text = "快捷操作"
-
-[node name="ThresholdButton" type="Button" parent="Panel"]
-offset_left = 428.0
-offset_top = 466.0
-offset_right = 632.0
-offset_bottom = 498.0
-text = "自动分解低于: rare"
+offset_left = 26.0
+offset_top = 20.0
+offset_right = 260.0
+offset_bottom = 44.0
+text = "角色与背包"
 
 [node name="SummaryLabel" type="Label" parent="Panel"]
-offset_left = 20.0
-offset_top = 52.0
-offset_right = 900.0
-offset_bottom = 80.0
+offset_left = 26.0
+offset_top = 68.0
+offset_right = 1092.0
+offset_bottom = 92.0
 autowrap_mode = 2
 text = "库存概览"
 
-[node name="CloseButton" type="Button" parent="Panel"]
-offset_left = 924.0
+[node name="PaperDollSection" type="Panel" parent="Panel"]
+offset_left = 18.0
+offset_top = 106.0
+offset_right = 282.0
+offset_bottom = 540.0
+
+[node name="PaperDollSectionLabel" type="Label" parent="Panel/PaperDollSection"]
+offset_left = 14.0
 offset_top = 12.0
-offset_right = 980.0
-offset_bottom = 40.0
-text = "关闭"
+offset_right = 180.0
+offset_bottom = 32.0
+text = "角色纸娃娃"
 
-[node name="InventoryList" type="ItemList" parent="Panel"]
-offset_left = 28.0
-offset_top = 130.0
-offset_right = 384.0
-offset_bottom = 496.0
-
-[node name="DetailLabel" type="Label" parent="Panel"]
-offset_left = 428.0
-offset_top = 132.0
-offset_right = 964.0
-offset_bottom = 402.0
+[node name="PaperDollSummaryLabel" type="Label" parent="Panel/PaperDollSection"]
+offset_left = 14.0
+offset_top = 38.0
+offset_right = 248.0
+offset_bottom = 118.0
 autowrap_mode = 2
-text = "未选择物品"
-vertical_alignment = 0
+text = "装备概览"
 
-[node name="ActionHintLabel" type="Label" parent="Panel"]
-offset_left = 648.0
-offset_top = 440.0
-offset_right = 964.0
-offset_bottom = 462.0
+[node name="PaperDollGrid" type="GridContainer" parent="Panel/PaperDollSection"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 122.0
+offset_right = 250.0
+offset_bottom = 430.0
+columns = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="InventorySection" type="Panel" parent="Panel"]
+offset_left = 300.0
+offset_top = 106.0
+offset_right = 840.0
+offset_bottom = 540.0
+
+[node name="InventorySectionLabel" type="Label" parent="Panel/InventorySection"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 180.0
+offset_bottom = 32.0
+text = "格子背包"
+
+[node name="FilterLabel" type="Label" parent="Panel/InventorySection"]
+offset_left = 16.0
+offset_top = 42.0
+offset_right = 58.0
+offset_bottom = 60.0
+text = "筛选"
+
+[node name="FilterOption" type="OptionButton" parent="Panel/InventorySection"]
+offset_left = 62.0
+offset_top = 38.0
+offset_right = 170.0
+offset_bottom = 70.0
+
+[node name="SortLabel" type="Label" parent="Panel/InventorySection"]
+offset_left = 182.0
+offset_top = 42.0
+offset_right = 224.0
+offset_bottom = 60.0
+text = "排序"
+
+[node name="SortOption" type="OptionButton" parent="Panel/InventorySection"]
+offset_left = 228.0
+offset_top = 38.0
+offset_right = 336.0
+offset_bottom = 70.0
+
+[node name="PrevPageButton" type="Button" parent="Panel/InventorySection"]
+offset_left = 364.0
+offset_top = 38.0
+offset_right = 400.0
+offset_bottom = 70.0
+text = "<"
+
+[node name="PageLabel" type="Label" parent="Panel/InventorySection"]
+offset_left = 408.0
+offset_top = 42.0
+offset_right = 500.0
+offset_bottom = 60.0
+horizontal_alignment = 1
+text = "第 1 / 1 页"
+
+[node name="NextPageButton" type="Button" parent="Panel/InventorySection"]
+offset_left = 476.0
+offset_top = 38.0
+offset_right = 512.0
+offset_bottom = 70.0
+text = ">"
+
+[node name="InventoryGrid" type="GridContainer" parent="Panel/InventorySection"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 88.0
+offset_right = 520.0
+offset_bottom = 430.0
+columns = 10
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="DetailSection" type="Panel" parent="Panel"]
+offset_left = 858.0
+offset_top = 106.0
+offset_right = 1110.0
+offset_bottom = 540.0
+
+[node name="DetailSectionLabel" type="Label" parent="Panel/DetailSection"]
+offset_left = 14.0
+offset_top = 12.0
+offset_right = 144.0
+offset_bottom = 32.0
+text = "详情与对比"
+
+[node name="BadgeLabel" type="Label" parent="Panel/DetailSection"]
+offset_left = 14.0
+offset_top = 40.0
+offset_right = 230.0
+offset_bottom = 74.0
+autowrap_mode = 2
+text = "标签: --"
+
+[node name="DetailLabel" type="Label" parent="Panel/DetailSection"]
+offset_left = 14.0
+offset_top = 70.0
+offset_right = 236.0
+offset_bottom = 238.0
+autowrap_mode = 2
+vertical_alignment = 0
+text = "未选择物品"
+
+[node name="CompareLabel" type="Label" parent="Panel/DetailSection"]
+offset_left = 14.0
+offset_top = 256.0
+offset_right = 236.0
+offset_bottom = 430.0
+autowrap_mode = 2
+vertical_alignment = 0
+text = "装备对比"
+
+[node name="ToolbarSection" type="Panel" parent="Panel"]
+offset_left = 18.0
+offset_top = 556.0
+offset_right = 1110.0
+offset_bottom = 652.0
+
+[node name="ToolbarSectionLabel" type="Label" parent="Panel/ToolbarSection"]
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 100.0
+offset_bottom = 28.0
+text = "快捷操作"
+
+[node name="ActionHintLabel" type="Label" parent="Panel/ToolbarSection"]
+offset_left = 116.0
+offset_top = 10.0
+offset_right = 620.0
+offset_bottom = 42.0
 autowrap_mode = 2
 text = "操作提示"
 
-[node name="EquipButton" type="Button" parent="Panel"]
-offset_left = 648.0
-offset_top = 466.0
-offset_right = 742.0
-offset_bottom = 498.0
+[node name="ThresholdButton" type="Button" parent="Panel/ToolbarSection"]
+offset_left = 14.0
+offset_top = 44.0
+offset_right = 210.0
+offset_bottom = 78.0
+text = "自动分解低于: rare"
+
+[node name="EquipButton" type="Button" parent="Panel/ToolbarSection"]
+offset_left = 448.0
+offset_top = 44.0
+offset_right = 556.0
+offset_bottom = 78.0
 text = "装备"
 
-[node name="LockButton" type="Button" parent="Panel"]
-offset_left = 754.0
-offset_top = 466.0
-offset_right = 848.0
-offset_bottom = 498.0
+[node name="UnequipButton" type="Button" parent="Panel/ToolbarSection"]
+offset_left = 568.0
+offset_top = 44.0
+offset_right = 676.0
+offset_bottom = 78.0
+text = "卸下"
+
+[node name="LockButton" type="Button" parent="Panel/ToolbarSection"]
+offset_left = 688.0
+offset_top = 44.0
+offset_right = 796.0
+offset_bottom = 78.0
 text = "锁定"
 
-[node name="SalvageButton" type="Button" parent="Panel"]
-offset_left = 860.0
-offset_top = 466.0
-offset_right = 964.0
-offset_bottom = 498.0
+[node name="SalvageButton" type="Button" parent="Panel/ToolbarSection"]
+offset_left = 808.0
+offset_top = 44.0
+offset_right = 924.0
+offset_bottom = 78.0
 text = "分解"
+
+[node name="CloseButton" type="Button" parent="Panel/ToolbarSection"]
+offset_left = 952.0
+offset_top = 44.0
+offset_right = 1068.0
+offset_bottom = 78.0
+text = "关闭"

@@ -62,6 +62,7 @@ const CARD_SIDE_MARGIN := 16.0
 @onready var focus_label: Label = $BattleCard/FocusLabel
 @onready var battle_safe_frame: Panel = $BattleSafeFrame
 @onready var target_card: Panel = $TargetCard
+@onready var target_title_label: Label = $TargetCard/TargetTitleLabel
 @onready var target_label: Label = $TargetCard/TargetLabel
 @onready var build_gap_label: Label = $TargetCard/BuildGapLabel
 @onready var next_target_label: Label = $TargetCard/NextTargetLabel
@@ -77,6 +78,7 @@ const CARD_SIDE_MARGIN := 16.0
 @onready var next_step_label: Label = $DailyGoalCard/NextStepLabel
 @onready var equip_card: Panel = $EquipCard
 @onready var equip_card_art: TextureRect = $EquipCard/CardArt
+@onready var equip_title_label: Label = $EquipCard/EquipTitleLabel
 var equip_slot_labels: Dictionary = {}
 var equip_slot_nodes: Dictionary = {}
 @onready var loot_card: Panel = $LootCard
@@ -99,6 +101,7 @@ func _ready() -> void:
 	target_card.visible = false
 	battle_safe_frame.visible = false
 	_apply_card_art()
+	_wire_card_interactions()
 	_apply_slot_icons()
 	_apply_battle_safe_frame_style()
 	_apply_compact_typography()
@@ -133,6 +136,16 @@ func _ready() -> void:
 	_apply_target_card_typography()
 	_apply_combat_highlight_style()
 	call_deferred("_apply_hud_layout")
+
+
+func _wire_card_interactions() -> void:
+	for panel in [target_card, daily_goal_card, equip_card, loot_card]:
+		panel.mouse_filter = Control.MOUSE_FILTER_STOP
+		panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	target_card.gui_input.connect(_on_target_card_input)
+	daily_goal_card.gui_input.connect(_on_daily_goal_card_input)
+	equip_card.gui_input.connect(_on_equip_card_input)
+	loot_card.gui_input.connect(_on_loot_card_input)
 
 
 func _on_node_changed(node_id: String) -> void:
@@ -204,21 +217,21 @@ func _on_daily_goals_changed() -> void:
 	var goal_data: Dictionary = DailyGoalSystem.get_daily_goal_data()
 	var primary_goal: Dictionary = goal_data.get("primary_goal", {})
 	var side_goals: Array = goal_data.get("side_goals", [])
-	daily_goal_title_label.text = "今日机缘"
+	daily_goal_title_label.text = "当前目标"
 	if primary_goal.is_empty():
-		primary_goal_label.text = "主机缘: 暂无"
+		primary_goal_label.text = "主目标: 暂无"
 		primary_goal_progress_label.text = "进度: --"
-		primary_goal_cta_label.text = "先等待系统生成今日机缘。"
+		primary_goal_cta_label.text = "建议: 等待系统生成目标"
 		side_goals_label.text = "旁支: 暂无"
-		next_step_label.text = "回来先做什么: 暂无"
+		next_step_label.text = "下一步: 暂无"
 		return
 
 	var primary_completed: bool = String(primary_goal.get("status", "active")) == "completed"
-	primary_goal_label.text = "主机缘: %s" % String(primary_goal.get("title", "未命名目标"))
+	primary_goal_label.text = "主目标: %s" % _truncate_ui_text(String(primary_goal.get("title", "未命名目标")), 14)
 	primary_goal_progress_label.text = "进度: %s" % String(primary_goal.get("progress_text", "--"))
-	primary_goal_cta_label.text = "建议: %s" % String(primary_goal.get("cta_text", "继续推进主机缘"))
+	primary_goal_cta_label.text = "建议: %s" % _truncate_ui_text(String(primary_goal.get("cta_text", "继续推进主目标")), 18)
 	side_goals_label.text = _build_side_goals_text(side_goals)
-	next_step_label.text = "回来先做什么: %s" % String(goal_data.get("next_step_summary", "继续推进今日机缘"))
+	next_step_label.text = "下一步: %s" % _truncate_ui_text(String(goal_data.get("next_step_summary", "继续推进当前目标")), 18)
 
 	primary_goal_label.add_theme_color_override(
 		"font_color",
@@ -251,15 +264,19 @@ func _on_loot_summary_changed(summary_text: String) -> void:
 			break
 	if highlight_line == "高价值掉落: 暂无" and not summary_lines.is_empty():
 		highlight_line = "高价值掉落: %s" % String(summary_lines[0])
-	highlight_label.text = highlight_line
+	highlight_label.text = _truncate_ui_text(highlight_line, 18)
 	highlight_label.add_theme_color_override("font_color", _get_loot_highlight_color(highlight_line))
 	loot_card_art.modulate = _get_loot_card_modulate(highlight_line)
 	_apply_loot_icon()
 	if summary_lines.size() <= 1:
-		loot_label.text = summary_text
+		loot_label.text = _truncate_ui_text(summary_text, 30)
 	else:
-		loot_label.text = "\n".join(summary_lines.slice(1))
+		var compact_lines: Array[String] = []
+		for line_variant in summary_lines.slice(1):
+			compact_lines.append(_truncate_ui_text(String(line_variant), 14))
+		loot_label.text = " | ".join(compact_lines)
 	loot_label.add_theme_color_override("font_color", Color(0.82, 0.86, 0.9, 1.0))
+	loot_card.tooltip_text = _build_loot_card_tooltip()
 	_maybe_show_drop_toast(highlight_line)
 
 
@@ -363,11 +380,20 @@ func _apply_battle_safe_frame_style() -> void:
 func _apply_hud_layout() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	combat_highlight_panel.position = Vector2((viewport_size.x - combat_highlight_panel.size.x) * 0.5, 66.0)
-	equip_card.size = Vector2(350.0, 100.0)
+	equip_card.size = Vector2(404.0, 100.0)
 	equip_card.position = Vector2(CARD_SIDE_MARGIN, battle_card.position.y + battle_card.size.y + 16.0)
-	loot_card.position = Vector2(viewport_size.x - loot_card.size.x - CARD_SIDE_MARGIN, 72.0)
-	daily_goal_card.position = Vector2(loot_card.position.x, loot_card.position.y + loot_card.size.y + 12.0)
-	daily_goal_card.size.x = loot_card.size.x
+	var right_card_width := 328.0
+	var right_card_x := viewport_size.x - right_card_width - CARD_SIDE_MARGIN
+	var right_column_top := 124.0
+	target_card.size = Vector2(right_card_width, 118.0)
+	target_card.position = Vector2(right_card_x, right_column_top)
+	daily_goal_card.size = Vector2(right_card_width, 136.0)
+	var next_stack_y := right_column_top
+	if target_card.visible:
+		next_stack_y = target_card.position.y + target_card.size.y + 10.0
+	daily_goal_card.position = Vector2(right_card_x, next_stack_y)
+	loot_card.size = Vector2(right_card_width, 112.0)
+	loot_card.position = Vector2(right_card_x, daily_goal_card.position.y + daily_goal_card.size.y + 10.0)
 	drop_toast_base_position = Vector2(
 		(viewport_size.x - drop_toast.size.x) * 0.5,
 		64.0
@@ -399,7 +425,7 @@ func _apply_daily_goal_typography() -> void:
 		side_goals_label,
 		next_step_label,
 	]:
-		label.add_theme_font_size_override("font_size", 12)
+		label.add_theme_font_size_override("font_size", 9)
 
 
 func _apply_target_card_typography() -> void:
@@ -410,7 +436,7 @@ func _apply_target_card_typography() -> void:
 		codex_label,
 		set_label,
 	]:
-		label.add_theme_font_size_override("font_size", 11)
+		label.add_theme_font_size_override("font_size", 9)
 
 
 func _apply_combat_highlight_style() -> void:
@@ -423,21 +449,30 @@ func _apply_combat_highlight_style() -> void:
 
 func _refresh_target_card() -> void:
 	var advice: Dictionary = GameManager.get_build_advice_data()
+	var equipment_state: Dictionary = GameManager.get_equipment_screen_state()
+	target_title_label.text = "当前 Build"
+	target_card.tooltip_text = "点击打开推演与秘境，查看当前追踪目标与推荐刷图。"
+	daily_goal_card.tooltip_text = "点击打开成长中心，继续推进当前目标。"
+	equip_card.tooltip_text = "点击打开背包，查看纸娃娃与格子库存。"
 	if advice.is_empty():
-		target_label.text = "追踪: --"
-		build_gap_label.text = "缺口: --"
-		next_target_label.text = "下一件: --"
-		codex_label.text = LootCodexSystem.get_codex_summary_text()
+		target_label.text = "当前追踪: --"
+		build_gap_label.text = _truncate_ui_text(String(equipment_state.get("inventory_summary", "Build 缺口: --")), 22)
+		next_target_label.text = _truncate_ui_text(String(equipment_state.get("next_target_line", "下一件: --")), 22)
+		codex_label.text = _truncate_ui_text(String(equipment_state.get("codex_summary_line", LootCodexSystem.get_codex_summary_text())), 22)
 		set_label.text = _build_set_summary_line()
 		return
 
-	target_label.text = String(advice.get("tracked_target_line", "追踪: --"))
-	build_gap_label.text = String(advice.get("gap_line", "缺口: --"))
-	next_target_label.text = String(advice.get("next_target_line", "下一件: --"))
-	codex_label.text = String(advice.get(
-		"stall_summary",
-		String(advice.get("recommendation_line", LootCodexSystem.get_codex_summary_text()))
-	))
+	target_label.text = _truncate_ui_text(String(advice.get("tracked_target_line", "当前追踪: --")).replace("追踪:", "当前追踪:"), 22)
+	build_gap_label.text = _truncate_ui_text(String(advice.get("gap_line", "Build 缺口: --")).replace("缺口:", "Build 缺口:"), 22)
+	next_target_label.text = _truncate_ui_text(String(equipment_state.get(
+		"next_target_line",
+		String(advice.get("next_target_line", "下一件: --"))
+	)), 22)
+	codex_label.text = _truncate_ui_text(String(
+		equipment_state.get("codex_summary_line", "")
+		if not String(equipment_state.get("codex_summary_line", "")).is_empty()
+		else advice.get("stall_summary", String(advice.get("recommendation_line", LootCodexSystem.get_codex_summary_text())))
+	), 22)
 	set_label.text = _build_set_summary_line()
 
 	target_label.add_theme_color_override("font_color", Color(0.92, 0.86, 1.0, 1.0))
@@ -459,31 +494,28 @@ func _build_set_summary_line() -> String:
 	if primary_set.is_empty():
 		return "传承: 当前未激活"
 	var piece_count: int = int(primary_set.get("piece_count", 0))
-	var bonus_segments: Array[String] = []
-	for bonus_variant in primary_set.get("active_bonuses", []):
-		var bonus: Dictionary = bonus_variant
-		bonus_segments.append("%d件: %s" % [
-			int(bonus.get("pieces", 0)),
-			String(bonus.get("summary", "")),
-		])
-	return "传承: %s %d/6 | %s" % [
+	return _truncate_ui_text("传承: %s %d/6" % [
 		String(primary_set.get("name", "传承")),
 		piece_count,
-		" | ".join(bonus_segments),
-	]
+	], 22)
 
 
 func _build_side_goals_text(goals: Array) -> String:
 	if goals.is_empty():
 		return "支线: 暂无"
-	var lines: Array[String] = []
-	for goal_variant in goals:
-		var goal: Dictionary = goal_variant
-		lines.append("%s (%s)" % [
-			String(goal.get("title", "支线目标")),
-			String(goal.get("progress_text", "--")),
-		])
-	return "支线:\n%s" % "\n".join(lines)
+	var first_goal: Dictionary = goals[0]
+	var suffix: String = " 等%d项" % goals.size() if goals.size() > 1 else ""
+	return "支线: %s%s" % [
+		_truncate_ui_text(String(first_goal.get("title", "支线目标")), 10),
+		suffix,
+	]
+
+
+func _truncate_ui_text(text: String, max_chars: int) -> String:
+	var single_line: String = text.replace("\n", " ").strip_edges()
+	if single_line.length() <= max_chars:
+		return single_line
+	return "%s…" % single_line.substr(0, max_chars)
 
 
 func _apply_slot_icons() -> void:
@@ -493,7 +525,7 @@ func _apply_slot_icons() -> void:
 			old_node.queue_free()
 	var title_label_node: Node = equip_card.get_node_or_null("EquipTitleLabel")
 	if title_label_node and title_label_node is Label:
-		title_label_node.text = "装备概览 (9槽)"
+		title_label_node.text = "已穿装备 · 9槽"
 
 	equip_slot_labels.clear()
 	equip_slot_nodes.clear()
@@ -532,6 +564,57 @@ func _apply_loot_icon() -> void:
 	loot_icon.texture = _load_runtime_texture(texture_path)
 
 
+func _on_target_card_input(event: InputEvent) -> void:
+	if _is_primary_click(event):
+		EventBus.ui_panel_requested.emit("drop_stats")
+
+
+func _on_daily_goal_card_input(event: InputEvent) -> void:
+	if _is_primary_click(event):
+		EventBus.ui_panel_requested.emit("research")
+
+
+func _on_equip_card_input(event: InputEvent) -> void:
+	if not _is_primary_click(event):
+		return
+	GameManager.set_ui_focus_request("inventory", {
+		"filter_id": "all",
+		"sort_id": "score_desc",
+	})
+	EventBus.ui_panel_requested.emit("inventory")
+
+
+func _on_loot_card_input(event: InputEvent) -> void:
+	if not _is_primary_click(event):
+		return
+	var highlight: Dictionary = GameManager.get_loot_highlight()
+	if highlight.is_empty():
+		EventBus.ui_panel_requested.emit("inventory")
+		return
+	var item_id: String = String(highlight.get("item_id", ""))
+	if bool(highlight.get("has_legendary_affix", false)) and not item_id.is_empty() and String(highlight.get("action", "")) != "equip":
+		GameManager.set_ui_focus_request("cube", {
+			"page_id": "extract",
+			"selected_entry_id": item_id,
+			"status_text": "已从掉落高光锁定萃取目标",
+		})
+		EventBus.ui_panel_requested.emit("cube")
+		return
+	if String(highlight.get("action", "")) == "equip":
+		GameManager.set_ui_focus_request("inventory", {
+			"selected_slot_id": String(highlight.get("target_slot", highlight.get("slot", ""))),
+			"filter_id": "all",
+			"sort_id": "score_desc",
+		})
+	else:
+		GameManager.set_ui_focus_request("inventory", {
+			"selected_item_id": item_id,
+			"filter_id": "high_value" if bool(highlight.get("is_tracked_target", false)) else "all",
+			"sort_id": "score_desc",
+		})
+	EventBus.ui_panel_requested.emit("inventory")
+
+
 func _maybe_show_drop_toast(highlight_line: String) -> void:
 	var highlight: Dictionary = GameManager.get_loot_highlight()
 	if highlight.is_empty():
@@ -567,6 +650,21 @@ func _maybe_show_drop_toast(highlight_line: String) -> void:
 		drop_toast.scale = Vector2.ONE
 		drop_toast.position = drop_toast_base_position
 	)
+
+
+func _build_loot_card_tooltip() -> String:
+	var highlight: Dictionary = GameManager.get_loot_highlight()
+	if highlight.is_empty():
+		return "点击打开背包，检查最近掉落。"
+	if bool(highlight.get("has_legendary_affix", false)) and String(highlight.get("action", "")) != "equip":
+		return "点击直达百炼坊的萃取页，处理这件武学装备。"
+	if String(highlight.get("action", "")) == "equip":
+		return "点击打开背包，并聚焦已替换上的装备槽位。"
+	return "点击打开背包，并聚焦最近这件高价值掉落。"
+
+
+func _is_primary_click(event: InputEvent) -> bool:
+	return event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
 
 
 func _get_loot_card_modulate(text: String) -> Color:

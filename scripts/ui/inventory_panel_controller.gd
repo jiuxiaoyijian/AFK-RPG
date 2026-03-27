@@ -1,101 +1,339 @@
 extends Control
 
+const ItemCardScene = preload("res://scenes/ui/item_card_button.tscn")
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
+const InventoryViewModelService = preload("res://scripts/utils/inventory_view_model_service.gd")
+
 @onready var title_label: Label = $Panel/TitleLabel
-@onready var threshold_button: Button = $Panel/ThresholdButton
 @onready var summary_label: Label = $Panel/SummaryLabel
-@onready var inventory_list: ItemList = $Panel/InventoryList
-@onready var detail_label: Label = $Panel/DetailLabel
-@onready var list_section_label: Label = $Panel/ListSectionLabel
-@onready var detail_section_label: Label = $Panel/DetailSectionLabel
-@onready var action_section_label: Label = $Panel/ActionSectionLabel
-@onready var action_hint_label: Label = $Panel/ActionHintLabel
-@onready var equip_button: Button = $Panel/EquipButton
-@onready var lock_button: Button = $Panel/LockButton
-@onready var salvage_button: Button = $Panel/SalvageButton
-@onready var close_button: Button = $Panel/CloseButton
+@onready var paper_doll_section_label: Label = $Panel/PaperDollSection/PaperDollSectionLabel
+@onready var paper_doll_summary_label: Label = $Panel/PaperDollSection/PaperDollSummaryLabel
+@onready var paper_doll_grid: GridContainer = $Panel/PaperDollSection/PaperDollGrid
+@onready var inventory_section_label: Label = $Panel/InventorySection/InventorySectionLabel
+@onready var filter_label: Label = $Panel/InventorySection/FilterLabel
+@onready var filter_option: OptionButton = $Panel/InventorySection/FilterOption
+@onready var sort_label: Label = $Panel/InventorySection/SortLabel
+@onready var sort_option: OptionButton = $Panel/InventorySection/SortOption
+@onready var prev_page_button: Button = $Panel/InventorySection/PrevPageButton
+@onready var page_label: Label = $Panel/InventorySection/PageLabel
+@onready var next_page_button: Button = $Panel/InventorySection/NextPageButton
+@onready var inventory_grid: GridContainer = $Panel/InventorySection/InventoryGrid
+@onready var detail_section_label: Label = $Panel/DetailSection/DetailSectionLabel
+@onready var badge_label: Label = $Panel/DetailSection/BadgeLabel
+@onready var detail_label: Label = $Panel/DetailSection/DetailLabel
+@onready var compare_label: Label = $Panel/DetailSection/CompareLabel
+@onready var toolbar_section_label: Label = $Panel/ToolbarSection/ToolbarSectionLabel
+@onready var action_hint_label: Label = $Panel/ToolbarSection/ActionHintLabel
+@onready var threshold_button: Button = $Panel/ToolbarSection/ThresholdButton
+@onready var equip_button: Button = $Panel/ToolbarSection/EquipButton
+@onready var unequip_button: Button = $Panel/ToolbarSection/UnequipButton
+@onready var lock_button: Button = $Panel/ToolbarSection/LockButton
+@onready var salvage_button: Button = $Panel/ToolbarSection/SalvageButton
+@onready var close_button: Button = $Panel/ToolbarSection/CloseButton
 
 var selected_item_id: String = ""
+var selected_slot_id: String = ""
+var current_page: int = 0
+var current_filter_id: String = InventoryViewModelService.FILTER_ALL
+var current_sort_id: String = InventoryViewModelService.SORT_SCORE_DESC
+
+var grid_buttons: Array = []
+var equipment_buttons: Dictionary = {}
+var filter_option_ids: Array[String] = []
+var sort_option_ids: Array[String] = []
 
 
 func _ready() -> void:
 	visible = false
 	_apply_visual_style()
-	inventory_list.item_selected.connect(_on_item_selected)
+	_build_equipment_buttons()
+	_build_inventory_grid()
+	_populate_filter_option()
+	_populate_sort_option()
+
+	filter_option.item_selected.connect(_on_filter_changed)
+	sort_option.item_selected.connect(_on_sort_changed)
+	prev_page_button.pressed.connect(_on_prev_page_pressed)
+	next_page_button.pressed.connect(_on_next_page_pressed)
+	threshold_button.pressed.connect(_on_threshold_pressed)
 	equip_button.pressed.connect(_on_equip_pressed)
+	unequip_button.pressed.connect(_on_unequip_pressed)
 	lock_button.pressed.connect(_on_lock_pressed)
 	salvage_button.pressed.connect(_on_salvage_pressed)
-	threshold_button.pressed.connect(_on_threshold_pressed)
 	close_button.pressed.connect(_on_close_pressed)
 
 	EventBus.inventory_changed.connect(_refresh)
 	EventBus.equipment_changed.connect(_refresh)
 	EventBus.resources_changed.connect(_refresh)
+	EventBus.set_bonus_changed.connect(_refresh)
+	EventBus.martial_codex_changed.connect(_refresh)
 
 	_refresh()
 
 
-func _refresh() -> void:
-	title_label.text = "背包与装备管理"
+func open_panel() -> void:
+	visible = true
+	_apply_open_focus()
+	_refresh()
+
+
+func _refresh(_payload: Variant = null) -> void:
+	title_label.text = "角色与背包"
+	inventory_section_label.text = "格子背包"
+	paper_doll_section_label.text = "角色纸娃娃"
+	detail_section_label.text = "详情与对比"
+	toolbar_section_label.text = "快捷操作"
 	threshold_button.text = GameManager.get_auto_salvage_label()
-	summary_label.text = _build_inventory_summary()
 
-	var previous_selection: String = selected_item_id
+	var screen_state: Dictionary = GameManager.get_inventory_screen_state(
+		current_page,
+		current_filter_id,
+		current_sort_id,
+		selected_item_id,
+		selected_slot_id
+	)
+	if screen_state.get("selected_item", {}).is_empty() and screen_state.get("selected_equipped_item", {}).is_empty():
+		var fallback_id: String = _get_first_visible_item_id(screen_state)
+		if not fallback_id.is_empty():
+			selected_item_id = fallback_id
+			selected_slot_id = ""
+			screen_state = GameManager.get_inventory_screen_state(
+				current_page,
+				current_filter_id,
+				current_sort_id,
+				selected_item_id,
+				selected_slot_id
+			)
+
+	var equipment_state: Dictionary = GameManager.get_equipment_screen_state()
+	summary_label.text = "%s | 格子 %d/%d" % [
+		String(screen_state.get("summary_text", "")),
+		int(screen_state.get("used_count", 0)),
+		int(screen_state.get("capacity", 40)),
+	]
+	paper_doll_summary_label.text = "%s | %s | %s" % [
+		String(equipment_state.get("inventory_summary", "")),
+		String(equipment_state.get("set_summary_line", "")),
+		String(equipment_state.get("codex_summary_line", "")),
+	]
+	page_label.text = "第 %d / %d 页" % [
+		int(screen_state.get("page", 0)) + 1,
+		int(screen_state.get("page_count", 1)),
+	]
+	prev_page_button.disabled = int(screen_state.get("page", 0)) <= 0
+	next_page_button.disabled = int(screen_state.get("page", 0)) >= int(screen_state.get("page_count", 1)) - 1
+	current_page = int(screen_state.get("page", 0))
+
+	_refresh_equipment_buttons(equipment_state)
+	_refresh_grid_buttons(screen_state)
+	_refresh_detail(screen_state)
+
+
+func _refresh_equipment_buttons(equipment_state: Dictionary) -> void:
+	for slot_entry_variant in equipment_state.get("slots", []):
+		var slot_entry: Dictionary = slot_entry_variant
+		var slot_id: String = String(slot_entry.get("slot_id", ""))
+		var button = equipment_buttons.get(slot_id, null)
+		if button == null:
+			continue
+		var is_empty: bool = bool(slot_entry.get("is_empty", true))
+		var accent: Color = Color(0.36, 0.42, 0.50, 1.0) if is_empty else GameManager.get_rarity_color(String(slot_entry.get("rarity", "common")))
+		button.configure({
+			"title": String(slot_entry.get("display_name", slot_id)),
+			"subtitle": String(slot_entry.get("title", "未装备")),
+			"badges": slot_entry.get("badges", []),
+			"tooltip_text": String(slot_entry.get("subtitle", "未装备")),
+			"accent_color": accent,
+			"slot_id": slot_id,
+			"rarity": String(slot_entry.get("rarity", "common")),
+			"selected": selected_slot_id == slot_id and selected_item_id.is_empty(),
+			"compact_mode": "equipment",
+			"min_size": Vector2(70, 72),
+			"is_placeholder": is_empty,
+		})
+
+
+func _refresh_grid_buttons(screen_state: Dictionary) -> void:
+	var entries: Array = screen_state.get("grid_entries", [])
+	for index in range(grid_buttons.size()):
+		var button = grid_buttons[index]
+		var entry: Dictionary = entries[index]
+		var has_item: bool = String(entry.get("kind", "")) == "item"
+		var accent: Color = Color(0.26, 0.30, 0.36, 1.0)
+		if has_item:
+			accent = GameManager.get_rarity_color(String(entry.get("rarity", "common")))
+			if bool(entry.get("is_high_value", false)):
+				accent = accent.lightened(0.08)
+		button.configure({
+			"title": String(entry.get("title", "")) if has_item else "空格",
+			"subtitle": String(entry.get("subtitle", "")) if has_item else "可存放 1 件",
+			"badges": entry.get("badges", []),
+			"tooltip_text": "%s\n%s" % [
+				String(entry.get("title", "")),
+				String(entry.get("subtitle", "")),
+			] if has_item else "空格位",
+			"accent_color": accent,
+			"slot_id": String(entry.get("slot", "")),
+			"rarity": String(entry.get("rarity", "common")),
+			"disabled": not has_item,
+			"selected": has_item and selected_item_id == String(entry.get("item_id", "")),
+			"compact_mode": "grid",
+			"min_size": Vector2(44, 56),
+			"is_placeholder": not has_item,
+		})
+
+
+func _refresh_detail(screen_state: Dictionary) -> void:
+	var selected_item: Dictionary = screen_state.get("selected_item", {})
+	var compare_summary: Dictionary = screen_state.get("compare_summary", {})
+	var badges: Array = screen_state.get("detail_badges", [])
+
+	detail_label.text = String(screen_state.get("detail_text", "未选择物品"))
+	compare_label.text = "%s\n%s" % [
+		String(compare_summary.get("title", "装备对比")),
+		"\n".join(compare_summary.get("lines", [])),
+	]
+	badge_label.text = "标签: %s" % (" | ".join(badges) if not badges.is_empty() else "暂无")
+	detail_label.add_theme_color_override("font_color", _get_selected_color(selected_item))
+	compare_label.add_theme_color_override(
+		"font_color",
+		Color(0.72, 0.90, 0.76, 1.0) if bool(compare_summary.get("is_upgrade", false)) else Color(0.82, 0.86, 0.92, 1.0)
+	)
+
+	var action_state: Dictionary = screen_state.get("action_state", {})
+	equip_button.disabled = not bool(action_state.get("can_equip", false))
+	unequip_button.disabled = not bool(action_state.get("can_unequip", false))
+	lock_button.disabled = not bool(action_state.get("can_lock", false))
+	salvage_button.disabled = not bool(action_state.get("can_salvage", false))
+	lock_button.text = "解锁" if bool(selected_item.get("is_locked", false)) else "锁定"
+	action_hint_label.text = _build_action_hint(screen_state)
+
+	UI_STYLE.style_button(threshold_button, UI_STYLE.COLOR_BLUE, false)
+	UI_STYLE.style_button(equip_button, UI_STYLE.COLOR_GREEN, equip_button.disabled)
+	UI_STYLE.style_button(unequip_button, UI_STYLE.COLOR_BLUE, unequip_button.disabled)
+	UI_STYLE.style_button(lock_button, UI_STYLE.COLOR_GOLD, lock_button.disabled)
+	UI_STYLE.style_button(salvage_button, UI_STYLE.COLOR_RED, salvage_button.disabled)
+	UI_STYLE.style_button(close_button, UI_STYLE.COLOR_TEXT_MUTED, false)
+
+
+func _build_equipment_buttons() -> void:
+	for child in paper_doll_grid.get_children():
+		child.queue_free()
+	equipment_buttons.clear()
+	for slot_id in GameManager.EQUIPMENT_SLOT_ORDER:
+		var button = ItemCardScene.instantiate()
+		button.name = "Equipment_%s" % slot_id
+		button.pressed.connect(_on_equipped_slot_pressed.bind(slot_id))
+		paper_doll_grid.add_child(button)
+		equipment_buttons[slot_id] = button
+
+
+func _build_inventory_grid() -> void:
+	for child in inventory_grid.get_children():
+		child.queue_free()
+	grid_buttons.clear()
+	for index in range(InventoryViewModelService.PAGE_SIZE):
+		var button = ItemCardScene.instantiate()
+		button.name = "InventoryCell_%d" % index
+		button.pressed.connect(_on_grid_button_pressed.bind(index))
+		inventory_grid.add_child(button)
+		grid_buttons.append(button)
+
+
+func _populate_filter_option() -> void:
+	filter_option.clear()
+	filter_option_ids.clear()
+	for entry_variant in InventoryViewModelService.get_filter_options():
+		var entry: Dictionary = entry_variant
+		filter_option.add_item(String(entry.get("label", "全部")))
+		filter_option_ids.append(String(entry.get("id", InventoryViewModelService.FILTER_ALL)))
+	filter_option.select(filter_option_ids.find(current_filter_id))
+
+
+func _populate_sort_option() -> void:
+	sort_option.clear()
+	sort_option_ids.clear()
+	for entry_variant in InventoryViewModelService.get_sort_options():
+		var entry: Dictionary = entry_variant
+		sort_option.add_item(String(entry.get("label", "按评分")))
+		sort_option_ids.append(String(entry.get("id", InventoryViewModelService.SORT_SCORE_DESC)))
+	sort_option.select(sort_option_ids.find(current_sort_id))
+
+
+func _on_grid_button_pressed(index: int) -> void:
+	var screen_state: Dictionary = GameManager.get_inventory_screen_state(
+		current_page,
+		current_filter_id,
+		current_sort_id,
+		selected_item_id,
+		selected_slot_id
+	)
+	var entries: Array = screen_state.get("grid_entries", [])
+	if index < 0 or index >= entries.size():
+		return
+	var entry: Dictionary = entries[index]
+	if String(entry.get("kind", "")) != "item":
+		return
+	selected_item_id = String(entry.get("item_id", ""))
+	selected_slot_id = ""
+	_refresh()
+
+
+func _on_equipped_slot_pressed(slot_id: String) -> void:
+	selected_slot_id = slot_id
 	selected_item_id = ""
-	inventory_list.clear()
-
-	for item in GameManager.get_inventory_items():
-		var item_data: Dictionary = item
-		var label := "%s %s" % [
-			"[锁]" if bool(item_data.get("is_locked", false)) else "",
-			_format_item_short(item_data),
-		]
-		inventory_list.add_item(label.strip_edges())
-		inventory_list.set_item_metadata(inventory_list.item_count - 1, String(item_data.get("id", "")))
-		if String(item_data.get("id", "")) == previous_selection:
-			selected_item_id = previous_selection
-			inventory_list.select(inventory_list.item_count - 1)
-
-	if selected_item_id.is_empty() and inventory_list.item_count > 0:
-		inventory_list.select(0)
-		selected_item_id = String(inventory_list.get_item_metadata(0))
-
-	_refresh_detail()
+	_refresh()
 
 
-func _refresh_detail() -> void:
-	var item: Dictionary = _find_selected_item()
-	detail_label.text = GameManager.get_item_detail_text(item)
-	var has_item: bool = not item.is_empty()
-	equip_button.disabled = not has_item
-	lock_button.disabled = not has_item
-	salvage_button.disabled = not has_item or bool(item.get("is_locked", false))
-	lock_button.text = "解锁" if bool(item.get("is_locked", false)) else "锁定"
-	equip_button.text = "装备到对应槽位" if has_item else "装备"
-	salvage_button.text = "已锁定，无法分解" if bool(item.get("is_locked", false)) else "分解为祠灰"
-	detail_label.add_theme_color_override("font_color", _get_item_detail_color(item))
-	action_hint_label.text = _build_action_hint(item)
-	action_hint_label.add_theme_color_override("font_color", _get_action_hint_color(item))
-	_update_button_style(threshold_button, Color(0.34, 0.52, 0.88, 1.0))
-	_update_button_style(equip_button, Color(0.32, 0.74, 0.48, 1.0) if has_item else Color(0.42, 0.42, 0.46, 1.0))
-	_update_button_style(
-		lock_button,
-		Color(0.84, 0.72, 0.30, 1.0) if has_item else Color(0.42, 0.42, 0.46, 1.0)
-	)
-	_update_button_style(
-		salvage_button,
-		Color(0.86, 0.40, 0.38, 1.0) if not salvage_button.disabled else Color(0.42, 0.42, 0.46, 1.0)
-	)
+func _on_filter_changed(index: int) -> void:
+	if index < 0 or index >= filter_option_ids.size():
+		return
+	current_filter_id = filter_option_ids[index]
+	current_page = 0
+	selected_item_id = ""
+	selected_slot_id = ""
+	_refresh()
 
 
-func _on_item_selected(index: int) -> void:
-	selected_item_id = String(inventory_list.get_item_metadata(index))
-	_refresh_detail()
+func _on_sort_changed(index: int) -> void:
+	if index < 0 or index >= sort_option_ids.size():
+		return
+	current_sort_id = sort_option_ids[index]
+	current_page = 0
+	selected_item_id = ""
+	selected_slot_id = ""
+	_refresh()
+
+
+func _on_prev_page_pressed() -> void:
+	current_page = maxi(0, current_page - 1)
+	selected_item_id = ""
+	selected_slot_id = ""
+	_refresh()
+
+
+func _on_next_page_pressed() -> void:
+	current_page += 1
+	selected_item_id = ""
+	selected_slot_id = ""
+	_refresh()
 
 
 func _on_equip_pressed() -> void:
 	if selected_item_id.is_empty():
 		return
 	GameManager.equip_inventory_item(selected_item_id)
+	selected_item_id = ""
+	selected_slot_id = ""
+	_refresh()
+
+
+func _on_unequip_pressed() -> void:
+	if selected_slot_id.is_empty():
+		return
+	GameManager.unequip_slot(selected_slot_id)
+	selected_item_id = ""
+	selected_slot_id = ""
 	_refresh()
 
 
@@ -110,6 +348,7 @@ func _on_salvage_pressed() -> void:
 	if selected_item_id.is_empty():
 		return
 	GameManager.salvage_inventory_item(selected_item_id)
+	selected_item_id = ""
 	_refresh()
 
 
@@ -122,88 +361,67 @@ func _on_close_pressed() -> void:
 	EventBus.ui_close_requested.emit()
 
 
-func open_panel() -> void:
-	visible = true
-	_refresh()
+func _apply_open_focus() -> void:
+	var focus_request: Dictionary = GameManager.consume_ui_focus_request("inventory")
+	if focus_request.is_empty():
+		return
+	selected_item_id = String(focus_request.get("selected_item_id", selected_item_id))
+	selected_slot_id = String(focus_request.get("selected_slot_id", selected_slot_id))
+	current_filter_id = String(focus_request.get("filter_id", current_filter_id))
+	current_sort_id = String(focus_request.get("sort_id", current_sort_id))
+	current_page = int(focus_request.get("page", current_page))
+	if not selected_item_id.is_empty():
+		selected_slot_id = ""
+	elif not selected_slot_id.is_empty():
+		selected_item_id = ""
+	var filter_index: int = filter_option_ids.find(current_filter_id)
+	if filter_index != -1:
+		filter_option.select(filter_index)
+	var sort_index: int = sort_option_ids.find(current_sort_id)
+	if sort_index != -1:
+		sort_option.select(sort_index)
 
 
-func _find_selected_item() -> Dictionary:
-	for item in GameManager.get_inventory_items():
-		var item_data: Dictionary = item
-		if String(item_data.get("id", "")) == selected_item_id:
-			return item_data
-	return {}
+func _build_action_hint(screen_state: Dictionary) -> String:
+	var selected_item: Dictionary = screen_state.get("selected_inventory_item", {})
+	var selected_equipped_item: Dictionary = screen_state.get("selected_equipped_item", {})
+	if not selected_item.is_empty():
+		return "当前选择: %s | 先看右侧对比，再决定穿戴、锁定或送去百炼坊。" % String(selected_item.get("name", "装备"))
+	if not selected_equipped_item.is_empty():
+		return "当前选择: 已穿戴 %s | 可直接卸下回到格子背包。" % String(selected_equipped_item.get("name", "装备"))
+	return "先从纸娃娃或格子背包里选一件物品。"
 
 
-func _format_item_short(item: Dictionary) -> String:
-	var rarity_display: String = GameManager.get_rarity_display_name(String(item.get("rarity", "common")))
-	return "[%s] %s (%.1f)" % [
-		rarity_display,
-		String(item.get("name", "未知装备")),
-		float(item.get("score", 0.0)),
-	]
-
-
-func _build_inventory_summary() -> String:
-	var inventory_items: Array = GameManager.get_inventory_items()
-	var locked_count: int = 0
-	for item_variant in inventory_items:
-		var item: Dictionary = item_variant
-		if bool(item.get("is_locked", false)):
-			locked_count += 1
-
-	var equipped_count: int = 0
-	for slot in GameManager.EQUIPMENT_SLOT_ORDER:
-		if not GameManager.get_equipped_item(slot).is_empty():
-			equipped_count += 1
-
-	return "库存 %d 件 | 锁定 %d 件 | 已装备 %d/9\n当前刷图关注: %s" % [
-		inventory_items.size(),
-		locked_count,
-		equipped_count,
-		GameManager.get_current_drop_focus(),
-	]
-
-
-func _build_action_hint(item: Dictionary) -> String:
-	if item.is_empty():
-		return "未选择物品 | 先从左侧列表挑一件准备查看或操作"
-
-	var status_label: String = "已锁定，适合留作备选" if bool(item.get("is_locked", false)) else "可装备或分解"
-	return "当前选择: %s | %s | 评分 %.1f" % [
-		String(item.get("name", "未知装备")),
-		status_label,
-		float(item.get("score", 0.0)),
-	]
-
-
-func _get_item_detail_color(item: Dictionary) -> Color:
+func _get_selected_color(item: Dictionary) -> Color:
 	if item.is_empty():
 		return Color(0.82, 0.84, 0.90, 1.0)
-	return _get_rarity_color(String(item.get("rarity", "common")))
+	return GameManager.get_rarity_color(String(item.get("rarity", "common")))
 
 
-func _get_action_hint_color(item: Dictionary) -> Color:
-	if item.is_empty():
-		return Color(0.74, 0.78, 0.86, 1.0)
-	if bool(item.get("is_locked", false)):
-		return Color(0.95, 0.82, 0.40, 1.0)
-	return Color(0.52, 0.86, 0.60, 1.0)
-
-
-func _get_rarity_color(rarity: String) -> Color:
-	return GameManager.get_rarity_color(rarity)
+func _get_first_visible_item_id(screen_state: Dictionary) -> String:
+	for entry_variant in screen_state.get("grid_entries", []):
+		var entry: Dictionary = entry_variant
+		if String(entry.get("kind", "")) == "item":
+			return String(entry.get("item_id", ""))
+	return ""
 
 
 func _apply_visual_style() -> void:
-	title_label.add_theme_color_override("font_color", Color(0.98, 0.92, 0.72, 1.0))
-	summary_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.96, 1.0))
-	list_section_label.add_theme_color_override("font_color", Color(0.66, 0.82, 1.0, 1.0))
-	detail_section_label.add_theme_color_override("font_color", Color(0.72, 0.90, 1.0, 1.0))
-	action_section_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54, 1.0))
-	action_hint_label.add_theme_color_override("font_color", Color(0.78, 0.82, 0.88, 1.0))
-	_update_button_style(close_button, Color(0.50, 0.50, 0.56, 1.0))
-
-
-func _update_button_style(button: Button, color: Color) -> void:
-	button.self_modulate = color
+	UI_STYLE.style_label(title_label, "title")
+	UI_STYLE.style_label(summary_label, "accent")
+	UI_STYLE.style_label(paper_doll_section_label, "heading")
+	UI_STYLE.style_label(paper_doll_summary_label, "muted")
+	UI_STYLE.style_label(inventory_section_label, "heading")
+	UI_STYLE.style_label(filter_label, "tiny")
+	UI_STYLE.style_label(sort_label, "tiny")
+	UI_STYLE.style_label(page_label, "muted")
+	UI_STYLE.style_label(detail_section_label, "heading")
+	UI_STYLE.style_label(badge_label, "warning")
+	UI_STYLE.style_label(toolbar_section_label, "heading")
+	UI_STYLE.style_label(action_hint_label, "muted")
+	detail_label.add_theme_font_size_override("font_size", 12)
+	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	compare_label.add_theme_font_size_override("font_size", 12)
+	compare_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UI_STYLE.style_option_button(filter_option, UI_STYLE.COLOR_BLUE)
+	UI_STYLE.style_option_button(sort_option, UI_STYLE.COLOR_BLUE)

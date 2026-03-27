@@ -135,62 +135,62 @@ offset_bottom = 604.0
 
 [node name="TargetCard" type="Panel" parent="."]
 offset_left = 936.0
-offset_top = 118.0
+offset_top = 78.0
 offset_right = 1264.0
-offset_bottom = 262.0
+offset_bottom = 226.0
 
 [node name="TargetTitleLabel" type="Label" parent="TargetCard"]
 offset_left = 18.0
 offset_top = 10.0
 offset_right = 260.0
 offset_bottom = 28.0
-text = "机缘追踪"
+text = "当前 Build"
 
 [node name="TargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
 offset_top = 30.0
 offset_right = 304.0
-offset_bottom = 46.0
+offset_bottom = 50.0
 autowrap_mode = 2
 text = "追踪: --"
 
 [node name="BuildGapLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 48.0
+offset_top = 50.0
 offset_right = 304.0
-offset_bottom = 64.0
+offset_bottom = 70.0
 autowrap_mode = 2
 text = "缺口: --"
 
 [node name="NextTargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 66.0
+offset_top = 72.0
 offset_right = 304.0
-offset_bottom = 82.0
+offset_bottom = 92.0
 autowrap_mode = 2
 text = "下一件: --"
 
 [node name="CodexLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 84.0
+offset_top = 94.0
 offset_right = 304.0
-offset_bottom = 106.0
+offset_bottom = 114.0
 autowrap_mode = 2
 text = "推荐: --"
 
 [node name="SetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 108.0
+offset_top = 116.0
 offset_right = 304.0
-offset_bottom = 134.0
+offset_bottom = 138.0
 autowrap_mode = 2
 text = "传承: 当前未激活"
 
 [node name="DailyGoalCard" type="Panel" parent="."]
 offset_left = 936.0
-offset_top = 250.0
+offset_top = 236.0
 offset_right = 1264.0
-offset_bottom = 388.0
+offset_bottom = 376.0
 
 [node name="DailyGoalIcon" type="TextureRect" parent="DailyGoalCard"]
 offset_left = 18.0
@@ -205,44 +205,44 @@ offset_left = 50.0
 offset_top = 12.0
 offset_right = 244.0
 offset_bottom = 28.0
-text = "今日机缘"
+text = "当前目标"
 
 [node name="PrimaryGoalLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
 offset_left = 18.0
 offset_top = 28.0
 offset_right = 310.0
-offset_bottom = 44.0
+offset_bottom = 46.0
 autowrap_mode = 2
 text = "主目标: --"
 
 [node name="PrimaryProgressLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 46.0
+offset_top = 48.0
 offset_right = 300.0
-offset_bottom = 60.0
+offset_bottom = 64.0
 text = "进度: --"
 
 [node name="PrimaryCtaLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 62.0
+offset_top = 68.0
 offset_right = 304.0
-offset_bottom = 82.0
+offset_bottom = 88.0
 autowrap_mode = 2
 text = "建议: --"
 
 [node name="SideGoalsLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 84.0
+offset_top = 92.0
 offset_right = 304.0
-offset_bottom = 108.0
+offset_bottom = 116.0
 autowrap_mode = 2
 text = "支线: --"
 
 [node name="NextStepLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
 offset_left = 18.0
-offset_top = 110.0
+offset_top = 118.0
 offset_right = 304.0
-offset_bottom = 132.0
+offset_bottom = 136.0
 autowrap_mode = 2
 text = "回来先做什么: --"
 
@@ -266,7 +266,7 @@ offset_left = 12.0
 offset_top = 8.0
 offset_right = 200.0
 offset_bottom = 26.0
-text = "装备概览"
+text = "已穿装备 · 9槽"
 
 [node name="WeaponSlot" type="Panel" parent="EquipCard"]
 offset_left = 12.0
@@ -418,15 +418,15 @@ text = "--"
 
 [node name="LootCard" type="Panel" parent="."]
 offset_left = 936.0
-offset_top = 412.0
+offset_top = 386.0
 offset_right = 1264.0
-offset_bottom = 510.0
+offset_bottom = 486.0
 
 [node name="CardArt" type="TextureRect" parent="LootCard"]
 offset_left = 0.0
 offset_top = 0.0
 offset_right = 328.0
-offset_bottom = 98.0
+offset_bottom = 100.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
@@ -442,7 +442,7 @@ text = "最近掉落"
 offset_left = 68.0
 offset_top = 32.0
 offset_right = 356.0
-offset_bottom = 52.0
+offset_bottom = 58.0
 text = "高价值掉落"
 
 [node name="LootIcon" type="TextureRect" parent="LootCard" unique_name_in_owner="true"]
@@ -458,7 +458,7 @@ stretch_mode = 5
 offset_left = 18.0
 offset_top = 58.0
 offset_right = 356.0
-offset_bottom = 84.0
+offset_bottom = 88.0
 autowrap_mode = 2
 text = "最近掉落摘要"
 

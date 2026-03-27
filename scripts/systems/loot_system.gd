@@ -139,7 +139,9 @@ func _pick_better_highlight(current_best: Dictionary, item: Dictionary, result: 
 	var legendary_affix_id: String = String(legendary_affix.get("legendary_affix_id", ""))
 	var is_tracked_target: bool = not legendary_affix_id.is_empty() and legendary_affix_id == LootCodexSystem.tracked_legendary_affix_id
 	var candidate: Dictionary = {
+		"item_id": String(item.get("id", "")),
 		"slot": String(item.get("slot", "")),
+		"target_slot": String(result.get("target_slot", String(item.get("slot", "")))),
 		"rarity": String(item.get("rarity", "common")),
 		"item_name": String(result.get("item_name", item.get("name", ""))),
 		"action": String(result.get("action", "none")),

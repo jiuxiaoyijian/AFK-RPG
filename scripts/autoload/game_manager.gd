@@ -2,6 +2,10 @@ extends Node
 
 const BuildQueryService = preload("res://scripts/utils/build_query_service.gd")
 const CubeSystem = preload("res://scripts/systems/cube_system.gd")
+const CubeViewModelService = preload("res://scripts/utils/cube_view_model_service.gd")
+const EquipmentViewModelService = preload("res://scripts/utils/equipment_view_model_service.gd")
+const InventoryViewModelService = preload("res://scripts/utils/inventory_view_model_service.gd")
+const ItemPresentationService = preload("res://scripts/utils/item_presentation_service.gd")
 const LootRuleService = preload("res://scripts/utils/loot_rule_service.gd")
 const MartialCodexSystem = preload("res://scripts/systems/martial_codex_system.gd")
 const SetSystem = preload("res://scripts/systems/set_system.gd")
@@ -189,6 +193,7 @@ var rift_state: Dictionary = RiftSystem.create_default_state()
 var gem_state: Dictionary = GemSystem.create_default_state()
 var paragon_state: Dictionary = ParagonSystem.create_default_state()
 var season_state: Dictionary = SeasonSystem.create_default_state()
+var pending_ui_focus: Dictionary = {}
 const SALVAGE_THRESHOLDS := ["common", "uncommon", "rare", "epic", "set", "legendary", "ancient"]
 const RESEARCH_META_KEYS := {
 	"offline_efficiency_bonus": 0.0,
@@ -572,6 +577,7 @@ func process_loot_item(item: Dictionary) -> Dictionary:
 		equipped_items[target_slot] = item
 		refresh_build_state()
 		result["action"] = "equip"
+		result["target_slot"] = target_slot
 		if not old_item.is_empty():
 			_store_or_salvage_item(old_item, result)
 		EventBus.equipment_changed.emit()
@@ -625,6 +631,62 @@ func get_inventory_items() -> Array:
 	return inventory
 
 
+func set_ui_focus_request(panel_id: String, payload: Dictionary = {}) -> void:
+	pending_ui_focus[panel_id] = payload.duplicate(true)
+
+
+func consume_ui_focus_request(panel_id: String) -> Dictionary:
+	if not pending_ui_focus.has(panel_id):
+		return {}
+	var payload: Dictionary = pending_ui_focus.get(panel_id, {}).duplicate(true)
+	pending_ui_focus.erase(panel_id)
+	return payload
+
+
+func get_inventory_screen_state(
+	page: int = 0,
+	filter_id: String = InventoryViewModelService.FILTER_ALL,
+	sort_id: String = InventoryViewModelService.SORT_SCORE_DESC,
+	selected_item_id: String = "",
+	selected_slot_id: String = ""
+) -> Dictionary:
+	return InventoryViewModelService.build_screen_state(
+		inventory,
+		equipped_items,
+		page,
+		filter_id,
+		sort_id,
+		selected_item_id,
+		selected_slot_id
+	)
+
+
+func get_equipment_screen_state() -> Dictionary:
+	return EquipmentViewModelService.build_screen_state(
+		equipped_items,
+		inventory,
+		set_summary,
+		get_martial_codex_runtime_state(),
+		get_build_advice_data()
+	)
+
+
+func get_cube_screen_state(
+	page_id: String,
+	selected_entry_id: String = "",
+	selected_target_slot: String = "",
+	selected_affix_index: int = -1
+) -> Dictionary:
+	return CubeViewModelService.build_screen_state(
+		page_id,
+		inventory,
+		get_martial_codex_runtime_state(),
+		selected_entry_id,
+		selected_target_slot,
+		selected_affix_index
+	)
+
+
 func get_auto_salvage_label() -> String:
 	return "自动分解低于: %s" % get_rarity_display_name(auto_salvage_below_rarity)
 
@@ -674,6 +736,14 @@ func get_item_detail_text(item: Dictionary) -> String:
 	return "\n".join(lines)
 
 
+func get_item_card_title(item: Dictionary) -> String:
+	return ItemPresentationService.build_item_title(item)
+
+
+func get_item_card_subtitle(item: Dictionary) -> String:
+	return ItemPresentationService.build_item_subtitle(item)
+
+
 func get_loot_summary_lines(limit: int = 3) -> Array[String]:
 	var lines: Array[String] = []
 	for line_variant in String(last_loot_summary).split("\n", false):
@@ -714,6 +784,20 @@ func equip_inventory_item(item_id: String) -> void:
 		EventBus.inventory_changed.emit()
 		EventBus.resources_changed.emit()
 		return
+
+
+func unequip_slot(slot_id: String) -> void:
+	if not equipped_items.has(slot_id):
+		return
+	var item: Dictionary = equipped_items.get(slot_id, {})
+	if item.is_empty():
+		return
+	equipped_items[slot_id] = {}
+	inventory.append(item)
+	refresh_build_state()
+	EventBus.equipment_changed.emit()
+	EventBus.inventory_changed.emit()
+	EventBus.resources_changed.emit()
 
 
 func execute_cube_recipe(recipe_id: String, item_id: String, options: Dictionary = {}, equipment_generator: Node = null) -> Dictionary:
