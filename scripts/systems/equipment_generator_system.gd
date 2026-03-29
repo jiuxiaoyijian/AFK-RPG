@@ -9,11 +9,6 @@ const RARITY_AFFIX_COUNTS := {
 	"legendary": 5,
 	"ancient": 6,
 }
-const ARCHETYPE_SET_IDS := {
-	"whirlwind": "set_wind",
-	"bleed": "set_blood",
-	"chain_lightning": "set_thunder",
-}
 
 
 func generate_equipment_for_profile(drop_profile: Dictionary) -> Dictionary:
@@ -25,257 +20,47 @@ func generate_equipment_for_profile(drop_profile: Dictionary) -> Dictionary:
 	var guaranteed_legendary_affix: bool = bool(equipment_rules.get("guaranteed_legendary_affix", false))
 	var legendary_source_type: String = String(equipment_rules.get("required_legendary_source_type", ""))
 	var profile_type: String = String(drop_profile.get("profile_type", "normal"))
-	var selected_tags: Array = GameManager.get_selected_archetype_tags() if prefer_current_build else []
-	var generated_rarity: String = _pick_rarity(allowed_rarities)
-	var item_level: int = randi_range(item_level_min, item_level_max)
-	var base_candidates: Array = _get_base_candidates_by_level(item_level_min, item_level_max)
-	if base_candidates.is_empty():
-		return {}
-
-	var set_data: Dictionary = {}
-	if generated_rarity == "set":
-		set_data = _pick_set_definition(selected_tags)
-		base_candidates = _get_set_base_candidates(set_data, item_level_min, item_level_max)
-		if base_candidates.is_empty():
-			return {}
-
-	var base_pick: Dictionary = _pick_base(base_candidates, selected_tags)
-	var item: Dictionary = _build_item_from_base(
-		base_pick,
-		generated_rarity,
-		item_level,
-		selected_tags,
-		profile_type,
-		guaranteed_legendary_affix,
-		legendary_source_type
-	)
-	if generated_rarity == "set":
-		_apply_set_data(item, set_data)
-	item["score"] = _calculate_item_score(item)
-	return item
-
-
-func generate_debug_item(
-	base_id: String,
-	rarity: String = "rare",
-	item_level: int = -1,
-	prefer_current_build: bool = true,
-	force_legendary: bool = false
-) -> Dictionary:
-	var base_pick: Dictionary = _get_base_entry(base_id)
-	if base_pick.is_empty():
-		return {}
 
 	var selected_tags: Array = GameManager.get_selected_archetype_tags() if prefer_current_build else []
-	var resolved_item_level: int = item_level if item_level > 0 else int(base_pick.get("item_level", 1))
-	var generated_rarity: String = rarity if GameManager.get_rarity_rank(rarity) > 0 else "rare"
-	var item: Dictionary = _build_item_from_base(
-		base_pick,
-		generated_rarity,
-		resolved_item_level,
-		selected_tags,
-		"boss",
-		force_legendary,
-		""
-	)
-	if generated_rarity == "set":
-		var set_data: Dictionary = _pick_set_definition_for_slot(String(base_pick.get("slot", "")), selected_tags)
-		if not set_data.is_empty():
-			_apply_set_data(item, set_data)
-	item["score"] = _calculate_item_score(item)
-	return item
-
-
-func upgrade_rare_item(item: Dictionary) -> Dictionary:
-	if String(item.get("rarity", "")) != "rare":
-		return {}
-	var base_pick: Dictionary = _get_base_entry(String(item.get("base_id", "")))
-	if base_pick.is_empty():
-		return {}
-	var selected_tags: Array = GameManager.get_selected_archetype_tags()
-	var upgraded: Dictionary = _build_item_shell(base_pick, "epic", int(item.get("item_level", 1)))
-	_copy_item_identity(item, upgraded)
-	_populate_affixes(
-		upgraded,
-		base_pick,
-		selected_tags,
-		"normal",
-		_build_locked_affix_map(item.get("affixes", [])),
-		RARITY_AFFIX_COUNTS["epic"]
-	)
-	upgraded["legendary_affix"] = _roll_best_legendary_affix(base_pick, selected_tags, "normal", "", "epic")
-	upgraded["score"] = _calculate_item_score(upgraded)
-	return upgraded
-
-
-func reforge_item(item: Dictionary) -> Dictionary:
-	var rarity: String = String(item.get("rarity", "common"))
-	if GameManager.get_rarity_rank(rarity) < GameManager.get_rarity_rank("epic"):
-		return {}
-	var base_pick: Dictionary = _get_base_entry(String(item.get("base_id", "")))
-	if base_pick.is_empty():
-		return {}
-	var selected_tags: Array = GameManager.get_selected_archetype_tags()
-	var reforged: Dictionary = _build_item_shell(base_pick, rarity, int(item.get("item_level", 1)))
-	_copy_item_identity(item, reforged)
-	if not String(item.get("set_id", "")).is_empty():
-		reforged["set_id"] = String(item.get("set_id", ""))
-		reforged["set_name"] = String(item.get("set_name", ""))
-	_populate_affixes(reforged, base_pick, selected_tags, "normal", {}, RARITY_AFFIX_COUNTS.get(rarity, 1))
-	reforged["legendary_affix"] = _roll_best_legendary_affix(base_pick, selected_tags, "normal", "", rarity)
-	reforged.erase("refine_slot_index")
-	reforged.erase("refine_count")
-	reforged["score"] = _calculate_item_score(reforged)
-	return reforged
-
-
-func convert_set_item(item: Dictionary, target_slot: String) -> Dictionary:
-	if String(item.get("rarity", "")) != "set":
-		return {}
-	var set_id: String = String(item.get("set_id", ""))
-	var set_data: Dictionary = ConfigDB.get_set(set_id)
-	if set_data.is_empty():
-		return {}
-	if target_slot.is_empty():
-		return {}
-	if _slots_compatible(String(item.get("slot", "")), target_slot):
-		return {}
-	var slot_candidates: Array = []
-	for allowed_slot_variant in set_data.get("piece_slots", []):
-		if _slots_compatible(String(allowed_slot_variant), target_slot):
-			slot_candidates.append(allowed_slot_variant)
-	if slot_candidates.is_empty():
-		return {}
-
-	var base_candidates: Array = _get_set_base_candidates(set_data, int(item.get("item_level", 1)), int(item.get("item_level", 1)), target_slot)
-	if base_candidates.is_empty():
-		return {}
-	var selected_tags: Array = GameManager.get_selected_archetype_tags()
-	var base_pick: Dictionary = _pick_base(base_candidates, selected_tags)
-	var converted: Dictionary = _build_item_shell(base_pick, "set", int(item.get("item_level", 1)))
-	_copy_item_identity(item, converted)
-	_apply_set_data(converted, set_data)
-	_populate_affixes(converted, base_pick, selected_tags, "normal", {}, RARITY_AFFIX_COUNTS["set"])
-	converted["legendary_affix"] = _roll_best_legendary_affix(base_pick, selected_tags, "normal", "", "set")
-	converted.erase("refine_slot_index")
-	converted.erase("refine_count")
-	converted["score"] = _calculate_item_score(converted)
-	return converted
-
-
-func refine_affix_item(item: Dictionary, affix_index: int) -> Dictionary:
-	var rarity: String = String(item.get("rarity", "common"))
-	if GameManager.get_rarity_rank(rarity) < GameManager.get_rarity_rank("epic"):
-		return {}
-	var current_affixes: Array = item.get("affixes", [])
-	if current_affixes.is_empty():
-		return {}
-	var locked_index: int = int(item.get("refine_slot_index", affix_index))
-	if locked_index < 0 or locked_index >= current_affixes.size():
-		return {}
-	if item.has("refine_slot_index") and locked_index != int(item.get("refine_slot_index", locked_index)):
-		return {}
-	var base_pick: Dictionary = _get_base_entry(String(item.get("base_id", "")))
-	if base_pick.is_empty():
-		return {}
-	var selected_tags: Array = GameManager.get_selected_archetype_tags()
-	var refined: Dictionary = item.duplicate(true)
-	_copy_item_identity(item, refined)
-	var locked_affixes: Dictionary = {}
-	for index in range(current_affixes.size()):
-		if index == locked_index:
-			continue
-		var current_affix: Dictionary = current_affixes[index]
-		locked_affixes[index] = current_affix.duplicate(true)
-	_populate_affixes(refined, base_pick, selected_tags, "normal", locked_affixes, current_affixes.size())
-	refined["refine_slot_index"] = locked_index
-	refined["refine_count"] = int(item.get("refine_count", 0)) + 1
-	refined["score"] = _calculate_item_score(refined)
-	return refined
-
-
-func _get_base_candidates_by_level(item_level_min: int, item_level_max: int) -> Array:
 	var base_candidates: Array = []
 	for entry in ConfigDB.get_all_equipment_bases():
 		var base_entry: Dictionary = entry
 		var entry_level: int = int(base_entry.get("item_level", 1))
 		if entry_level >= item_level_min and entry_level <= item_level_max:
 			base_candidates.append(base_entry)
-	return base_candidates
 
+	if base_candidates.is_empty():
+		return {}
 
-func _build_item_from_base(
-	base_pick: Dictionary,
-	rarity: String,
-	item_level: int,
-	selected_tags: Array,
-	profile_type: String,
-	guaranteed_legendary_affix: bool,
-	legendary_source_type: String
-) -> Dictionary:
-	var item: Dictionary = _build_item_shell(base_pick, rarity, item_level)
-	_populate_affixes(item, base_pick, selected_tags, profile_type, {}, RARITY_AFFIX_COUNTS.get(rarity, 1))
-	if guaranteed_legendary_affix or rarity == "set" or GameManager.get_rarity_rank(rarity) >= GameManager.get_rarity_rank("legendary"):
-		item["legendary_affix"] = _roll_best_legendary_affix(base_pick, selected_tags, profile_type, legendary_source_type, rarity)
-	return item
+	var base_pick: Dictionary = _pick_base(base_candidates, selected_tags)
+	var generated_rarity: String = _pick_rarity(allowed_rarities)
+	var item_level: int = randi_range(item_level_min, item_level_max)
+	var is_primal: bool = generated_rarity == "ancient"
+	var affix_count: int = RARITY_AFFIX_COUNTS.get(generated_rarity, 1)
 
-
-func _build_item_shell(base_pick: Dictionary, rarity: String, item_level: int) -> Dictionary:
 	var item: Dictionary = {
-		"id": _generate_item_id(String(base_pick.get("id", "item"))),
+		"id": "%s_%d" % [String(base_pick.get("id", "item")), Time.get_ticks_msec()],
 		"base_id": String(base_pick.get("id", "")),
 		"slot": String(base_pick.get("slot", "")),
 		"name": String(base_pick.get("name", "装备")),
-		"rarity": rarity,
+		"rarity": generated_rarity,
 		"item_level": item_level,
 		"base_stats": [],
 		"affixes": [],
 		"legendary_affix": {},
 		"score": 0.0,
 	}
-	for stat_entry_variant in base_pick.get("base_stats", []):
-		var stat_entry: Dictionary = stat_entry_variant
-		item["base_stats"].append({
+
+	for stat_entry in base_pick.get("base_stats", []):
+		var cloned: Dictionary = {
 			"stat_key": String(stat_entry.get("stat_key", "")),
 			"value": float(stat_entry.get("value", 0.0)) + item_level * 0.5,
-		})
-	return item
+		}
+		item["base_stats"].append(cloned)
 
-
-func _copy_item_identity(source_item: Dictionary, target_item: Dictionary) -> void:
-	target_item["id"] = _generate_item_id(String(target_item.get("base_id", "item")))
-	target_item["is_locked"] = bool(source_item.get("is_locked", false))
-	if source_item.has("set_id"):
-		target_item["set_id"] = String(source_item.get("set_id", ""))
-	if source_item.has("set_name"):
-		target_item["set_name"] = String(source_item.get("set_name", ""))
-
-
-func _apply_set_data(item: Dictionary, set_data: Dictionary) -> void:
-	item["set_id"] = String(set_data.get("id", ""))
-	item["set_name"] = String(set_data.get("name", ""))
-
-
-func _populate_affixes(
-	item: Dictionary,
-	base_pick: Dictionary,
-	selected_tags: Array,
-	profile_type: String,
-	locked_affixes: Dictionary,
-	desired_affix_count: int
-) -> void:
-	var result_affixes: Array = []
 	var used_affix_ids: Array[String] = []
 	var used_buckets: Array[String] = []
-	for index in range(desired_affix_count):
-		if locked_affixes.has(index):
-			var locked_affix: Dictionary = locked_affixes[index]
-			result_affixes.append(locked_affix)
-			used_affix_ids.append(String(locked_affix.get("affix_id", "")))
-			var locked_bucket: String = String(locked_affix.get("bucket", ""))
-			if not locked_bucket.is_empty():
-				used_buckets.append(locked_bucket)
-			continue
+	for _i in affix_count:
 		var affix: Dictionary = _pick_affix(
 			String(base_pick.get("slot", "")),
 			base_pick.get("affix_pool_tags", []),
@@ -290,142 +75,125 @@ func _populate_affixes(
 		var bucket: String = String(affix.get("bucket", ""))
 		if not bucket.is_empty():
 			used_buckets.append(bucket)
-		result_affixes.append({
+		item["affixes"].append({
 			"affix_id": String(affix.get("id", "")),
 			"name": String(affix.get("name", "")),
 			"stat_key": String(affix.get("stat_key", "")),
 			"bucket": bucket,
-			"value": _roll_affix_value(affix) if rarity_is_primal(String(item.get("rarity", ""))) == false else float(affix.get("value_max", 0.0)),
+			"value": _roll_affix_value(affix) if not is_primal else float(affix.get("value_max", 0.0)),
 			"score_weight": float(affix.get("score_weight", 1.0)),
 			"archetype_tags": affix.get("archetype_tags", []),
 		})
-	item["affixes"] = result_affixes
+
+	if guaranteed_legendary_affix or GameManager.get_rarity_rank(generated_rarity) >= GameManager.get_rarity_rank("legendary"):
+		var legendary_affix: Dictionary = _pick_legendary_affix(
+			String(base_pick.get("slot", "")),
+			base_pick.get("legendary_pool_tags", []),
+			selected_tags,
+			profile_type,
+			legendary_source_type
+		)
+		if not legendary_affix.is_empty():
+			item["legendary_affix"] = {
+				"legendary_affix_id": String(legendary_affix.get("id", "")),
+				"name": String(legendary_affix.get("name", "")),
+				"description": String(legendary_affix.get("description", "")),
+				"archetype_tags": legendary_affix.get("archetype_tags", []),
+				"stat_key": String(legendary_affix.get("stat_key", "")),
+				"value": _roll_legendary_value(legendary_affix, "value_min", "value_max") if not is_primal else float(legendary_affix.get("value_max", 0.0)),
+				"secondary_stat_key": String(legendary_affix.get("secondary_stat_key", "")),
+				"secondary_value": _roll_legendary_value(legendary_affix, "secondary_value_min", "secondary_value_max") if not is_primal else float(legendary_affix.get("secondary_value_max", 0.0)),
+			}
+
+	item["score"] = _calculate_item_score(item)
+	return item
 
 
-func rarity_is_primal(rarity: String) -> bool:
-	return rarity == "ancient"
+func generate_debug_item(
+	base_id: String,
+	rarity: String = "rare",
+	item_level: int = -1,
+	prefer_current_build: bool = true,
+	force_legendary: bool = false
+) -> Dictionary:
+	var base_pick: Dictionary = ConfigDB.equipment_bases.get(base_id, {})
+	if base_pick.is_empty():
+		return {}
 
+	var selected_tags: Array = GameManager.get_selected_archetype_tags() if prefer_current_build else []
+	var resolved_item_level: int = item_level if item_level > 0 else int(base_pick.get("item_level", 1))
+	var generated_rarity: String = rarity if GameManager.get_rarity_rank(rarity) > 0 else "rare"
+	var is_primal: bool = generated_rarity == "ancient"
+	var affix_count: int = RARITY_AFFIX_COUNTS.get(generated_rarity, 2)
 
-func _build_locked_affix_map(affixes: Array) -> Dictionary:
-	var locked_affixes: Dictionary = {}
-	for index in range(affixes.size()):
-		var affix_data: Dictionary = affixes[index]
-		locked_affixes[index] = affix_data.duplicate(true)
-	return locked_affixes
+	var item: Dictionary = {
+		"id": "%s_debug_%d" % [String(base_pick.get("id", "item")), Time.get_ticks_usec()],
+		"base_id": String(base_pick.get("id", "")),
+		"slot": String(base_pick.get("slot", "")),
+		"name": String(base_pick.get("name", "装备")),
+		"rarity": generated_rarity,
+		"item_level": resolved_item_level,
+		"base_stats": [],
+		"affixes": [],
+		"legendary_affix": {},
+		"score": 0.0,
+	}
 
+	for stat_entry in base_pick.get("base_stats", []):
+		item["base_stats"].append({
+			"stat_key": String(stat_entry.get("stat_key", "")),
+			"value": float(stat_entry.get("value", 0.0)) + resolved_item_level * 0.5,
+		})
 
-func _roll_best_legendary_affix(base_pick: Dictionary, selected_tags: Array, profile_type: String, required_source_type: String, rarity: String) -> Dictionary:
-	var is_primal: bool = rarity_is_primal(rarity)
-	var legendary_affix: Dictionary = _pick_legendary_affix(
-		String(base_pick.get("slot", "")),
-		base_pick.get("legendary_pool_tags", []),
-		selected_tags,
-		profile_type,
-		required_source_type
-	)
-	if legendary_affix.is_empty():
-		legendary_affix = _pick_legendary_affix(
+	var used_affix_ids: Array[String] = []
+	var used_buckets: Array[String] = []
+	for _i in affix_count:
+		var affix: Dictionary = _pick_affix(
+			String(base_pick.get("slot", "")),
+			base_pick.get("affix_pool_tags", []),
+			selected_tags,
+			"boss",
+			used_affix_ids,
+			used_buckets
+		)
+		if affix.is_empty():
+			continue
+		used_affix_ids.append(String(affix.get("id", "")))
+		var bucket: String = String(affix.get("bucket", ""))
+		if not bucket.is_empty():
+			used_buckets.append(bucket)
+		item["affixes"].append({
+			"affix_id": String(affix.get("id", "")),
+			"name": String(affix.get("name", "")),
+			"stat_key": String(affix.get("stat_key", "")),
+			"bucket": bucket,
+			"value": _roll_affix_value(affix) if not is_primal else float(affix.get("value_max", 0.0)),
+			"score_weight": float(affix.get("score_weight", 1.0)),
+			"archetype_tags": affix.get("archetype_tags", []),
+		})
+
+	if force_legendary or GameManager.get_rarity_rank(generated_rarity) >= GameManager.get_rarity_rank("legendary"):
+		var legendary_affix: Dictionary = _pick_legendary_affix(
 			String(base_pick.get("slot", "")),
 			base_pick.get("legendary_pool_tags", []),
 			selected_tags,
 			"boss",
 			""
 		)
-	if legendary_affix.is_empty():
-		return {}
-	return {
-		"legendary_affix_id": String(legendary_affix.get("id", "")),
-		"name": String(legendary_affix.get("name", "")),
-		"description": String(legendary_affix.get("description", "")),
-		"archetype_tags": legendary_affix.get("archetype_tags", []),
-		"stat_key": String(legendary_affix.get("stat_key", "")),
-		"value": _roll_legendary_value(legendary_affix, "value_min", "value_max") if not is_primal else float(legendary_affix.get("value_max", 0.0)),
-		"secondary_stat_key": String(legendary_affix.get("secondary_stat_key", "")),
-		"secondary_value": _roll_legendary_value(legendary_affix, "secondary_value_min", "secondary_value_max") if not is_primal else float(legendary_affix.get("secondary_value_max", 0.0)),
-	}
+		if not legendary_affix.is_empty():
+			item["legendary_affix"] = {
+				"legendary_affix_id": String(legendary_affix.get("id", "")),
+				"name": String(legendary_affix.get("name", "")),
+				"description": String(legendary_affix.get("description", "")),
+				"archetype_tags": legendary_affix.get("archetype_tags", []),
+				"stat_key": String(legendary_affix.get("stat_key", "")),
+				"value": _roll_legendary_value(legendary_affix, "value_min", "value_max") if not is_primal else float(legendary_affix.get("value_max", 0.0)),
+				"secondary_stat_key": String(legendary_affix.get("secondary_stat_key", "")),
+				"secondary_value": _roll_legendary_value(legendary_affix, "secondary_value_min", "secondary_value_max") if not is_primal else float(legendary_affix.get("secondary_value_max", 0.0)),
+			}
 
-
-func _pick_set_definition(selected_tags: Array) -> Dictionary:
-	var candidate_sets: Array = ConfigDB.get_all_sets()
-	if candidate_sets.is_empty():
-		return {}
-	var weighted_pool: Array = []
-	var preferred_set_id: String = ""
-	for tag_variant in selected_tags:
-		var tag: String = String(tag_variant)
-		if ARCHETYPE_SET_IDS.has(tag):
-			preferred_set_id = String(ARCHETYPE_SET_IDS.get(tag, ""))
-			break
-	for set_variant in candidate_sets:
-		var set_data: Dictionary = set_variant
-		var copies: int = 1
-		if String(set_data.get("id", "")) == preferred_set_id:
-			copies = 4
-		for _copy in range(copies):
-			weighted_pool.append(set_data)
-	return weighted_pool[randi() % weighted_pool.size()]
-
-
-func _pick_set_definition_for_slot(slot: String, selected_tags: Array) -> Dictionary:
-	var candidate_sets: Array = []
-	for set_variant in ConfigDB.get_all_sets():
-		var set_data: Dictionary = set_variant
-		for set_slot_variant in set_data.get("piece_slots", []):
-			if _slots_compatible(String(set_slot_variant), slot):
-				candidate_sets.append(set_data)
-				break
-	if candidate_sets.is_empty():
-		return {}
-	var preferred_set_id: String = ""
-	for tag_variant in selected_tags:
-		var tag: String = String(tag_variant)
-		if ARCHETYPE_SET_IDS.has(tag):
-			preferred_set_id = String(ARCHETYPE_SET_IDS.get(tag, ""))
-			break
-	for set_data_variant in candidate_sets:
-		var set_data: Dictionary = set_data_variant
-		if String(set_data.get("id", "")) == preferred_set_id:
-			return set_data
-	return candidate_sets[randi() % candidate_sets.size()]
-
-
-func _get_set_base_candidates(set_data: Dictionary, item_level_min: int, item_level_max: int, target_slot: String = "") -> Array:
-	var candidates: Array = []
-	if set_data.is_empty():
-		return candidates
-	for entry in ConfigDB.get_all_equipment_bases():
-		var base_entry: Dictionary = entry
-		var entry_level: int = int(base_entry.get("item_level", 1))
-		if entry_level < item_level_min or entry_level > item_level_max:
-			continue
-		var base_slot: String = String(base_entry.get("slot", ""))
-		var matches_set: bool = false
-		for piece_slot_variant in set_data.get("piece_slots", []):
-			if _slots_compatible(base_slot, String(piece_slot_variant)):
-				matches_set = true
-				break
-		if not matches_set:
-			continue
-		if not target_slot.is_empty() and not _slots_compatible(base_slot, target_slot):
-			continue
-		candidates.append(base_entry)
-	return candidates
-
-
-func _get_base_entry(base_id: String) -> Dictionary:
-	return ConfigDB.equipment_bases.get(base_id, {})
-
-
-func _generate_item_id(base_id: String) -> String:
-	return "%s_%d" % [base_id, Time.get_ticks_usec()]
-
-
-func _slots_compatible(slot_a: String, slot_b: String) -> bool:
-	return _normalize_slot(slot_a) == _normalize_slot(slot_b)
-
-
-func _normalize_slot(slot_id: String) -> String:
-	return "accessory" if slot_id.begins_with("accessory") else slot_id
+	item["score"] = _calculate_item_score(item)
+	return item
 
 
 func _pick_base(base_candidates: Array, selected_tags: Array) -> Dictionary:
@@ -470,23 +238,9 @@ func _pick_rarity(allowed_rarities: Array) -> String:
 	for rarity in allowed_rarities:
 		current += int(weights.get(String(rarity), 1))
 		if roll <= current:
-			return _maybe_promote_rarity(String(rarity), allowed_rarities)
+			return String(rarity)
 
-	return _maybe_promote_rarity(String(allowed_rarities[0]), allowed_rarities)
-
-
-func _maybe_promote_rarity(rarity: String, allowed_rarities: Array) -> String:
-	var quality_bonus: float = float(GameManager.get_meta_progression_bonuses().get("drop_quality_bonus", 0.0))
-	if quality_bonus <= 0.0 or randf() > quality_bonus:
-		return rarity
-	var ordered_rarities: Array[String] = []
-	for rarity_id in ["common", "uncommon", "rare", "epic", "set", "legendary", "ancient"]:
-		if allowed_rarities.has(rarity_id):
-			ordered_rarities.append(rarity_id)
-	var current_index: int = ordered_rarities.find(rarity)
-	if current_index == -1 or current_index >= ordered_rarities.size() - 1:
-		return rarity
-	return ordered_rarities[current_index + 1]
+	return String(allowed_rarities[0])
 
 
 func _pick_affix(slot: String, pool_tags: Array, selected_tags: Array, profile_type: String, excluded_ids: Array[String], excluded_buckets: Array[String]) -> Dictionary:
@@ -630,11 +384,9 @@ func _calculate_item_score(item: Dictionary) -> float:
 		"elite": 14.0,
 	}
 
-	for stat_entry_variant in item.get("base_stats", []):
-		var stat_entry: Dictionary = stat_entry_variant
+	for stat_entry in item.get("base_stats", []):
 		score += absf(float(stat_entry.get("value", 0.0))) * 2.0
-	for affix_entry_variant in item.get("affixes", []):
-		var affix_entry: Dictionary = affix_entry_variant
+	for affix_entry in item.get("affixes", []):
 		var bucket: String = String(affix_entry.get("bucket", ""))
 		var bucket_mult: float = bucket_bonus.get(bucket, 6.0)
 		score += absf(float(affix_entry.get("value", 0.0))) * bucket_mult * float(affix_entry.get("score_weight", 1.0))

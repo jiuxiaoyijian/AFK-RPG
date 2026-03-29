@@ -38,7 +38,7 @@ func setup(drop_data: Dictionary) -> void:
 	arc_height = float(drop_data.get("arc_height", 42.0))
 	z_index = int(drop_data.get("z_index", 20))
 
-	scale = Vector2.ONE * visual_scale * 1.32
+	scale = Vector2.ONE * visual_scale
 	shadow.color = Color(0, 0, 0, 0.28)
 	backdrop.color = Color(tint.r, tint.g, tint.b, 0.22)
 	icon_sprite.texture = _load_runtime_texture(icon_path)

@@ -24,7 +24,7 @@ color = Color(0.1, 0.11, 0.16, 1)
 z_index = -30
 
 [node name="SkyLayer" type="Parallax2D" parent="WorldLayer"]
-repeat_size = Vector2(3072, 720)
+repeat_size = Vector2(1280, 720)
 scroll_scale = Vector2(1, 1)
 ignore_camera_scroll = true
 z_index = -28
@@ -33,7 +33,7 @@ z_index = -28
 centered = false
 
 [node name="FarLayer" type="Parallax2D" parent="WorldLayer"]
-repeat_size = Vector2(3072, 720)
+repeat_size = Vector2(1280, 720)
 scroll_scale = Vector2(1, 1)
 ignore_camera_scroll = true
 z_index = -24
@@ -42,7 +42,7 @@ z_index = -24
 centered = false
 
 [node name="MidLayer" type="Parallax2D" parent="WorldLayer"]
-repeat_size = Vector2(3072, 720)
+repeat_size = Vector2(1280, 720)
 scroll_scale = Vector2(1, 1)
 ignore_camera_scroll = true
 z_index = -18
@@ -56,24 +56,25 @@ color = Color(0.16, 0.18, 0.24, 1)
 z_index = -10
 
 [node name="NearBackLayer" type="Parallax2D" parent="WorldLayer"]
-repeat_size = Vector2(3072, 720)
+repeat_size = Vector2(1280, 720)
 scroll_scale = Vector2(1, 1)
 ignore_camera_scroll = true
-z_index = -8
+z_index = -6
 
 [node name="NearBackSprite" type="Sprite2D" parent="WorldLayer/NearBackLayer"]
 centered = false
 
 [node name="NearFrontLayer" type="Parallax2D" parent="WorldLayer"]
-repeat_size = Vector2(3072, 720)
+repeat_size = Vector2(1280, 720)
 scroll_scale = Vector2(1, 1)
 ignore_camera_scroll = true
-z_index = 24
+z_index = -3
 
 [node name="NearFrontSprite" type="Sprite2D" parent="WorldLayer/NearFrontLayer"]
 centered = false
 
 [node name="CombatRunner" type="Node2D" parent="WorldLayer"]
+z_index = 5
 
 [node name="PlayerSpawn" type="Marker2D" parent="WorldLayer/CombatRunner"]
 position = Vector2(392, 500)

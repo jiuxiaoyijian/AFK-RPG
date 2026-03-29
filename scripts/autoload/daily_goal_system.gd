@@ -714,7 +714,7 @@ func _get_high_value_farm_node(chapter_id: String) -> Dictionary:
 			best_node_id = node_id
 	return {
 		"node_id": best_node_id,
-		"label": ConfigDB.get_chapter_node_short_label(best_node_id),
+		"label": "%s / %s" % [String(chapter.get("name", chapter_id)), best_node_id],
 	}
 
 

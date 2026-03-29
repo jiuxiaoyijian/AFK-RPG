@@ -4,7 +4,6 @@
 # Local exports and temporary build output
 build/
 dist/
-assets/generated/_openai_raw/
 
 # ComfyUI / LoRA training workspace (kept local only)
 ComfyUI+LoRA/

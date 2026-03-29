@@ -24,13 +24,13 @@ polygon = PackedVector2Array(-18, -18, 18, -18, 18, 18, -18, 18)
 color = Color(0.7, 0.78, 0.9, 0.22)
 
 [node name="IconSprite" type="Sprite2D" parent="."]
-scale = Vector2(0.14, 0.14)
+scale = Vector2(0.1, 0.1)
 
 [node name="NameLabel" type="Label" parent="."]
 offset_left = -90.0
-offset_top = -82.0
+offset_top = -50.0
 offset_right = 90.0
-offset_bottom = -48.0
+offset_bottom = -24.0
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = ""

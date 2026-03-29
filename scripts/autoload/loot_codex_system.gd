@@ -1,8 +1,5 @@
 extends Node
 
-const BuildQueryService = preload("res://scripts/utils/build_query_service.gd")
-const LootRuleService = preload("res://scripts/utils/loot_rule_service.gd")
-
 var discovered_base_ids: Array[String] = []
 var discovered_affix_ids: Array[String] = []
 var discovered_legendary_affix_ids: Array[String] = []
@@ -147,7 +144,6 @@ func get_drop_stat_entries() -> Array:
 		var chapter_data: Dictionary = ConfigDB.get_chapter(String(node_data.get("chapter_id", "")))
 		entries.append({
 			"node_id": node_id,
-			"node_name": ConfigDB.get_chapter_node_name(node_id),
 			"chapter_name": String(chapter_data.get("name", "")),
 			"node_type": String(node_data.get("node_type", "normal")),
 			"clears": int(stats.get("clears", 0)),
@@ -170,7 +166,7 @@ func get_drop_stat_visual_data(node_id: String) -> Dictionary:
 	var drop_profile: Dictionary = ConfigDB.get_drop_profile(String(node_data.get("repeat_rewards_profile_id", "")))
 	var expected_equipment_rate: float = float(drop_profile.get("equipment_rolls", 1)) * float(drop_profile.get("equipment_chance", 0.0))
 	var actual_equipment_rate: float = float(stats.get("equipment_drops", 0)) / maxf(float(clears), 1.0)
-	var expected_legendary_rate: float = expected_equipment_rate * LootRuleService.get_legendary_rarity_gate_probability(drop_profile)
+	var expected_legendary_rate: float = expected_equipment_rate * _get_legendary_rarity_gate_probability(drop_profile)
 	var actual_legendary_rate: float = float(stats.get("legendary_drops", 0)) / maxf(float(clears), 1.0)
 	return {
 		"equipment": _build_visual_rate_entry("装备效率", expected_equipment_rate, actual_equipment_rate, clears),
@@ -216,13 +212,7 @@ func get_tracked_target_visual_data(node_id: String) -> Dictionary:
 			"delta_ratio": 0.0,
 			"state_label": "不产出",
 		}
-	var metrics: Dictionary = LootRuleService.get_expectation_metrics(
-		"legendary",
-		affix,
-		drop_profile,
-		node_data,
-		GameManager.get_selected_archetype_tags()
-	)
+	var metrics: Dictionary = _get_expectation_metrics("legendary", affix, drop_profile, node_data)
 	if metrics.is_empty():
 		return {
 			"label": target_name,
@@ -261,8 +251,8 @@ func get_drop_stat_detail_text(node_id: String) -> String:
 	var legendary_drops: int = int(stats.get("legendary_drops", 0))
 	var drop_profile: Dictionary = ConfigDB.get_drop_profile(String(node_data.get("repeat_rewards_profile_id", "")))
 	var lines: Array[String] = []
-	lines.append("%s - %s" % [String(chapter_data.get("name", "")), ConfigDB.get_chapter_node_name(node_id)])
-	lines.append("类型: %s" % ConfigDB.get_node_type_display_name(String(node_data.get("node_type", "normal"))))
+	lines.append("%s - %s" % [String(chapter_data.get("name", "")), node_id])
+	lines.append("类型: %s" % String(node_data.get("node_type", "normal")))
 	lines.append("掉落方向: %s" % String(drop_profile.get("drop_focus", "常规掉落")))
 	lines.append("样本次数: %d" % clears)
 	lines.append("装备掉落: %d (%.2f / 次)" % [equipment_drops, float(equipment_drops) / maxf(float(clears), 1.0)])
@@ -312,7 +302,7 @@ func _get_node_rate_comparison_text(node_id: String) -> String:
 	var drop_profile: Dictionary = ConfigDB.get_drop_profile(String(node_data.get("repeat_rewards_profile_id", "")))
 	var expected_equipment_rate: float = float(drop_profile.get("equipment_rolls", 1)) * float(drop_profile.get("equipment_chance", 0.0))
 	var actual_equipment_rate: float = float(stats.get("equipment_drops", 0)) / float(clears)
-	var expected_legendary_rate: float = expected_equipment_rate * LootRuleService.get_legendary_rarity_gate_probability(drop_profile)
+	var expected_legendary_rate: float = expected_equipment_rate * _get_legendary_rarity_gate_probability(drop_profile)
 	var actual_legendary_rate: float = float(stats.get("legendary_drops", 0)) / float(clears)
 	return "偏差对比: %s | %s" % [
 		_build_rate_comparison_text("装备", expected_equipment_rate, actual_equipment_rate),
@@ -328,13 +318,7 @@ func _get_tracked_target_comparison_text(node_id: String, node_data: Dictionary,
 		return ""
 	if not _profile_matches_entry("legendary", affix, drop_profile):
 		return "机缘追踪对比: 当前节点不产出该机缘"
-	var metrics: Dictionary = LootRuleService.get_expectation_metrics(
-		"legendary",
-		affix,
-		drop_profile,
-		node_data,
-		GameManager.get_selected_archetype_tags()
-	)
+	var metrics: Dictionary = _get_expectation_metrics("legendary", affix, drop_profile, node_data)
 	if metrics.is_empty():
 		return "机缘追踪对比: 暂无法估算"
 	var observed_stats: Dictionary = get_observed_entry_stats(tracked_legendary_affix_id, "legendary", node_id)
@@ -517,7 +501,22 @@ func _on_core_skill_changed(_skill_id: String) -> void:
 
 
 func _get_build_relevant_legendary_ids() -> Array:
-	return BuildQueryService.get_build_relevant_legendary_ids(GameManager.get_selected_archetype_tags())
+	var selected_tags: Array = GameManager.get_selected_archetype_tags()
+	var relevant_ids: Array[String] = []
+	var fallback_ids: Array[String] = []
+	for entry in ConfigDB.get_all_legendary_affixes():
+		var affix: Dictionary = entry
+		var affix_id: String = String(affix.get("id", ""))
+		fallback_ids.append(affix_id)
+		if selected_tags.is_empty():
+			continue
+		for tag in selected_tags:
+			if affix.get("archetype_tags", []).has(tag):
+				relevant_ids.append(affix_id)
+				break
+	if not relevant_ids.is_empty():
+		return relevant_ids
+	return fallback_ids
 
 
 func _get_legendary_affix_by_id(legendary_affix_id: String) -> Dictionary:
@@ -612,12 +611,45 @@ func _get_affix_detail_text(affix_id: String) -> String:
 
 
 func _get_best_recommendation_entry(category: String, data: Dictionary) -> Dictionary:
-	return LootRuleService.get_best_recommendation_entry(
-		category,
-		data,
-		GameManager.current_chapter_id,
-		GameManager.get_selected_archetype_tags()
-	)
+	var best_entry: Dictionary = {}
+	var best_score: float = -INF
+	var current_chapter_order: int = int(ConfigDB.get_chapter(GameManager.current_chapter_id).get("order", 1))
+	var selected_tags: Array = GameManager.get_selected_archetype_tags()
+	for node_id in ConfigDB.chapter_nodes.keys():
+		var node_data: Dictionary = ConfigDB.get_chapter_node(String(node_id))
+		var profile_id: String = String(node_data.get("repeat_rewards_profile_id", ""))
+		var drop_profile: Dictionary = ConfigDB.get_drop_profile(profile_id)
+		if drop_profile.is_empty():
+			continue
+		if not _profile_matches_entry(category, data, drop_profile):
+			continue
+		var chapter_data: Dictionary = ConfigDB.get_chapter(String(node_data.get("chapter_id", "")))
+		var chapter_order: int = int(chapter_data.get("order", 9999))
+		var node_type: String = String(node_data.get("node_type", "normal"))
+		var score: float = _score_recommendation_node(category, data, drop_profile, chapter_order, current_chapter_order, selected_tags)
+		var metrics: Dictionary = _get_expectation_metrics(category, data, drop_profile, node_data)
+		if score > best_score:
+			best_score = score
+			best_entry = {
+				"node_id": String(node_data.get("id", "")),
+				"chapter_id": String(node_data.get("chapter_id", "")),
+				"label": "%s - %s (%s)" % [
+					String(chapter_data.get("name", "")),
+					String(node_data.get("id", "")),
+					node_type,
+				],
+				"short_label": "%s/%s" % [
+					String(chapter_data.get("name", "")),
+					node_type,
+				],
+				"reason": _build_recommendation_reason(drop_profile, chapter_order, current_chapter_order, score),
+				"expectation_text": _build_expectation_text(category, data, drop_profile, node_data),
+				"expected_per_clear": float(metrics.get("expected_per_clear", 0.0)),
+				"expected_clears_per_hit": float(metrics.get("expected_clears_per_hit", 0.0)),
+				"expected_minutes_per_hit": float(metrics.get("expected_minutes_per_hit", 0.0)),
+				"score": score,
+			}
+	return best_entry
 
 
 func _profile_matches_entry(category: String, data: Dictionary, drop_profile: Dictionary) -> bool:
@@ -693,23 +725,48 @@ func _build_recommendation_reason(drop_profile: Dictionary, chapter_order: int, 
 
 
 func _build_expectation_text(category: String, data: Dictionary, drop_profile: Dictionary, node_data: Dictionary) -> String:
-	return LootRuleService.build_expectation_text(
-		category,
-		data,
-		drop_profile,
-		node_data,
-		GameManager.get_selected_archetype_tags()
-	)
+	var metrics: Dictionary = _get_expectation_metrics(category, data, drop_profile, node_data)
+	if metrics.is_empty():
+		return "暂无法估算"
+	return "单次期望 %.3f | 约 %.1f 次结算见 1 次 | 按时限约 %.1f 分钟" % [
+		float(metrics.get("expected_per_clear", 0.0)),
+		float(metrics.get("expected_clears_per_hit", 0.0)),
+		float(metrics.get("expected_minutes_per_hit", 0.0)),
+	]
 
 
 func _get_expectation_metrics(category: String, data: Dictionary, drop_profile: Dictionary, node_data: Dictionary) -> Dictionary:
-	return LootRuleService.get_expectation_metrics(
-		category,
-		data,
-		drop_profile,
-		node_data,
-		GameManager.get_selected_archetype_tags()
-	)
+	var expected_items_per_clear: float = float(drop_profile.get("equipment_rolls", 1)) * float(drop_profile.get("equipment_chance", 0.0))
+	if expected_items_per_clear <= 0.0:
+		return {}
+
+	var equipment_rules: Dictionary = drop_profile.get("equipment_rules", {})
+	var selected_tags: Array = GameManager.get_selected_archetype_tags() if bool(equipment_rules.get("prefer_current_build", false)) else []
+	var base_distribution: Array = _get_base_distribution(drop_profile, selected_tags)
+	if base_distribution.is_empty():
+		return {}
+
+	var per_item_probability: float = 0.0
+	match category:
+		"base":
+			per_item_probability = _estimate_base_probability_per_item(String(data.get("id", "")), base_distribution)
+		"affix":
+			per_item_probability = _estimate_affix_probability_per_item(data, drop_profile, base_distribution, selected_tags)
+		_:
+			per_item_probability = _estimate_legendary_probability_per_item(data, drop_profile, base_distribution, selected_tags)
+
+	if per_item_probability <= 0.0:
+		return {}
+
+	var expected_per_clear: float = expected_items_per_clear * per_item_probability
+	var expected_clears_per_hit: float = 1.0 / expected_per_clear
+	var time_limit_seconds: float = float(node_data.get("time_limit", 60))
+	var expected_minutes_per_hit: float = (expected_clears_per_hit * time_limit_seconds) / 60.0
+	return {
+		"expected_per_clear": expected_per_clear,
+		"expected_clears_per_hit": expected_clears_per_hit,
+		"expected_minutes_per_hit": expected_minutes_per_hit,
+	}
 
 
 func _get_base_distribution(drop_profile: Dictionary, selected_tags: Array) -> Array:
@@ -994,11 +1051,44 @@ func _format_observed_stats_text(stats: Dictionary, include_time: bool) -> Strin
 
 
 func _build_rate_comparison_text(label: String, expected_rate: float, actual_rate: float) -> String:
-	return LootRuleService.build_rate_comparison_text(label, expected_rate, actual_rate)
+	if expected_rate <= 0.0:
+		if actual_rate <= 0.0:
+			return "%s理论 -- / 实测 -- / 无偏差" % label
+		return "%s理论 -- / 实测 %.3f / 超出理论池" % [label, actual_rate]
+	var delta_ratio: float = 0.0
+	if expected_rate > 0.0:
+		delta_ratio = (actual_rate - expected_rate) / expected_rate
+	var state_label: String = _get_deviation_state_label(delta_ratio)
+	return "%s理论 %.3f / 实测 %.3f / 偏差 %s / %s" % [
+		label,
+		expected_rate,
+		actual_rate,
+		_format_signed_percent(delta_ratio),
+		state_label,
+	]
 
 
 func _build_visual_rate_entry(label: String, expected_rate: float, actual_rate: float, sample_count: int) -> Dictionary:
-	return LootRuleService.build_visual_rate_entry(label, expected_rate, actual_rate, sample_count)
+	var delta_ratio: float = 0.0
+	var bar_value: float = 0.0
+	var state_label: String = "暂无样本"
+	if expected_rate > 0.0:
+		delta_ratio = (actual_rate - expected_rate) / expected_rate
+		bar_value = clampf((actual_rate / expected_rate) * 100.0, 0.0, 200.0)
+		state_label = _get_deviation_state_label(delta_ratio)
+	elif actual_rate > 0.0:
+		bar_value = 200.0
+		state_label = "超出理论池"
+	return {
+		"label": label,
+		"expected_rate": expected_rate,
+		"actual_rate": actual_rate,
+		"delta_ratio": delta_ratio,
+		"bar_value": bar_value,
+		"sample_count": sample_count,
+		"state_label": state_label,
+		"delta_text": _format_signed_percent(delta_ratio),
+	}
 
 
 func _get_deviation_state_label(delta_ratio: float) -> String:
@@ -1025,7 +1115,6 @@ func _append_recent_drop_record(node_id: String, items: Array, stats: Dictionary
 	var chapter_data: Dictionary = ConfigDB.get_chapter(String(node_data.get("chapter_id", "")))
 	var record: Dictionary = {
 		"node_id": node_id,
-		"node_name": ConfigDB.get_chapter_node_name(node_id),
 		"chapter_name": String(chapter_data.get("name", "")),
 		"node_type": String(node_data.get("node_type", "normal")),
 		"clear_index": int(stats.get("clears", 0)),

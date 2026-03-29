@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://desktop_idle_inventory"]
 
 [ext_resource type="Script" path="res://scripts/ui/inventory_panel_controller.gd" id="1_inventory"]
-[ext_resource type="Texture2D" path="res://assets/generated/formal_replacement_samples/ui/inventory_formal_v1.png" id="2_inventory_bg"]
+[ext_resource type="Texture2D" path="res://assets/generated/afk_rpg_formal/ui/sliced/inventory_panel_bg.png" id="2_inventory_bg"]
 
 [node name="InventoryPanel" type="Control"]
 layout_mode = 3
@@ -26,7 +26,7 @@ mouse_filter = 2
 texture = ExtResource("2_inventory_bg")
 expand_mode = 1
 stretch_mode = 6
-self_modulate = Color(1, 1, 1, 0.14)
+self_modulate = Color(1, 1, 1, 0.45)
 
 [node name="HeaderBar" type="Panel" parent="Panel"]
 offset_left = 14.0

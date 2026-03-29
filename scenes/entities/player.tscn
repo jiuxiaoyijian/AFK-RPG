@@ -15,7 +15,7 @@ shape = SubResource("RectangleShape2D_qjuo0")
 polygon = PackedVector2Array(-14, -22, 14, -22, 14, 22, -14, 22)
 color = Color(0.278431, 0.658824, 1, 1)
 
-[node name="PortraitVisual" type="AnimatedSprite2D" parent="."]
+[node name="PortraitVisual" type="Sprite2D" parent="."]
 position = Vector2(0, -6)
 scale = Vector2(0.1, 0.1)
 z_index = 1
