@@ -56,6 +56,10 @@ const ENEMY_LAYOUTS := {
 		"feedback_position": Vector2(-68.0, -178.0),
 	},
 }
+const ENEMY_MOVE_SPEED_MULTIPLIER := 1.65
+const ENEMY_HP_BAR_BACKGROUND := Color(0.15, 0.04, 0.04, 0.92)
+const ENEMY_HP_BAR_FILL := Color(0.88, 0.18, 0.16, 0.98)
+const ENEMY_HP_BAR_BORDER := Color(0.42, 0.10, 0.10, 1.0)
 
 signal died(enemy_id: String, world_position: Vector2, enemy_type: String)
 
@@ -85,6 +89,7 @@ var feedback_tween: Tween
 
 func _ready() -> void:
 	add_to_group("enemy_actor")
+	_apply_hp_bar_theme()
 
 
 func setup_from_config(data: Dictionary) -> void:
@@ -95,7 +100,7 @@ func setup_from_config(data: Dictionary) -> void:
 	current_hp = max_hp
 	attack = float(data.get("attack", 1.0))
 	defense = float(data.get("defense", 0.0))
-	move_speed = float(data.get("move_speed", 40.0))
+	move_speed = float(data.get("move_speed", 40.0)) * ENEMY_MOVE_SPEED_MULTIPLIER
 	attack_interval = float(data.get("attack_interval", 1.2))
 	hp_bar.max_value = max_hp
 	hp_bar.value = current_hp
@@ -112,6 +117,7 @@ func setup_from_config(data: Dictionary) -> void:
 	scale = Vector2.ONE
 	_apply_visual_layout()
 	_apply_portrait_visual()
+	_apply_hp_bar_theme()
 
 
 func _physics_process(delta: float) -> void:
@@ -297,3 +303,28 @@ func _apply_visual_layout() -> void:
 func _get_feedback_position() -> Vector2:
 	var layout: Dictionary = ENEMY_LAYOUTS.get(enemy_type, ENEMY_LAYOUTS["normal"])
 	return layout["feedback_position"]
+
+
+func _apply_hp_bar_theme() -> void:
+	var background := StyleBoxFlat.new()
+	background.bg_color = ENEMY_HP_BAR_BACKGROUND
+	background.corner_radius_top_left = 999
+	background.corner_radius_top_right = 999
+	background.corner_radius_bottom_left = 999
+	background.corner_radius_bottom_right = 999
+	background.border_color = ENEMY_HP_BAR_BORDER
+	background.border_width_left = 1
+	background.border_width_top = 1
+	background.border_width_right = 1
+	background.border_width_bottom = 1
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = ENEMY_HP_BAR_FILL
+	fill.corner_radius_top_left = 999
+	fill.corner_radius_top_right = 999
+	fill.corner_radius_bottom_left = 999
+	fill.corner_radius_bottom_right = 999
+
+	hp_bar.add_theme_stylebox_override("background", background)
+	hp_bar.add_theme_stylebox_override("fill", fill)
+	hp_bar.modulate = Color(1, 1, 1, 1)

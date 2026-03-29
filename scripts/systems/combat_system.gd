@@ -3,27 +3,6 @@ extends Node
 const PLAYER_SCENE := preload("res://scenes/entities/player.tscn")
 const ENEMY_SCENE := preload("res://scenes/entities/enemy.tscn")
 const LOOT_DROP_VISUAL_SCENE := preload("res://scenes/effects/loot_drop_visual.tscn")
-const CHAPTER_BACKGROUND_PATHS := {
-	"chapter_1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2a.png",
-	"chapter_2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
-	"chapter_3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_tiesuo_zhen_v1a.png",
-}
-const NODE_BACKGROUND_PATHS := {
-	"ch1_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2a.png",
-	"ch1_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2b.png",
-	"ch1_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2a.png",
-	"ch1_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_taoxi_waidu_v2b.png",
-	"ch2_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
-	"ch2_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2b.png",
-	"ch2_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
-	"ch2_n4": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2b.png",
-	"ch2_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_cixia_lingtian_v2a.png",
-	"ch3_n1": "res://assets/generated/afk_rpg_formal/backgrounds/bg_tiesuo_zhen_v1a.png",
-	"ch3_n2": "res://assets/generated/afk_rpg_formal/backgrounds/bg_tiesuo_zhen_v1b.png",
-	"ch3_n3": "res://assets/generated/afk_rpg_formal/backgrounds/bg_tiesuo_zhen_v1a.png",
-	"ch3_n4": "res://assets/generated/afk_rpg_formal/backgrounds/bg_tiesuo_zhen_v1b.png",
-	"ch3_boss": "res://assets/generated/afk_rpg_formal/backgrounds/bg_tiesuo_zhen_v1b.png",
-}
 const CHAPTER_BACKGROUND_COLORS := {
 	"chapter_1": Color(0.12, 0.11, 0.14, 1.0),
 	"chapter_2": Color(0.17, 0.2, 0.18, 1.0),
@@ -34,14 +13,26 @@ const CHAPTER_GROUND_COLORS := {
 	"chapter_2": Color(0.21, 0.23, 0.17, 1.0),
 	"chapter_3": Color(0.24, 0.20, 0.16, 1.0),
 }
-const HERO_LEFT_BOUND := 426.0
-const HERO_RIGHT_BOUND := 854.0
-const LEFT_SPAWN_X := 112.0
-const RIGHT_SPAWN_X := 1168.0
+const SCREEN_CENTER := Vector2(640.0, 360.0)
+const SCREEN_SIZE := Vector2(1280.0, 720.0)
+const PARALLAX_LAYER_IDS := ["sky", "far", "mid", "near_back", "near_front"]
+const HERO_LEFT_BOUND := 332.0
+const HERO_RIGHT_BOUND := 472.0
+const RIGHT_SPAWN_X := 1368.0
+const FORWARD_SCROLL_SPEED := 96.0
 
 @onready var background_fill: Polygon2D = $"../../WorldLayer/Background"
-@onready var background_art: Sprite2D = $"../../WorldLayer/BackgroundArt"
 @onready var ground_fill: Polygon2D = $"../../WorldLayer/Ground"
+@onready var sky_layer: Parallax2D = $"../../WorldLayer/SkyLayer"
+@onready var far_layer: Parallax2D = $"../../WorldLayer/FarLayer"
+@onready var mid_layer: Parallax2D = $"../../WorldLayer/MidLayer"
+@onready var near_back_layer: Parallax2D = $"../../WorldLayer/NearBackLayer"
+@onready var near_front_layer: Parallax2D = $"../../WorldLayer/NearFrontLayer"
+@onready var sky_sprite: Sprite2D = $"../../WorldLayer/SkyLayer/SkySprite"
+@onready var far_sprite: Sprite2D = $"../../WorldLayer/FarLayer/FarSprite"
+@onready var mid_sprite: Sprite2D = $"../../WorldLayer/MidLayer/MidSprite"
+@onready var near_back_sprite: Sprite2D = $"../../WorldLayer/NearBackLayer/NearBackSprite"
+@onready var near_front_sprite: Sprite2D = $"../../WorldLayer/NearFrontLayer/NearFrontSprite"
 @onready var combat_runner: Node2D = $"../../WorldLayer/CombatRunner"
 @onready var collect_effects: Node2D = $"../../UILayer/CollectEffects"
 @onready var player_spawn: Marker2D = $"../../WorldLayer/CombatRunner/PlayerSpawn"
@@ -61,9 +52,14 @@ var state_hint_timer: float = 0.0
 var battle_state: String = "loading"
 var pending_finish_action: String = ""
 var last_enemy_death_position: Vector2 = Vector2.ZERO
+var forward_scroll_distance: float = 0.0
+var parallax_layers: Dictionary = {}
+var parallax_sprites: Dictionary = {}
+var current_parallax_scene: Dictionary = {}
 
 
 func _ready() -> void:
+	_setup_parallax_runtime()
 	EventBus.config_loaded.connect(_start_current_node)
 	EventBus.node_changed.connect(_on_node_changed)
 	if not ConfigDB.chapter_nodes.is_empty():
@@ -72,6 +68,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_process_loot_pickups()
+	_update_forward_progress(delta)
+	_update_background_parallax()
 	if player == null or not is_instance_valid(player):
 		return
 
@@ -138,8 +136,11 @@ func _start_current_node() -> void:
 	wave_wait_timer = 0.3
 	node_time_left = _get_current_time_limit()
 	state_hint_timer = 1.0
+	forward_scroll_distance = 0.0
 	player.target = null
 	player.should_move = false
+	if player.has_method("set_forward_run_in_place"):
+		player.set_forward_run_in_place(true)
 	EventBus.battle_started.emit(String(current_node_data.get("id", "")))
 	if GameManager.is_rift_active():
 		var active_run: Dictionary = GameManager.get_rift_runtime_summary().get("active_run", {})
@@ -188,7 +189,7 @@ func _spawn_wave() -> void:
 			enemy_data["name"] = "秘境%s" % String(enemy_data.get("name", enemy_id))
 		var enemy: Node2D = ENEMY_SCENE.instantiate() as Node2D
 		enemy_container.add_child(enemy)
-		var spawn_side: int = -1 if randi() % 2 == 0 else 1
+		var spawn_side: int = 1
 		enemy.global_position = _get_enemy_spawn_position(i, count, spawn_side)
 		enemy.setup_from_config(enemy_data)
 		if enemy.has_method("set_spawn_side"):
@@ -198,6 +199,8 @@ func _spawn_wave() -> void:
 
 	current_wave_index += 1
 	battle_state = "moving"
+	if player.has_method("set_forward_run_in_place"):
+		player.set_forward_run_in_place(false)
 	_emit_wave_highlight(enemy_ids)
 	if GameManager.is_rift_active():
 		var active_run: Dictionary = GameManager.get_rift_runtime_summary().get("active_run", {})
@@ -240,6 +243,8 @@ func _check_wave_progress() -> void:
 		wave_wait_timer = 1.2
 		player.target = null
 		player.should_move = false
+		if player.has_method("set_forward_run_in_place"):
+			player.set_forward_run_in_place(true)
 		EventBus.combat_state_changed.emit("波次清空，准备下一波")
 		return
 
@@ -267,6 +272,8 @@ func _check_wave_progress() -> void:
 	pending_finish_action = "restart_current" if was_rift_active else "advance"
 	player.target = null
 	player.should_move = false
+	if player.has_method("set_forward_run_in_place"):
+		player.set_forward_run_in_place(true)
 	EventBus.battle_finished.emit(String(current_node_data.get("id", "")), true)
 	EventBus.combat_state_changed.emit("节点完成，结算奖励中")
 
@@ -289,6 +296,8 @@ func _on_player_died() -> void:
 	pending_finish_action = "restart_current" if was_rift_active else "fallback"
 	player.target = null
 	player.should_move = false
+	if player.has_method("set_forward_run_in_place"):
+		player.set_forward_run_in_place(true)
 	EventBus.battle_finished.emit(String(current_node_data.get("id", "")), false)
 	EventBus.combat_state_changed.emit("试剑秘境失败，回到当前驻守节点" if was_rift_active else "挑战失败，回退到稳定节点")
 
@@ -386,20 +395,199 @@ func _merge_string_arrays(primary: Array, secondary: Array) -> Array[String]:
 func _apply_chapter_visuals(chapter_id: String, node_id: String = "") -> void:
 	background_fill.color = CHAPTER_BACKGROUND_COLORS.get(chapter_id, Color(0.1, 0.11, 0.16, 1.0))
 	ground_fill.color = CHAPTER_GROUND_COLORS.get(chapter_id, Color(0.16, 0.18, 0.24, 1.0))
-
-	var texture_path: String = String(NODE_BACKGROUND_PATHS.get(node_id, ""))
-	if texture_path.is_empty():
-		texture_path = String(CHAPTER_BACKGROUND_PATHS.get(chapter_id, ""))
-	if texture_path.is_empty():
-		background_art.texture = null
+	current_parallax_scene = _resolve_parallax_scene(chapter_id, node_id)
+	if current_parallax_scene.is_empty():
+		_clear_parallax_layers()
 		return
-
-	var chapter_texture: Texture2D = _load_runtime_texture(texture_path)
-	background_art.texture = chapter_texture
+	_apply_parallax_scene(current_parallax_scene)
+	_update_background_parallax()
 
 
 func _load_runtime_texture(resource_path: String) -> Texture2D:
 	return RuntimeTextureLoader.load_texture(resource_path)
+
+
+func _setup_parallax_runtime() -> void:
+	parallax_layers = {
+		"sky": sky_layer,
+		"far": far_layer,
+		"mid": mid_layer,
+		"near_back": near_back_layer,
+		"near_front": near_front_layer,
+	}
+	parallax_sprites = {
+		"sky": sky_sprite,
+		"far": far_sprite,
+		"mid": mid_sprite,
+		"near_back": near_back_sprite,
+		"near_front": near_front_sprite,
+	}
+	for layer_id in PARALLAX_LAYER_IDS:
+		var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
+		var sprite: Sprite2D = parallax_sprites.get(layer_id)
+		parallax_layer.position = Vector2.ZERO
+		parallax_layer.repeat_size = Vector2(3072.0, 720.0)
+		parallax_layer.scroll_scale = Vector2.ONE
+		parallax_layer.ignore_camera_scroll = true
+		parallax_layer.scroll_offset = Vector2.ZERO
+		sprite.position = Vector2.ZERO
+		sprite.centered = false
+
+
+func _resolve_parallax_scene(chapter_id: String, node_id: String) -> Dictionary:
+	var scene_key: String = ConfigDB.get_parallax_scene_key(chapter_id, node_id)
+	if not scene_key.is_empty():
+		var configured_scene: Dictionary = ConfigDB.get_parallax_scene(scene_key).duplicate(true)
+		if not configured_scene.is_empty():
+			return configured_scene
+	return _build_legacy_fallback_scene()
+
+
+func _build_legacy_fallback_scene() -> Dictionary:
+	return {
+		"id": "runtime_legacy_fallback",
+		"repeat_size": [1280, 720],
+		"ground_y": 540,
+		"player_spawn_y": 500,
+		"scroll_speed_multipliers": {
+			"sky": 0.08,
+			"far": 0.18,
+			"mid": 0.42,
+			"near_back": 0.72,
+			"near_front": 1.0,
+		},
+		"parallax_distances": {
+			"sky": 8.0,
+			"far": 12.0,
+			"mid": 20.0,
+			"near_back": 28.0,
+			"near_front": 34.0,
+		},
+		"anchor_bias": {
+			"sky": 0.0,
+			"far": -12.0,
+			"mid": -8.0,
+			"near_back": -2.0,
+			"near_front": 0.0,
+		},
+		"layer_paths": {
+			"sky": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__far.png",
+			"far": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__far.png",
+			"mid": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__mid.png",
+			"near_back": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__near.png",
+			"near_front": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__near.png",
+		},
+	}
+
+
+func _apply_parallax_scene(scene_def: Dictionary) -> void:
+	_apply_scene_lane_metrics(scene_def)
+	var layer_paths: Dictionary = scene_def.get("layer_paths", {})
+	for layer_id in PARALLAX_LAYER_IDS:
+		var texture_path: String = String(layer_paths.get(layer_id, ""))
+		_apply_parallax_layer(layer_id, _load_runtime_texture(texture_path), scene_def)
+
+
+func _apply_scene_lane_metrics(scene_def: Dictionary) -> void:
+	var ground_y: float = float(scene_def.get("ground_y", 540.0))
+	ground_fill.polygon = PackedVector2Array([
+		Vector2(0.0, ground_y),
+		Vector2(SCREEN_SIZE.x, ground_y),
+		Vector2(SCREEN_SIZE.x, SCREEN_SIZE.y),
+		Vector2(0.0, SCREEN_SIZE.y),
+	])
+	player_spawn.position.y = float(scene_def.get("player_spawn_y", 500.0))
+
+
+func _apply_parallax_layer(layer_id: String, texture: Texture2D, scene_def: Dictionary) -> void:
+	var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
+	var sprite: Sprite2D = parallax_sprites.get(layer_id)
+	if parallax_layer == null or sprite == null:
+		return
+	if texture == null:
+		sprite.texture = null
+		parallax_layer.scroll_offset = Vector2.ZERO
+		return
+	sprite.texture = texture
+	sprite.position = Vector2.ZERO
+	sprite.centered = false
+	sprite.scale = Vector2.ONE
+	sprite.modulate = _get_parallax_layer_modulate(layer_id)
+	parallax_layer.repeat_size = _resolve_repeat_size(scene_def, texture)
+	parallax_layer.scroll_offset = Vector2.ZERO
+
+
+func _resolve_repeat_size(scene_def: Dictionary, texture: Texture2D) -> Vector2:
+	var raw_repeat: Variant = scene_def.get("repeat_size", [texture.get_width(), texture.get_height()])
+	if raw_repeat is Array and raw_repeat.size() >= 2:
+		return Vector2(float(raw_repeat[0]), float(raw_repeat[1]))
+	return Vector2(float(texture.get_width()), float(texture.get_height()))
+
+
+func _get_parallax_layer_modulate(layer_id: String) -> Color:
+	match layer_id:
+		"sky":
+			return Color(0.98, 1.0, 1.0, 0.96)
+		"far":
+			return Color(0.92, 0.95, 1.0, 0.94)
+		"mid":
+			return Color(1.0, 1.0, 1.0, 1.0)
+		"near_back":
+			return Color(0.94, 0.90, 0.82, 0.96)
+		"near_front":
+			return Color(0.92, 0.88, 0.78, 0.98)
+		_:
+			return Color.WHITE
+
+
+func _clear_parallax_layers() -> void:
+	for layer_id in PARALLAX_LAYER_IDS:
+		var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
+		var sprite: Sprite2D = parallax_sprites.get(layer_id)
+		if sprite != null:
+			sprite.texture = null
+		if parallax_layer != null:
+			parallax_layer.scroll_offset = Vector2.ZERO
+
+
+func _update_background_parallax() -> void:
+	if current_parallax_scene.is_empty():
+		return
+	var travel_ratio: float = 0.5
+	if player != null and is_instance_valid(player):
+		travel_ratio = inverse_lerp(HERO_LEFT_BOUND, HERO_RIGHT_BOUND, player.global_position.x)
+	travel_ratio = clampf(travel_ratio, 0.0, 1.0)
+	var centered_ratio: float = (travel_ratio - 0.5) * 2.0
+	for layer_id in PARALLAX_LAYER_IDS:
+		_update_background_parallax_to_layer(layer_id, centered_ratio)
+
+
+func _update_background_parallax_to_layer(layer_id: String, centered_ratio: float) -> void:
+	var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
+	var sprite: Sprite2D = parallax_sprites.get(layer_id)
+	if parallax_layer == null or sprite == null or sprite.texture == null:
+		return
+	var repeat_width: float = maxf(1.0, parallax_layer.repeat_size.x)
+	var speed_multipliers: Dictionary = current_parallax_scene.get("scroll_speed_multipliers", {})
+	var parallax_distances: Dictionary = current_parallax_scene.get("parallax_distances", {})
+	var anchor_biases: Dictionary = current_parallax_scene.get("anchor_bias", {})
+	var directional_shift: float = centered_ratio * float(parallax_distances.get(layer_id, 0.0))
+	var travel_scroll: float = forward_scroll_distance * float(speed_multipliers.get(layer_id, 0.0))
+	var raw_scroll: float = -travel_scroll - directional_shift + float(anchor_biases.get(layer_id, 0.0))
+	var wrapped_scroll: float = fposmod(raw_scroll, repeat_width)
+	parallax_layer.scroll_offset = Vector2(wrapped_scroll, 0.0)
+
+
+func _update_forward_progress(delta: float) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var should_scroll: bool = battle_state in ["waiting_next_wave", "node_success", "node_failed"]
+	if player.has_method("is_advancing_visual"):
+		should_scroll = should_scroll or bool(player.is_advancing_visual())
+	else:
+		should_scroll = should_scroll or bool(player.should_move)
+	if should_scroll:
+		forward_scroll_distance += FORWARD_SCROLL_SPEED * delta
 
 
 func _spawn_enemy_death_visuals(world_position: Vector2, enemy_type: String) -> void:
@@ -434,7 +622,7 @@ func _spawn_loot_visual_entries(visual_entries: Array, world_position: Vector2) 
 
 func _get_enemy_spawn_position(index: int, total: int, spawn_side: int) -> Vector2:
 	var spread_offset: float = (float(index) - floor(float(total) * 0.5)) * 58.0
-	var x_position: float = LEFT_SPAWN_X + absf(spread_offset) if spawn_side < 0 else RIGHT_SPAWN_X - absf(spread_offset)
+	var x_position: float = RIGHT_SPAWN_X + absf(spread_offset) * 0.35
 	return Vector2(x_position, player_spawn.global_position.y)
 
 

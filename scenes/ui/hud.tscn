@@ -11,20 +11,100 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_hud")
 
-[node name="TopBar" type="Panel" parent="."]
+[node name="PlayerHeader" type="Panel" parent="."]
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 454.0
+offset_bottom = 140.0
+
+[node name="PortraitRing" type="Panel" parent="PlayerHeader"]
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 1268.0
+offset_right = 92.0
+offset_bottom = 92.0
+
+[node name="PortraitTexture" type="TextureRect" parent="PlayerHeader/PortraitRing"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 72.0
+offset_bottom = 72.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="PlayerHeader"]
+offset_left = 106.0
+offset_top = 14.0
+offset_right = 306.0
+offset_bottom = 34.0
+text = "无名侠客"
+
+[node name="ArchetypeLabel" type="Label" parent="PlayerHeader"]
+offset_left = 106.0
+offset_top = 38.0
+offset_right = 400.0
 offset_bottom = 56.0
+text = "流派: 御风刀"
+
+[node name="PlayerHpLabel" type="Label" parent="PlayerHeader"]
+offset_left = 106.0
+offset_top = 60.0
+offset_right = 400.0
+offset_bottom = 78.0
+text = "生命 0 / 0"
+
+[node name="ResourceLabel" type="Label" parent="PlayerHeader"]
+offset_left = 12.0
+offset_top = 94.0
+offset_right = 420.0
+offset_bottom = 116.0
+text = "香火钱 0 | 祠灰 0 | 灵核 0 | 真意残片 0 | 背包 0"
+
+[node name="StageHeader" type="Panel" parent="."]
+offset_left = 942.0
+offset_top = 18.0
+offset_right = 1262.0
+offset_bottom = 108.0
+
+[node name="StageTitleLabel" type="Label" parent="StageHeader"]
+offset_left = 14.0
+offset_top = 12.0
+offset_right = 300.0
+offset_bottom = 32.0
+horizontal_alignment = 2
+text = "第一章 · 桃溪外渡"
+
+[node name="StageProgressLabel" type="Label" parent="StageHeader"]
+offset_left = 14.0
+offset_top = 36.0
+offset_right = 300.0
+offset_bottom = 54.0
+horizontal_alignment = 2
+text = "节点推进中"
+
+[node name="StageRunLabel" type="Label" parent="StageHeader"]
+offset_left = 14.0
+offset_top = 58.0
+offset_right = 300.0
+offset_bottom = 76.0
+horizontal_alignment = 2
+text = "击杀 0 | 清图 0"
+
+[node name="StageDotsLabel" type="Label" parent="StageHeader"]
+offset_left = 14.0
+offset_top = 74.0
+offset_right = 300.0
+offset_bottom = 88.0
+horizontal_alignment = 2
+text = "●○○○○"
 
 [node name="CombatHighlightPanel" type="Panel" parent="."]
 offset_left = 430.0
-offset_top = 66.0
+offset_top = 86.0
 offset_right = 850.0
-offset_bottom = 132.0
+offset_bottom = 152.0
 visible = false
 
-[node name="CombatHighlightTitle" type="Label" parent="CombatHighlightPanel" unique_name_in_owner="true"]
+[node name="CombatHighlightTitle" type="Label" parent="CombatHighlightPanel"]
 offset_left = 18.0
 offset_top = 10.0
 offset_right = 400.0
@@ -32,7 +112,7 @@ offset_bottom = 30.0
 horizontal_alignment = 1
 text = "战斗高光"
 
-[node name="CombatHighlightSubtitle" type="Label" parent="CombatHighlightPanel" unique_name_in_owner="true"]
+[node name="CombatHighlightSubtitle" type="Label" parent="CombatHighlightPanel"]
 offset_left = 18.0
 offset_top = 30.0
 offset_right = 400.0
@@ -40,7 +120,7 @@ offset_bottom = 48.0
 horizontal_alignment = 1
 text = "副标题"
 
-[node name="CombatHighlightDetail" type="Label" parent="CombatHighlightPanel" unique_name_in_owner="true"]
+[node name="CombatHighlightDetail" type="Label" parent="CombatHighlightPanel"]
 offset_left = 18.0
 offset_top = 48.0
 offset_right = 400.0
@@ -48,444 +128,385 @@ offset_bottom = 62.0
 horizontal_alignment = 1
 text = "细节"
 
-[node name="ResourceLabel" type="Label" parent="TopBar" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 10.0
-offset_right = 860.0
-offset_bottom = 30.0
-text = "香火钱 0"
+[node name="ObjectiveCard" type="Panel" parent="."]
+offset_left = 942.0
+offset_top = 148.0
+offset_right = 1262.0
+offset_bottom = 270.0
 
-[node name="RunLabel" type="Label" parent="TopBar" unique_name_in_owner="true"]
-offset_left = 866.0
-offset_top = 10.0
-offset_right = 1230.0
-offset_bottom = 30.0
-horizontal_alignment = 2
-text = "击杀 0 | 清图 0"
-
-[node name="BattleCard" type="Panel" parent="."]
-offset_left = 16.0
-offset_top = 72.0
-offset_right = 388.0
-offset_bottom = 238.0
-
-[node name="NodeLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+[node name="ObjectiveTitleLabel" type="Label" parent="ObjectiveCard"]
 offset_left = 14.0
 offset_top = 12.0
-offset_right = 232.0
+offset_right = 220.0
 offset_bottom = 30.0
-text = "当前探境"
+text = "任务目标"
 
-[node name="StateLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
+[node name="ObjectiveMainLabel" type="Label" parent="ObjectiveCard"]
 offset_left = 14.0
-offset_top = 34.0
-offset_right = 232.0
-offset_bottom = 52.0
-text = "状态: --"
+offset_top = 36.0
+offset_right = 302.0
+offset_bottom = 58.0
+autowrap_mode = 2
+text = "目标: 暂无"
 
-[node name="HpBar" type="ProgressBar" parent="BattleCard" unique_name_in_owner="true"]
+[node name="ObjectiveRewardLabel" type="Label" parent="ObjectiveCard"]
 offset_left = 14.0
-offset_top = 56.0
-offset_right = 232.0
-offset_bottom = 74.0
-show_percentage = false
-max_value = 100.0
-value = 0.0
-
-[node name="HpLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
-offset_left = 14.0
-offset_top = 80.0
-offset_right = 232.0
-offset_bottom = 98.0
-text = "生命: --"
-
-[node name="SkillLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
-offset_left = 14.0
-offset_top = 102.0
-offset_right = 232.0
-offset_bottom = 120.0
-text = "道统: --"
-
-[node name="SkillIconPanel" type="Panel" parent="BattleCard"]
-offset_left = 258.0
-offset_top = 12.0
-offset_right = 348.0
-offset_bottom = 102.0
-
-[node name="SkillIconTexture" type="TextureRect" parent="BattleCard/SkillIconPanel" unique_name_in_owner="true"]
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 82.0
-offset_bottom = 82.0
-expand_mode = 1
-stretch_mode = 5
-
-[node name="FocusLabel" type="Label" parent="BattleCard" unique_name_in_owner="true"]
-offset_left = 14.0
-offset_top = 126.0
-offset_right = 348.0
-offset_bottom = 154.0
-text = "掉落方向: --"
-
-[node name="BattleSafeFrame" type="Panel" parent="."]
-offset_left = 8.0
-offset_top = 394.0
-offset_right = 1272.0
-offset_bottom = 604.0
-
-[node name="TargetCard" type="Panel" parent="."]
-offset_left = 936.0
-offset_top = 78.0
-offset_right = 1264.0
-offset_bottom = 226.0
-
-[node name="TargetTitleLabel" type="Label" parent="TargetCard"]
-offset_left = 18.0
-offset_top = 10.0
-offset_right = 260.0
-offset_bottom = 28.0
-text = "当前 Build"
-
-[node name="TargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 30.0
-offset_right = 304.0
-offset_bottom = 50.0
+offset_top = 66.0
+offset_right = 302.0
+offset_bottom = 88.0
 autowrap_mode = 2
-text = "追踪: --"
-
-[node name="BuildGapLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 50.0
-offset_right = 304.0
-offset_bottom = 70.0
-autowrap_mode = 2
-text = "缺口: --"
-
-[node name="NextTargetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 72.0
-offset_right = 304.0
-offset_bottom = 92.0
-autowrap_mode = 2
-text = "下一件: --"
-
-[node name="CodexLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 94.0
-offset_right = 304.0
-offset_bottom = 114.0
-autowrap_mode = 2
-text = "推荐: --"
-
-[node name="SetLabel" type="Label" parent="TargetCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 116.0
-offset_right = 304.0
-offset_bottom = 138.0
-autowrap_mode = 2
-text = "传承: 当前未激活"
-
-[node name="DailyGoalCard" type="Panel" parent="."]
-offset_left = 936.0
-offset_top = 236.0
-offset_right = 1264.0
-offset_bottom = 376.0
-
-[node name="DailyGoalIcon" type="TextureRect" parent="DailyGoalCard"]
-offset_left = 18.0
-offset_top = 10.0
-offset_right = 42.0
-offset_bottom = 34.0
-expand_mode = 1
-stretch_mode = 5
-
-[node name="DailyGoalTitleLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
-offset_left = 50.0
-offset_top = 12.0
-offset_right = 244.0
-offset_bottom = 28.0
-text = "当前目标"
-
-[node name="PrimaryGoalLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 28.0
-offset_right = 310.0
-offset_bottom = 46.0
-autowrap_mode = 2
-text = "主目标: --"
-
-[node name="PrimaryProgressLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 48.0
-offset_right = 300.0
-offset_bottom = 64.0
 text = "进度: --"
 
-[node name="PrimaryCtaLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 68.0
-offset_right = 304.0
-offset_bottom = 88.0
-autowrap_mode = 2
-text = "建议: --"
-
-[node name="SideGoalsLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 92.0
-offset_right = 304.0
+[node name="ObjectiveNextLabel" type="Label" parent="ObjectiveCard"]
+offset_left = 14.0
+offset_top = 94.0
+offset_right = 302.0
 offset_bottom = 116.0
 autowrap_mode = 2
-text = "支线: --"
-
-[node name="NextStepLabel" type="Label" parent="DailyGoalCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 118.0
-offset_right = 304.0
-offset_bottom = 136.0
-autowrap_mode = 2
-text = "回来先做什么: --"
-
-[node name="EquipCard" type="Panel" parent="."]
-offset_left = 16.0
-offset_top = 412.0
-offset_right = 420.0
-offset_bottom = 510.0
-
-[node name="CardArt" type="TextureRect" parent="EquipCard"]
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 404.0
-offset_bottom = 98.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="EquipTitleLabel" type="Label" parent="EquipCard"]
-offset_left = 12.0
-offset_top = 8.0
-offset_right = 200.0
-offset_bottom = 26.0
-text = "已穿装备 · 9槽"
-
-[node name="WeaponSlot" type="Panel" parent="EquipCard"]
-offset_left = 12.0
-offset_top = 34.0
-offset_right = 96.0
-offset_bottom = 84.0
-
-[node name="Icon" type="TextureRect" parent="EquipCard/WeaponSlot"]
-offset_left = 4.0
-offset_top = 10.0
-offset_right = 26.0
-offset_bottom = 32.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Frame" type="TextureRect" parent="EquipCard/WeaponSlot"]
-offset_right = 84.0
-offset_bottom = 50.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="Title" type="Label" parent="EquipCard/WeaponSlot"]
-offset_left = 30.0
-offset_top = 8.0
-offset_right = 78.0
-offset_bottom = 20.0
-text = "武器"
-
-[node name="Value" type="Label" parent="EquipCard/WeaponSlot" unique_name_in_owner="true"]
-offset_left = 30.0
-offset_top = 22.0
-offset_right = 78.0
-offset_bottom = 46.0
-autowrap_mode = 2
-text = "--"
-
-[node name="HelmetSlot" type="Panel" parent="EquipCard"]
-offset_left = 102.0
-offset_top = 34.0
-offset_right = 186.0
-offset_bottom = 84.0
-
-[node name="Icon" type="TextureRect" parent="EquipCard/HelmetSlot"]
-offset_left = 4.0
-offset_top = 10.0
-offset_right = 26.0
-offset_bottom = 32.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Frame" type="TextureRect" parent="EquipCard/HelmetSlot"]
-offset_right = 84.0
-offset_bottom = 50.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="Title" type="Label" parent="EquipCard/HelmetSlot"]
-offset_left = 30.0
-offset_top = 8.0
-offset_right = 78.0
-offset_bottom = 20.0
-text = "头盔"
-
-[node name="Value" type="Label" parent="EquipCard/HelmetSlot" unique_name_in_owner="true"]
-offset_left = 30.0
-offset_top = 22.0
-offset_right = 78.0
-offset_bottom = 46.0
-autowrap_mode = 2
-text = "--"
-
-[node name="ArmorSlot" type="Panel" parent="EquipCard"]
-offset_left = 192.0
-offset_top = 34.0
-offset_right = 276.0
-offset_bottom = 84.0
-
-[node name="Icon" type="TextureRect" parent="EquipCard/ArmorSlot"]
-offset_left = 4.0
-offset_top = 10.0
-offset_right = 26.0
-offset_bottom = 32.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Frame" type="TextureRect" parent="EquipCard/ArmorSlot"]
-offset_right = 84.0
-offset_bottom = 50.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="Title" type="Label" parent="EquipCard/ArmorSlot"]
-offset_left = 30.0
-offset_top = 8.0
-offset_right = 78.0
-offset_bottom = 20.0
-text = "护甲"
-
-[node name="Value" type="Label" parent="EquipCard/ArmorSlot" unique_name_in_owner="true"]
-offset_left = 30.0
-offset_top = 22.0
-offset_right = 78.0
-offset_bottom = 46.0
-autowrap_mode = 2
-text = "--"
-
-[node name="GlovesSlot" type="Panel" parent="EquipCard"]
-offset_left = 282.0
-offset_top = 34.0
-offset_right = 366.0
-offset_bottom = 84.0
-
-[node name="Icon" type="TextureRect" parent="EquipCard/GlovesSlot"]
-offset_left = 4.0
-offset_top = 10.0
-offset_right = 26.0
-offset_bottom = 32.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Frame" type="TextureRect" parent="EquipCard/GlovesSlot"]
-offset_right = 84.0
-offset_bottom = 50.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="Title" type="Label" parent="EquipCard/GlovesSlot"]
-offset_left = 30.0
-offset_top = 8.0
-offset_right = 78.0
-offset_bottom = 20.0
-text = "手套"
-
-[node name="Value" type="Label" parent="EquipCard/GlovesSlot" unique_name_in_owner="true"]
-offset_left = 30.0
-offset_top = 22.0
-offset_right = 78.0
-offset_bottom = 46.0
-autowrap_mode = 2
-text = "--"
+text = "下一步: --"
 
 [node name="LootCard" type="Panel" parent="."]
-offset_left = 936.0
-offset_top = 386.0
-offset_right = 1264.0
-offset_bottom = 486.0
-
-[node name="CardArt" type="TextureRect" parent="LootCard"]
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 328.0
-offset_bottom = 100.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
+offset_left = 18.0
+offset_top = 430.0
+offset_right = 322.0
+offset_bottom = 544.0
 
 [node name="LootTitleLabel" type="Label" parent="LootCard"]
-offset_left = 18.0
-offset_top = 8.0
-offset_right = 220.0
-offset_bottom = 26.0
-text = "最近掉落"
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 184.0
+offset_bottom = 28.0
+text = "掉落信息"
 
-[node name="HighlightLabel" type="Label" parent="LootCard" unique_name_in_owner="true"]
-offset_left = 68.0
-offset_top = 32.0
-offset_right = 356.0
-offset_bottom = 58.0
-text = "高价值掉落"
-
-[node name="LootIcon" type="TextureRect" parent="LootCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 30.0
-offset_right = 54.0
-offset_bottom = 66.0
-mouse_filter = 2
+[node name="LootIcon" type="TextureRect" parent="LootCard"]
+offset_left = 14.0
+offset_top = 38.0
+offset_right = 50.0
+offset_bottom = 74.0
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LootLabel" type="Label" parent="LootCard" unique_name_in_owner="true"]
-offset_left = 18.0
-offset_top = 58.0
-offset_right = 356.0
-offset_bottom = 88.0
+[node name="HighlightLabel" type="Label" parent="LootCard"]
+offset_left = 58.0
+offset_top = 38.0
+offset_right = 286.0
+offset_bottom = 60.0
+text = "高价值掉落"
+
+[node name="LootLabel" type="Label" parent="LootCard"]
+offset_left = 14.0
+offset_top = 66.0
+offset_right = 286.0
+offset_bottom = 106.0
 autowrap_mode = 2
 text = "最近掉落摘要"
 
-[node name="DropToast" type="Panel" parent="."]
-offset_left = 440.0
-offset_top = 64.0
-offset_right = 840.0
-offset_bottom = 118.0
-visible = false
+[node name="BattleSafeFrame" type="Panel" parent="."]
+offset_left = 350.0
+offset_top = 530.0
+offset_right = 870.0
+offset_bottom = 686.0
 
-[node name="ToastIcon" type="TextureRect" parent="DropToast" unique_name_in_owner="true"]
-offset_left = 14.0
-offset_top = 14.0
-offset_right = 54.0
-offset_bottom = 54.0
+[node name="CombatPlateTexture" type="TextureRect" parent="BattleSafeFrame"]
+z_index = -3
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 512.0
+offset_bottom = 152.0
 mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CombatPlate" type="Panel" parent="BattleSafeFrame"]
+z_index = -1
+offset_left = 128.0
+offset_top = 22.0
+offset_right = 392.0
+offset_bottom = 142.0
+
+[node name="LeftOrbMount" type="Panel" parent="BattleSafeFrame"]
+z_index = -1
+offset_left = 4.0
+offset_top = 26.0
+offset_right = 154.0
+offset_bottom = 152.0
+
+[node name="LeftOrb" type="Panel" parent="BattleSafeFrame"]
+offset_left = 16.0
+offset_top = 18.0
+offset_right = 144.0
+offset_bottom = 146.0
+
+[node name="LeftOrbTexture" type="TextureRect" parent="BattleSafeFrame/LeftOrb"]
+offset_left = -22.0
+offset_top = -2.0
+offset_right = 150.0
+offset_bottom = 112.0
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ToastTitle" type="Label" parent="DropToast" unique_name_in_owner="true"]
+[node name="LeftOrbValueLabel" type="Label" parent="BattleSafeFrame/LeftOrb"]
+offset_left = 12.0
+offset_top = 34.0
+offset_right = 116.0
+offset_bottom = 62.0
+horizontal_alignment = 1
+text = "100%"
+
+[node name="LeftOrbCaptionLabel" type="Label" parent="BattleSafeFrame/LeftOrb"]
+offset_left = 16.0
+offset_top = 74.0
+offset_right = 112.0
+offset_bottom = 94.0
+horizontal_alignment = 1
+text = "生命"
+
+[node name="RightOrb" type="Panel" parent="BattleSafeFrame"]
+offset_left = 376.0
+offset_top = 18.0
+offset_right = 504.0
+offset_bottom = 146.0
+
+[node name="RightOrbMount" type="Panel" parent="BattleSafeFrame"]
+z_index = -1
+offset_left = 366.0
+offset_top = 26.0
+offset_right = 516.0
+offset_bottom = 152.0
+
+[node name="RightOrbTexture" type="TextureRect" parent="BattleSafeFrame/RightOrb"]
+offset_left = -22.0
+offset_top = -5.0
+offset_right = 150.0
+offset_bottom = 116.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RightOrbValueLabel" type="Label" parent="BattleSafeFrame/RightOrb"]
+offset_left = 12.0
+offset_top = 34.0
+offset_right = 116.0
+offset_bottom = 62.0
+horizontal_alignment = 1
+text = "就绪"
+
+[node name="RightOrbCaptionLabel" type="Label" parent="BattleSafeFrame/RightOrb"]
+offset_left = 16.0
+offset_top = 74.0
+offset_right = 112.0
+offset_bottom = 94.0
+horizontal_alignment = 1
+text = "斗势"
+
+[node name="BuffStrip" type="Panel" parent="BattleSafeFrame"]
+offset_left = 138.0
+offset_top = 14.0
+offset_right = 382.0
+offset_bottom = 44.0
+
+[node name="BuffALabel" type="Label" parent="BattleSafeFrame/BuffStrip"]
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 84.0
+offset_bottom = 22.0
+horizontal_alignment = 1
+text = "流派"
+
+[node name="BuffBLabel" type="Label" parent="BattleSafeFrame/BuffStrip"]
+offset_left = 88.0
+offset_top = 6.0
+offset_right = 172.0
+offset_bottom = 22.0
+horizontal_alignment = 1
+text = "传承"
+
+[node name="BuffCLabel" type="Label" parent="BattleSafeFrame/BuffStrip"]
+offset_left = 176.0
+offset_top = 6.0
+offset_right = 252.0
+offset_bottom = 22.0
+horizontal_alignment = 1
+text = "秘录"
+
+[node name="SkillStrip" type="Panel" parent="BattleSafeFrame"]
+offset_left = 136.0
+offset_top = 52.0
+offset_right = 388.0
+offset_bottom = 136.0
+
+[node name="SkillSlot1" type="Panel" parent="BattleSafeFrame/SkillStrip"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 56.0
+offset_bottom = 76.0
+
+[node name="Frame" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot1"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 48.0
+offset_bottom = 48.0
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Icon" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot1"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 40.0
+offset_bottom = 40.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="BattleSafeFrame/SkillStrip/SkillSlot1"]
+offset_left = 0.0
+offset_top = 50.0
+offset_right = 48.0
+offset_bottom = 66.0
+horizontal_alignment = 1
+text = "普攻"
+
+[node name="SkillSlot2" type="Panel" parent="BattleSafeFrame/SkillStrip"]
+offset_left = 58.0
+offset_top = 8.0
+offset_right = 106.0
+offset_bottom = 76.0
+
+[node name="Frame" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot2"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 48.0
+offset_bottom = 48.0
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Icon" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot2"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 40.0
+offset_bottom = 40.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="BattleSafeFrame/SkillStrip/SkillSlot2"]
+offset_left = 0.0
+offset_top = 50.0
+offset_right = 48.0
+offset_bottom = 66.0
+horizontal_alignment = 1
+text = "武学"
+
+[node name="SkillSlot3" type="Panel" parent="BattleSafeFrame/SkillStrip"]
+offset_left = 108.0
+offset_top = 8.0
+offset_right = 156.0
+offset_bottom = 76.0
+
+[node name="Frame" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot3"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 48.0
+offset_bottom = 48.0
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Icon" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot3"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 40.0
+offset_bottom = 40.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="BattleSafeFrame/SkillStrip/SkillSlot3"]
+offset_left = 0.0
+offset_top = 50.0
+offset_right = 48.0
+offset_bottom = 66.0
+horizontal_alignment = 1
+text = "秘录"
+
+[node name="SkillSlot4" type="Panel" parent="BattleSafeFrame/SkillStrip"]
+offset_left = 158.0
+offset_top = 8.0
+offset_right = 206.0
+offset_bottom = 76.0
+
+[node name="Frame" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot4"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 48.0
+offset_bottom = 48.0
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Icon" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot4"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 40.0
+offset_bottom = 40.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="BattleSafeFrame/SkillStrip/SkillSlot4"]
+offset_left = 0.0
+offset_top = 50.0
+offset_right = 48.0
+offset_bottom = 66.0
+horizontal_alignment = 1
+text = "机缘"
+
+[node name="SkillSlot5" type="Panel" parent="BattleSafeFrame/SkillStrip"]
+offset_left = 208.0
+offset_top = 8.0
+offset_right = 256.0
+offset_bottom = 76.0
+
+[node name="Frame" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot5"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 48.0
+offset_bottom = 48.0
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Icon" type="TextureRect" parent="BattleSafeFrame/SkillStrip/SkillSlot5"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 40.0
+offset_bottom = 40.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="BattleSafeFrame/SkillStrip/SkillSlot5"]
+offset_left = 0.0
+offset_top = 50.0
+offset_right = 48.0
+offset_bottom = 66.0
+horizontal_alignment = 1
+text = "秘境"
+
+[node name="DropToast" type="Panel" parent="."]
+offset_left = 440.0
+offset_top = 72.0
+offset_right = 840.0
+offset_bottom = 126.0
+visible = false
+
+[node name="ToastIcon" type="TextureRect" parent="DropToast"]
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 54.0
+offset_bottom = 50.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ToastTitle" type="Label" parent="DropToast"]
 offset_left = 66.0
 offset_top = 8.0
 offset_right = 372.0
 offset_bottom = 24.0
 text = "高价值掉落"
 
-[node name="ToastLabel" type="Label" parent="DropToast" unique_name_in_owner="true"]
+[node name="ToastLabel" type="Label" parent="DropToast"]
 offset_left = 66.0
 offset_top = 24.0
 offset_right = 372.0

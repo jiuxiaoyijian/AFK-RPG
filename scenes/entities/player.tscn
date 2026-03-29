@@ -28,6 +28,17 @@ offset_bottom = -34.0
 show_percentage = false
 max_value = 100.0
 value = 100.0
+visible = false
+
+[node name="HealthMarkerBack" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 0, -16, -18, 16, -18)
+color = Color(0.08, 0.12, 0.08, 0.8)
+position = Vector2(0, -96)
+
+[node name="HealthMarkerFill" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, -2, -13, -16, 13, -16)
+color = Color(0.27, 0.85, 0.37, 0.95)
+position = Vector2(0, -96)
 
 [node name="CastLabel" type="Label" parent="."]
 offset_left = -50.0

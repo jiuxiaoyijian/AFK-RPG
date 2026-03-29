@@ -13,6 +13,7 @@ const DROP_TABLES_PATH := "res://data/drops/drop_tables.json"
 const RIFT_SCALING_PATH := "res://data/rift/rift_scaling.json"
 const RIFT_KEYS_PATH := "res://data/rift/rift_keys.json"
 const RESEARCH_TREE_PATH := "res://data/progression/research_tree.json"
+const PARALLAX_SCENE_DEFS_PATH := "res://data/backgrounds/parallax_scene_defs.json"
 
 var core_skills: Dictionary = {}
 var enemies: Dictionary = {}
@@ -29,6 +30,9 @@ var drop_profiles: Dictionary = {}
 var rift_scaling_entries: Array = []
 var rift_key_entries: Array = []
 var research_nodes: Dictionary = {}
+var parallax_scene_defs: Dictionary = {}
+var parallax_scene_chapter_defaults: Dictionary = {}
+var parallax_scene_node_overrides: Dictionary = {}
 
 
 func _ready() -> void:
@@ -51,6 +55,9 @@ func load_all() -> void:
 	rift_scaling_entries.clear()
 	rift_key_entries.clear()
 	research_nodes.clear()
+	parallax_scene_defs.clear()
+	parallax_scene_chapter_defaults.clear()
+	parallax_scene_node_overrides.clear()
 
 	for entry: Dictionary in _read_json_array(CORE_SKILLS_PATH):
 		core_skills[entry["id"]] = entry
@@ -100,6 +107,12 @@ func load_all() -> void:
 	var research_payload: Dictionary = _read_json_dict(RESEARCH_TREE_PATH)
 	for entry: Dictionary in research_payload.get("research_nodes", []):
 		research_nodes[entry["id"]] = entry
+
+	var parallax_scene_payload: Dictionary = _read_json_dict(PARALLAX_SCENE_DEFS_PATH)
+	for entry: Dictionary in parallax_scene_payload.get("scene_defs", []):
+		parallax_scene_defs[entry["id"]] = entry
+	parallax_scene_chapter_defaults = parallax_scene_payload.get("chapter_defaults", {})
+	parallax_scene_node_overrides = parallax_scene_payload.get("node_overrides", {})
 
 	EventBus.config_loaded.emit()
 
@@ -221,6 +234,17 @@ func get_research_node(node_id: String) -> Dictionary:
 
 func get_all_research_nodes() -> Array:
 	return research_nodes.values()
+
+
+func get_parallax_scene(scene_id: String) -> Dictionary:
+	return parallax_scene_defs.get(scene_id, {})
+
+
+func get_parallax_scene_key(chapter_id: String, node_id: String) -> String:
+	var node_override: String = String(parallax_scene_node_overrides.get(node_id, ""))
+	if not node_override.is_empty():
+		return node_override
+	return String(parallax_scene_chapter_defaults.get(chapter_id, ""))
 
 
 func get_chapter_first_node(chapter_id: String) -> String:

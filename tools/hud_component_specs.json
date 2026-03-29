@@ -1,0 +1,47 @@
+[
+  {
+    "name": "hud_left_orb_clean_v3",
+    "source": "hud_left_orb_try1.png",
+    "keep_mode": "largest",
+    "padding": 0,
+    "seed_stride": 2,
+    "step_threshold": 22,
+    "bin_step": 16,
+    "edge_threshold": 38,
+    "min_component_area": 500,
+    "center_bias": true,
+    "focus_rect": [0, 0, 172, 172],
+    "preserve_canvas": true
+  },
+  {
+    "name": "hud_right_orb_clean_v3",
+    "source": "hud_right_orb_try1.png",
+    "keep_mode": "largest",
+    "padding": 0,
+    "seed_stride": 2,
+    "step_threshold": 22,
+    "bin_step": 16,
+    "edge_threshold": 38,
+    "min_component_area": 500,
+    "center_bias": true,
+    "focus_rect": [0, 0, 172, 172],
+    "preserve_canvas": true
+  },
+  {
+    "name": "hud_bottom_bar_clean_v3",
+    "source": "hud_bottom_bar_try1.png",
+    "keep_mode": "largest",
+    "padding": 12,
+    "seed_stride": 3,
+    "step_threshold": 24,
+    "bin_step": 16,
+    "edge_threshold": 40,
+    "min_component_area": 5000,
+    "center_bias": true,
+    "focus_rect": [132, 0, 628, 170],
+    "clear_rects": [
+      [0, 0, 156, 170],
+      [604, 0, 760, 170]
+    ]
+  }
+]

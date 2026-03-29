@@ -357,6 +357,75 @@ func get_analysis_hub_summary() -> Dictionary:
 	}
 
 
+func get_main_hud_state() -> Dictionary:
+	var skill_data: Dictionary = get_selected_core_skill()
+	var profile_id: String = String(skill_data.get("build_profile_id", ""))
+	var build_profile: Dictionary = BUILD_ARCHETYPE_PROFILES.get(profile_id, {})
+	var goal_data: Dictionary = DailyGoalSystem.get_daily_goal_data()
+	var primary_goal: Dictionary = goal_data.get("primary_goal", {})
+	var chapter_data: Dictionary = ConfigDB.get_chapter(current_chapter_id)
+	var node_data: Dictionary = ConfigDB.get_chapter_node(current_node_id)
+	var codex_runtime: Dictionary = get_martial_codex_runtime_state()
+	var active_codex_count: int = 0
+	for slot_id in ["weapon", "armor", "accessory"]:
+		if not String(codex_runtime.get("active_slots", {}).get(slot_id, "")).is_empty():
+			active_codex_count += 1
+	var primary_set: Dictionary = set_summary.get("primary_active_set", {})
+	var set_summary_text: String = "传承未激活"
+	if not primary_set.is_empty():
+		set_summary_text = "%s %d/6" % [
+			String(primary_set.get("name", "传承")),
+			int(primary_set.get("piece_count", 0)),
+		]
+	return {
+		"player_header": {
+			"name": "无名侠客",
+			"archetype": "流派: %s" % String(build_profile.get("display_name", skill_data.get("name", "江湖弟子"))),
+			"resource_text": "香火钱 %d | 祠灰 %d | 灵核 %d | 真意残片 %d | 背包 %d" % [
+				MetaProgressionSystem.gold,
+				MetaProgressionSystem.scrap,
+				MetaProgressionSystem.core,
+				MetaProgressionSystem.legend_shard,
+				get_inventory_count(),
+			],
+			"portrait_path": "res://assets/generated/afk_rpg_formal/characters/disciple_male_portrait.png",
+		},
+		"stage_header": {
+			"title": "%s · %s" % [
+				String(chapter_data.get("name", current_chapter_id)),
+				ConfigDB.get_chapter_node_name(current_node_id),
+			],
+			"subtitle": "节点类型: %s" % ConfigDB.get_node_type_display_name(String(node_data.get("node_type", "normal"))),
+			"run_text": "击杀 %d | 清图 %d" % [current_run_kills, current_run_clears],
+			"node_short_label": ConfigDB.get_chapter_node_short_label(current_node_id),
+		},
+		"objective_summary": {
+			"title": "任务目标",
+			"goal_text": String(primary_goal.get("title", "暂无目标")),
+			"progress_text": String(primary_goal.get("progress_text", "--")),
+			"cta_text": String(primary_goal.get("cta_text", "继续推进主目标")),
+			"next_step_text": String(goal_data.get("next_step_summary", "继续推进当前目标")),
+		},
+		"loot_feed": {
+			"lines": get_loot_summary_lines(5),
+			"highlight": get_loot_highlight(),
+			"summary_text": last_loot_summary,
+		},
+		"combat_bar": {
+			"core_skill_id": selected_core_skill_id,
+			"core_skill_name": String(skill_data.get("name", selected_core_skill_id)),
+			"set_summary_text": set_summary_text,
+			"codex_summary_text": "武学秘录 %d/3 已激活" % active_codex_count,
+			"focus_text": get_current_drop_focus(),
+		},
+		"entry_badges": {
+			"inventory_count": get_inventory_count(),
+			"research_summary": get_progression_hub_summary().get("research_summary", ""),
+			"analysis_summary": get_analysis_hub_summary().get("rift_summary", ""),
+		},
+	}
+
+
 func get_martial_codex_runtime_state() -> Dictionary:
 	return MartialCodexSystem.build_runtime_state(martial_codex_state)
 

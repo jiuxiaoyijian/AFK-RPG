@@ -33,6 +33,8 @@ const HERO_ANIMATION_LOOP := {
 const PLAYER_PORTRAIT_SCALE := Vector2(0.22, 0.22)
 const PLAYER_BODY_SCALE := Vector2(2.2, 2.2)
 const PLAYER_PORTRAIT_POSITION := Vector2(0.0, -20.0)
+const PLAYER_HEALTH_MARKER_POSITION := Vector2(0.0, -104.0)
+const PLAYER_HEALTH_MARKER_MIN_SCALE := 0.36
 const PLAYER_HP_BAR_OFFSETS := {
 	"left": -40.0,
 	"top": -102.0,
@@ -52,6 +54,8 @@ signal died()
 @onready var body_visual: Polygon2D = $BodyVisual
 @onready var portrait_visual: AnimatedSprite2D = $PortraitVisual
 @onready var hp_bar: ProgressBar = $HpBar
+@onready var health_marker_back: Polygon2D = $HealthMarkerBack
+@onready var health_marker_fill: Polygon2D = $HealthMarkerFill
 @onready var cast_label: Label = $CastLabel
 
 var max_hp: float = 160.0
@@ -88,6 +92,7 @@ var movement_right_bound: float = 854.0
 var portrait_state: String = "idle"
 var attack_animation_locked: bool = false
 var portrait_frames: SpriteFrames
+var forward_run_in_place: bool = false
 
 
 func _ready() -> void:
@@ -173,6 +178,7 @@ func setup_from_skill(skill_data: Dictionary) -> void:
 	current_hp = max_hp
 	hp_bar.max_value = max_hp
 	hp_bar.value = current_hp
+	_update_health_marker()
 	EventBus.player_hp_changed.emit(current_hp, max_hp)
 
 
@@ -188,6 +194,8 @@ func _physics_process(delta: float) -> void:
 			target_x = idle_anchor_x
 		global_position.x = move_toward(global_position.x, clampf(target_x, movement_left_bound, movement_right_bound), move_speed * delta)
 		status_text = "追击中"
+	elif forward_run_in_place:
+		status_text = "推进中"
 	elif target == null or not is_instance_valid(target):
 		var distance_to_anchor: float = idle_anchor_x - global_position.x
 		if absf(distance_to_anchor) > IDLE_RETURN_THRESHOLD:
@@ -299,6 +307,7 @@ func take_damage(raw_damage: float, attacker_defense: float = 0.0) -> void:
 	var actual_damage: float = DamageResolverScript.apply_defense(adjusted_raw, defense)
 	current_hp = maxf(0.0, current_hp - actual_damage)
 	hp_bar.value = current_hp
+	_update_health_marker()
 	EventBus.player_hp_changed.emit(current_hp, max_hp)
 	if current_hp <= 0.0:
 		died.emit()
@@ -311,7 +320,9 @@ func reset_state() -> void:
 	target = null
 	should_move = false
 	hp_bar.value = current_hp
+	_update_health_marker()
 	EventBus.player_hp_changed.emit(current_hp, max_hp)
+	forward_run_in_place = false
 
 
 func set_idle_anchor_x(value: float) -> void:
@@ -321,6 +332,18 @@ func set_idle_anchor_x(value: float) -> void:
 func set_movement_bounds(left_bound: float, right_bound: float) -> void:
 	movement_left_bound = left_bound
 	movement_right_bound = right_bound
+
+
+func set_forward_run_in_place(enabled: bool) -> void:
+	forward_run_in_place = enabled
+	if not attack_animation_locked:
+		_update_portrait_state()
+
+
+func is_advancing_visual() -> bool:
+	if attack_animation_locked:
+		return false
+	return should_move or forward_run_in_place or portrait_state == "move"
 
 
 func _show_cast_feedback(text: String) -> void:
@@ -384,7 +407,7 @@ func _update_portrait_state() -> void:
 	if attack_animation_locked:
 		return
 	var next_state: String = "idle"
-	if should_move:
+	if should_move or forward_run_in_place:
 		next_state = "move"
 	elif target != null and is_instance_valid(target):
 		next_state = "combat"
@@ -429,11 +452,22 @@ func _apply_visual_layout() -> void:
 	portrait_visual.scale = PLAYER_PORTRAIT_SCALE
 	portrait_visual.position = PLAYER_PORTRAIT_POSITION
 	body_visual.scale = PLAYER_BODY_SCALE
+	health_marker_back.position = PLAYER_HEALTH_MARKER_POSITION
+	health_marker_fill.position = PLAYER_HEALTH_MARKER_POSITION
 	hp_bar.offset_left = PLAYER_HP_BAR_OFFSETS["left"]
 	hp_bar.offset_top = PLAYER_HP_BAR_OFFSETS["top"]
 	hp_bar.offset_right = PLAYER_HP_BAR_OFFSETS["right"]
 	hp_bar.offset_bottom = PLAYER_HP_BAR_OFFSETS["bottom"]
+	hp_bar.visible = false
 	cast_label.offset_left = PLAYER_CAST_LABEL_OFFSETS["left"]
 	cast_label.offset_top = PLAYER_CAST_LABEL_OFFSETS["top"]
 	cast_label.offset_right = PLAYER_CAST_LABEL_OFFSETS["right"]
 	cast_label.offset_bottom = PLAYER_CAST_LABEL_OFFSETS["bottom"]
+	_update_health_marker()
+
+
+func _update_health_marker() -> void:
+	var ratio: float = 1.0 if max_hp <= 0.0 else clampf(current_hp / max_hp, 0.0, 1.0)
+	var x_scale: float = PLAYER_HEALTH_MARKER_MIN_SCALE + (1.0 - PLAYER_HEALTH_MARKER_MIN_SCALE) * ratio
+	health_marker_fill.scale = Vector2(x_scale, 1.0)
+	health_marker_fill.visible = current_hp > 0.0
