@@ -4,10 +4,15 @@
 # Local exports and temporary build output
 build/
 dist/
+.vendor/
 assets/generated/_openai_raw/
 
 # ComfyUI / LoRA training workspace (kept local only)
 ComfyUI+LoRA/
+
+# Local secrets / env files
+.env
+.env.*
 
 # OS / editor noise
 .DS_Store
