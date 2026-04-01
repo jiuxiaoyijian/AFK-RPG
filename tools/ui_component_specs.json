@@ -1,0 +1,320 @@
+{
+  "profiles": [
+    {
+      "id": "hud_round2_v1",
+      "title": "HUD Round2 V1 UI Component Review",
+      "source": "assets/generated/style_boards_trendy_q_round2/round2_main_hud_v1.png",
+      "output_dir": "assets/generated/afk_rpg_formal/ui/hud",
+      "review_html": "assets/generated/ui_component_review/hud_round2_v1.html",
+      "manifest_md": "assets/generated/ui_component_review/hud_round2_v1.md",
+      "description": "基于 round2_main_hud_v1 切出的 HUD 控件候选。首轮只产出评审切图，不接入 HUD 场景。",
+      "components": [
+        {
+          "id": "HUD01",
+          "name": "player_header_frame",
+          "source_rect": [0, 0, 352, 118],
+          "extract_mode": "crop",
+          "output_name": "player_header_frame.png",
+          "mapping": "HUD > PlayerHeader",
+          "status": "review_only",
+          "notes": "头像环与摘要条的抠除仍不够稳定，先保留为评审参考，不纳入首轮正式替换。",
+          "keep_rects": [
+            [80, 0, 272, 118],
+            [0, 16, 42, 92]
+          ],
+          "keep_ellipse_rects": [
+            [6, 0, 148, 118]
+          ],
+          "clear_round_rects": [
+            [166, 8, 134, 18, 9],
+            [166, 34, 112, 16, 8],
+            [226, 54, 52, 18, 8],
+            [144, 84, 180, 22, 10]
+          ],
+          "clear_ellipse_rects": [
+            [8, 0, 148, 118]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [20, 20, 20, 20]
+        },
+        {
+          "id": "HUD02",
+          "name": "stage_header_frame",
+          "source_rect": [988, 0, 292, 44],
+          "extract_mode": "crop",
+          "output_name": "stage_header_frame.png",
+          "mapping": "HUD > StageHeader",
+          "status": "review_only",
+          "notes": "关卡条仍混入左侧示意圆点与背景细节，先保留为评审参考。",
+          "keep_round_rects": [
+            [0, 0, 292, 40, 12]
+          ],
+          "clear_round_rects": [
+            [18, 4, 256, 28, 12]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [18, 16, 18, 16]
+        },
+        {
+          "id": "HUD03",
+          "name": "loot_card_frame",
+          "source_rect": [42, 145, 224, 320],
+          "extract_mode": "crop",
+          "output_name": "loot_card_frame.png",
+          "mapping": "HUD > LootCard",
+          "status": "review_only",
+          "notes": "左侧掉落卡仍混入部分示意底图，先保留为评审参考，不纳入首轮正式替换。",
+          "keep_rects": [
+            [0, 18, 26, 118]
+          ],
+          "keep_round_rects": [
+            [18, 0, 188, 292, 12]
+          ],
+          "clear_round_rects": [
+            [22, 16, 168, 82, 10],
+            [22, 100, 168, 182, 10]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [18, 18, 18, 18]
+        },
+        {
+          "id": "HUD04",
+          "name": "objective_card_frame",
+          "source_rect": [949, 145, 272, 322],
+          "extract_mode": "crop",
+          "output_name": "objective_card_frame.png",
+          "mapping": "HUD > ObjectiveCard",
+          "status": "candidate",
+          "notes": "保留右侧任务卡边框，尽量只留下外框与纸面底，清掉勾选和列表示意。",
+          "keep_round_rects": [
+            [10, 0, 252, 296, 12]
+          ],
+          "clear_round_rects": [
+            [20, 28, 214, 240, 10]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [18, 18, 18, 18]
+        },
+        {
+          "id": "HUD05",
+          "name": "combat_plate_frame",
+          "source_rect": [270, 588, 742, 132],
+          "extract_mode": "crop",
+          "output_name": "combat_plate_frame.png",
+          "mapping": "HUD > BattleSafeFrame / CombatPlateTexture",
+          "status": "candidate",
+          "notes": "保留底部战斗底板，后续视确认决定是否继续把中心槽位做更细清理。",
+          "nine_slice": [30, 22, 30, 18]
+        },
+        {
+          "id": "HUD06",
+          "name": "left_orb_shell",
+          "source_rect": [323, 550, 242, 170],
+          "extract_mode": "crop",
+          "output_name": "left_orb_shell.png",
+          "mapping": "HUD > BattleSafeFrame / LeftOrbTexture",
+          "status": "candidate",
+          "notes": "保留完整左资源球外观，首轮作为现有 orb 贴图替代候选。"
+        },
+        {
+          "id": "HUD07",
+          "name": "right_orb_shell",
+          "source_rect": [716, 550, 242, 170],
+          "extract_mode": "crop",
+          "output_name": "right_orb_shell.png",
+          "mapping": "HUD > BattleSafeFrame / RightOrbTexture",
+          "status": "candidate",
+          "notes": "保留完整右资源球外观，首轮作为现有 orb 贴图替代候选。"
+        },
+        {
+          "id": "HUD08",
+          "name": "skill_slot_frame",
+          "source_rect": [555, 636, 60, 60],
+          "extract_mode": "crop",
+          "output_name": "skill_slot_frame.png",
+          "mapping": "HUD > BattleSafeFrame / SkillStrip / SkillSlot* / Frame",
+          "status": "review_only",
+          "notes": "技能槽边缘已收紧，但仍带入背景碎片，先保留为评审参考。",
+          "keep_round_rects": [
+            [2, 2, 54, 54, 8]
+          ],
+          "clear_round_rects": [
+            [9, 9, 36, 36, 8]
+          ],
+          "trim_alpha": true
+        },
+        {
+          "id": "HUD09",
+          "name": "buff_strip_frame",
+          "extract_mode": "skip",
+          "mapping": "HUD > BattleSafeFrame / BuffStrip",
+          "status": "keep_existing",
+          "notes": "源图未提供稳定独立的 buff strip，首轮保留代码面板。"
+        }
+      ]
+    },
+    {
+      "id": "inventory_formal_v1",
+      "title": "Inventory Formal V1 UI Component Review",
+      "source": "assets/generated/formal_replacement_samples/ui/inventory_formal_v1.png",
+      "output_dir": "assets/generated/afk_rpg_formal/ui/inventory",
+      "review_html": "assets/generated/ui_component_review/inventory_formal_v1.html",
+      "manifest_md": "assets/generated/ui_component_review/inventory_formal_v1.md",
+      "description": "基于 inventory_formal_v1 切出的背包控件候选。首轮聚焦框体、槽位与格子资源，不接入 InventoryPanel。",
+      "components": [
+        {
+          "id": "INV01",
+          "name": "inventory_main_frame_9patch",
+          "source_rect": [34, 44, 1188, 566],
+          "extract_mode": "crop",
+          "output_name": "inventory_main_frame_9patch.png",
+          "mapping": "InventoryPanel > Panel",
+          "status": "review_only",
+          "notes": "整张主框的控件化抠除仍混入分区示意，先保留为评审参考，不作为首轮接入资源。",
+          "keep_round_rects": [
+            [14, 14, 1160, 534, 18]
+          ],
+          "clear_round_rects": [
+            [26, 24, 1128, 510, 14]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [30, 30, 30, 30]
+        },
+        {
+          "id": "INV02",
+          "name": "inventory_header_bar_9patch",
+          "source_rect": [366, 0, 548, 74],
+          "extract_mode": "crop",
+          "output_name": "inventory_header_bar_9patch.png",
+          "mapping": "InventoryPanel > Panel / HeaderBar",
+          "status": "review_only",
+          "notes": "顶部标题条仍混入背景纹理，先保留为评审参考。",
+          "keep_round_rects": [
+            [8, 8, 532, 52, 14]
+          ],
+          "clear_round_rects": [
+            [124, 18, 300, 24, 12]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [24, 18, 24, 18]
+        },
+        {
+          "id": "INV03",
+          "name": "paper_doll_panel_9patch",
+          "source_rect": [40, 78, 292, 556],
+          "extract_mode": "crop",
+          "output_name": "paper_doll_panel_9patch.png",
+          "mapping": "InventoryPanel > Panel / PaperDollSection",
+          "status": "review_only",
+          "notes": "纸娃娃区边缘仍混入装备位示意，先保留为评审参考。",
+          "keep_round_rects": [
+            [8, 8, 270, 540, 14]
+          ],
+          "clear_round_rects": [
+            [16, 16, 244, 520, 12]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [20, 20, 20, 20]
+        },
+        {
+          "id": "INV04",
+          "name": "inventory_grid_panel_9patch",
+          "source_rect": [398, 76, 434, 540],
+          "extract_mode": "crop",
+          "output_name": "inventory_grid_panel_9patch.png",
+          "mapping": "InventoryPanel > Panel / InventorySection",
+          "status": "review_only",
+          "notes": "中央格包外框仍混入右侧相邻示意，先保留为评审参考。",
+          "keep_round_rects": [
+            [8, 8, 414, 524, 10]
+          ],
+          "clear_round_rects": [
+            [16, 16, 394, 504, 8]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [22, 22, 22, 22]
+        },
+        {
+          "id": "INV05",
+          "name": "detail_panel_9patch",
+          "source_rect": [874, 184, 332, 190],
+          "extract_mode": "crop",
+          "output_name": "detail_panel_9patch.png",
+          "mapping": "InventoryPanel > Panel / DetailSection",
+          "status": "candidate",
+          "notes": "提取右侧详情卡边框，内部尽量挖空，只留下详情区外框。",
+          "keep_round_rects": [
+            [8, 8, 314, 172, 12]
+          ],
+          "clear_round_rects": [
+            [16, 16, 292, 148, 10]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [20, 20, 20, 20]
+        },
+        {
+          "id": "INV06",
+          "name": "toolbar_panel_9patch",
+          "source_rect": [126, 650, 1006, 58],
+          "extract_mode": "crop",
+          "output_name": "toolbar_panel_9patch.png",
+          "mapping": "InventoryPanel > Panel / ToolbarSection",
+          "status": "review_only",
+          "notes": "底部快捷条仍混入器物示意，先保留为评审参考。",
+          "keep_round_rects": [
+            [6, 4, 992, 44, 12]
+          ],
+          "clear_round_rects": [
+            [14, 10, 976, 24, 10]
+          ],
+          "trim_alpha": true,
+          "nine_slice": [20, 16, 20, 16]
+        },
+        {
+          "id": "INV07",
+          "name": "equipment_slot_frame",
+          "source_rect": [86, 92, 82, 80],
+          "extract_mode": "crop",
+          "output_name": "equipment_slot_frame.png",
+          "mapping": "InventoryPanel > PaperDollGrid > Equipment_*",
+          "status": "review_only",
+          "notes": "装备槽小图仍残留底图，先保留为评审参考。",
+          "keep_round_rects": [
+            [2, 2, 74, 72, 10]
+          ],
+          "clear_round_rects": [
+            [10, 10, 50, 48, 8]
+          ],
+          "trim_alpha": true
+        },
+        {
+          "id": "INV08",
+          "name": "inventory_cell_frame",
+          "source_rect": [529, 266, 64, 68],
+          "extract_mode": "crop",
+          "output_name": "inventory_cell_frame.png",
+          "mapping": "InventoryPanel > InventoryGrid > InventoryCell_*",
+          "status": "candidate",
+          "notes": "提取空白格子单元，作为动态物品按钮背景候选。"
+        },
+        {
+          "id": "INV09",
+          "name": "section_divider",
+          "source_rect": [881, 78, 294, 66],
+          "extract_mode": "crop",
+          "output_name": "section_divider.png",
+          "mapping": "InventoryPanel > 顶部装饰 / 可选分区横幅",
+          "status": "review_only",
+          "notes": "装饰性候选，尽量清掉横幅内部景片，只保留边框装饰，不默认纳入首轮替换。",
+          "keep_round_rects": [
+            [0, 0, 294, 66, 12]
+          ],
+          "clear_round_rects": [
+            [16, 10, 262, 42, 10]
+          ],
+          "trim_alpha": true
+        }
+      ]
+    }
+  ]
+}

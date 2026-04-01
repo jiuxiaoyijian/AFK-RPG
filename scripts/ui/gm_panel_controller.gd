@@ -76,7 +76,7 @@ func open_panel() -> void:
 func _refresh(_unused: Variant = null) -> void:
 	title_label.text = "GM 调试面板"
 	summary_label.text = "节点 %s | 库存 %d 件 | 香火钱 %d | 祠灰 %d | 灵核 %d | 真意残片 %d" % [
-		GameManager.current_node_id,
+		ConfigDB.get_chapter_node_short_label(GameManager.current_node_id),
 		GameManager.get_inventory_count(),
 		MetaProgressionSystem.get_resource_amount("gold"),
 		MetaProgressionSystem.get_resource_amount("scrap"),
@@ -123,15 +123,9 @@ func _populate_node_options() -> void:
 	var node_entries: Array[Dictionary] = []
 	for node_id_variant in ConfigDB.chapter_nodes.keys():
 		var node_id: String = String(node_id_variant)
-		var node_data: Dictionary = ConfigDB.get_chapter_node(node_id)
-		var chapter_data: Dictionary = ConfigDB.get_chapter(String(node_data.get("chapter_id", "")))
 		node_entries.append({
 			"node_id": node_id,
-			"label": "%s | %s | %s" % [
-				String(chapter_data.get("name", "")),
-				node_id,
-				String(node_data.get("node_type", "normal")),
-			],
+			"label": "%s" % ConfigDB.get_chapter_node_full_label(node_id),
 		})
 	node_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return String(a.get("label", "")) < String(b.get("label", ""))
@@ -205,14 +199,14 @@ func _on_add_item_pressed() -> void:
 func _on_jump_node_pressed() -> void:
 	var node_id: String = _get_selected_option_metadata(node_option)
 	if GameManager.gm_jump_to_node(node_id):
-		_push_action_log("已跳转到节点 %s" % node_id)
+		_push_action_log("已跳转到节点 %s" % ConfigDB.get_chapter_node_short_label(node_id))
 	else:
 		_push_action_log("节点跳转失败")
 
 
 func _on_restart_node_pressed() -> void:
 	EventBus.node_changed.emit(GameManager.current_node_id)
-	_push_action_log("已重开当前节点 %s" % GameManager.current_node_id)
+	_push_action_log("已重开当前节点 %s" % ConfigDB.get_chapter_node_short_label(GameManager.current_node_id))
 
 
 func _on_unlock_research_pressed() -> void:

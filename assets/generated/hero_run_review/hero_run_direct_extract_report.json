@@ -1,0 +1,194 @@
+[
+  {
+    "input_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/hero_run_review/direct_cutouts/hero_move_direct_cutout_01.png",
+    "output_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/afk_rpg_formal/characters/hero_move_anim_01.png",
+    "offset_x": -228,
+    "offset_y": 92,
+    "input_metrics": {
+      "bbox": [
+        358,
+        138,
+        866,
+        633
+      ],
+      "center_x": 612.0,
+      "head_y": 138,
+      "foot_y": 633,
+      "body_height": 496,
+      "area": 78212
+    },
+    "output_metrics": {
+      "bbox": [
+        130,
+        230,
+        638,
+        725
+      ],
+      "center_x": 384.0,
+      "head_y": 230,
+      "foot_y": 725,
+      "body_height": 496,
+      "area": 78212
+    }
+  },
+  {
+    "input_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/hero_run_review/direct_cutouts/hero_move_direct_cutout_02.png",
+    "output_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/afk_rpg_formal/characters/hero_move_anim_02.png",
+    "offset_x": -232,
+    "offset_y": 89,
+    "input_metrics": {
+      "bbox": [
+        368,
+        141,
+        863,
+        633
+      ],
+      "center_x": 615.5,
+      "head_y": 141,
+      "foot_y": 633,
+      "body_height": 493,
+      "area": 83550
+    },
+    "output_metrics": {
+      "bbox": [
+        136,
+        230,
+        631,
+        722
+      ],
+      "center_x": 383.5,
+      "head_y": 230,
+      "foot_y": 722,
+      "body_height": 493,
+      "area": 83550
+    }
+  },
+  {
+    "input_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/hero_run_review/direct_cutouts/hero_move_direct_cutout_03.png",
+    "output_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/afk_rpg_formal/characters/hero_move_anim_03.png",
+    "offset_x": -219,
+    "offset_y": 107,
+    "input_metrics": {
+      "bbox": [
+        349,
+        123,
+        857,
+        580
+      ],
+      "center_x": 603.0,
+      "head_y": 123,
+      "foot_y": 580,
+      "body_height": 458,
+      "area": 87710
+    },
+    "output_metrics": {
+      "bbox": [
+        130,
+        230,
+        638,
+        687
+      ],
+      "center_x": 384.0,
+      "head_y": 230,
+      "foot_y": 687,
+      "body_height": 458,
+      "area": 87710
+    }
+  },
+  {
+    "input_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/hero_run_review/direct_cutouts/hero_move_direct_cutout_04.png",
+    "output_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/afk_rpg_formal/characters/hero_move_anim_04.png",
+    "offset_x": -212,
+    "offset_y": 103,
+    "input_metrics": {
+      "bbox": [
+        355,
+        127,
+        838,
+        629
+      ],
+      "center_x": 596.5,
+      "head_y": 127,
+      "foot_y": 629,
+      "body_height": 503,
+      "area": 84317
+    },
+    "output_metrics": {
+      "bbox": [
+        143,
+        230,
+        626,
+        732
+      ],
+      "center_x": 384.5,
+      "head_y": 230,
+      "foot_y": 732,
+      "body_height": 503,
+      "area": 84317
+    }
+  },
+  {
+    "input_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/hero_run_review/direct_cutouts/hero_move_direct_cutout_05.png",
+    "output_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/afk_rpg_formal/characters/hero_move_anim_05.png",
+    "offset_x": -203,
+    "offset_y": 91,
+    "input_metrics": {
+      "bbox": [
+        354,
+        139,
+        820,
+        632
+      ],
+      "center_x": 587.0,
+      "head_y": 139,
+      "foot_y": 632,
+      "body_height": 494,
+      "area": 76153
+    },
+    "output_metrics": {
+      "bbox": [
+        151,
+        230,
+        617,
+        723
+      ],
+      "center_x": 384.0,
+      "head_y": 230,
+      "foot_y": 723,
+      "body_height": 494,
+      "area": 76153
+    }
+  },
+  {
+    "input_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/hero_run_review/direct_cutouts/hero_move_direct_cutout_06.png",
+    "output_path": "/Users/hehe/Documents/AIProject/AFK-RPG/assets/generated/afk_rpg_formal/characters/hero_move_anim_06.png",
+    "offset_x": -252,
+    "offset_y": 89,
+    "input_metrics": {
+      "bbox": [
+        369,
+        141,
+        903,
+        633
+      ],
+      "center_x": 636.0,
+      "head_y": 141,
+      "foot_y": 633,
+      "body_height": 493,
+      "area": 84187
+    },
+    "output_metrics": {
+      "bbox": [
+        117,
+        230,
+        651,
+        722
+      ],
+      "center_x": 384.0,
+      "head_y": 230,
+      "foot_y": 722,
+      "body_height": 493,
+      "area": 84187
+    }
+  }
+]

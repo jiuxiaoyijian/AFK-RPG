@@ -10,7 +10,56 @@ const ENEMY_PORTRAIT_PATHS := {
 const ENEMY_PORTRAIT_PATHS_BY_ID := {
 	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_v2.png",
 	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_v2.png",
+	"boss_silver_hook_elder": "res://assets/generated/afk_rpg_formal/bosses/boss_yingou_laoren_v1.png",
 }
+const ENEMY_LAYOUTS := {
+	"normal": {
+		"portrait_scale": Vector2(0.22, 0.22),
+		"portrait_position": Vector2(0.0, -18.0),
+		"body_scale": Vector2(2.15, 2.15),
+		"hp_left": -36.0,
+		"hp_top": -94.0,
+		"hp_right": 36.0,
+		"hp_bottom": -82.0,
+		"status_left": -46.0,
+		"status_top": -120.0,
+		"status_right": 46.0,
+		"status_bottom": -100.0,
+		"feedback_position": Vector2(-54.0, -136.0),
+	},
+	"elite": {
+		"portrait_scale": Vector2(0.24, 0.24),
+		"portrait_position": Vector2(0.0, -22.0),
+		"body_scale": Vector2(2.35, 2.35),
+		"hp_left": -40.0,
+		"hp_top": -104.0,
+		"hp_right": 40.0,
+		"hp_bottom": -92.0,
+		"status_left": -48.0,
+		"status_top": -132.0,
+		"status_right": 48.0,
+		"status_bottom": -110.0,
+		"feedback_position": Vector2(-58.0, -150.0),
+	},
+	"boss": {
+		"portrait_scale": Vector2(0.3, 0.3),
+		"portrait_position": Vector2(0.0, -30.0),
+		"body_scale": Vector2(2.85, 2.85),
+		"hp_left": -50.0,
+		"hp_top": -126.0,
+		"hp_right": 50.0,
+		"hp_bottom": -112.0,
+		"status_left": -58.0,
+		"status_top": -158.0,
+		"status_right": 58.0,
+		"status_bottom": -134.0,
+		"feedback_position": Vector2(-68.0, -178.0),
+	},
+}
+const ENEMY_MOVE_SPEED_MULTIPLIER := 1.65
+const ENEMY_HP_BAR_BACKGROUND := Color(0.15, 0.04, 0.04, 0.92)
+const ENEMY_HP_BAR_FILL := Color(0.88, 0.18, 0.16, 0.98)
+const ENEMY_HP_BAR_BORDER := Color(0.42, 0.10, 0.10, 1.0)
 
 signal died(enemy_id: String, world_position: Vector2, enemy_type: String)
 
@@ -40,6 +89,7 @@ var feedback_tween: Tween
 
 func _ready() -> void:
 	add_to_group("enemy_actor")
+	_apply_hp_bar_theme()
 
 
 func setup_from_config(data: Dictionary) -> void:
@@ -50,7 +100,7 @@ func setup_from_config(data: Dictionary) -> void:
 	current_hp = max_hp
 	attack = float(data.get("attack", 1.0))
 	defense = float(data.get("defense", 0.0))
-	move_speed = float(data.get("move_speed", 40.0))
+	move_speed = float(data.get("move_speed", 40.0)) * ENEMY_MOVE_SPEED_MULTIPLIER
 	attack_interval = float(data.get("attack_interval", 1.2))
 	hp_bar.max_value = max_hp
 	hp_bar.value = current_hp
@@ -58,17 +108,16 @@ func setup_from_config(data: Dictionary) -> void:
 	match enemy_type:
 		"elite":
 			body_visual.color = Color(0.82, 0.45, 0.18, 1.0)
-			portrait_visual.scale = Vector2(0.1, 0.1)
 		"boss":
 			body_visual.color = Color(0.75, 0.18, 0.18, 1.0)
-			scale = Vector2(1.3, 1.3)
 			attack_range = 68.0
-			portrait_visual.scale = Vector2(0.12, 0.12)
 		_:
 			body_visual.color = Color(0.32, 0.75, 0.36, 1.0)
-			portrait_visual.scale = Vector2(0.09, 0.09)
 
+	scale = Vector2.ONE
+	_apply_visual_layout()
 	_apply_portrait_visual()
+	_apply_hp_bar_theme()
 
 
 func _physics_process(delta: float) -> void:
@@ -173,7 +222,7 @@ func update_status_label(attacker_payload: Dictionary) -> void:
 func _show_feedback(text: String, color: Color, emphasis: float = 1.0) -> void:
 	feedback_label.text = text
 	feedback_label.modulate = color
-	feedback_label.position = Vector2(-40.0, -74.0)
+	feedback_label.position = _get_feedback_position()
 	feedback_label.scale = Vector2.ONE * emphasis
 	if feedback_tween:
 		feedback_tween.kill()
@@ -234,3 +283,48 @@ func _load_runtime_texture(resource_path: String) -> Texture2D:
 
 func set_spawn_side(value: int) -> void:
 	spawn_side = value
+
+
+func _apply_visual_layout() -> void:
+	var layout: Dictionary = ENEMY_LAYOUTS.get(enemy_type, ENEMY_LAYOUTS["normal"])
+	portrait_visual.scale = layout["portrait_scale"]
+	portrait_visual.position = layout["portrait_position"]
+	body_visual.scale = layout["body_scale"]
+	hp_bar.offset_left = layout["hp_left"]
+	hp_bar.offset_top = layout["hp_top"]
+	hp_bar.offset_right = layout["hp_right"]
+	hp_bar.offset_bottom = layout["hp_bottom"]
+	status_label.offset_left = layout["status_left"]
+	status_label.offset_top = layout["status_top"]
+	status_label.offset_right = layout["status_right"]
+	status_label.offset_bottom = layout["status_bottom"]
+
+
+func _get_feedback_position() -> Vector2:
+	var layout: Dictionary = ENEMY_LAYOUTS.get(enemy_type, ENEMY_LAYOUTS["normal"])
+	return layout["feedback_position"]
+
+
+func _apply_hp_bar_theme() -> void:
+	var background := StyleBoxFlat.new()
+	background.bg_color = ENEMY_HP_BAR_BACKGROUND
+	background.corner_radius_top_left = 999
+	background.corner_radius_top_right = 999
+	background.corner_radius_bottom_left = 999
+	background.corner_radius_bottom_right = 999
+	background.border_color = ENEMY_HP_BAR_BORDER
+	background.border_width_left = 1
+	background.border_width_top = 1
+	background.border_width_right = 1
+	background.border_width_bottom = 1
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = ENEMY_HP_BAR_FILL
+	fill.corner_radius_top_left = 999
+	fill.corner_radius_top_right = 999
+	fill.corner_radius_bottom_left = 999
+	fill.corner_radius_bottom_right = 999
+
+	hp_bar.add_theme_stylebox_override("background", background)
+	hp_bar.add_theme_stylebox_override("fill", fill)
+	hp_bar.modulate = Color(1, 1, 1, 1)

@@ -3,1945 +3,535 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1280">
-<title>AFK-RPG 交互原型</title>
+<title>AFK-RPG 暗黑like 原型</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg-main: #141620;
-  --bg-title: #1f2a38;
-  --bg-sub: #1c212e;
-  --bg-float: rgba(17, 22, 30, 0.84);
-  --border: #576a8f;
-  --border-soft: rgba(87, 106, 143, 0.28);
-  --text: #c0c8d8;
-  --text-dim: #8090a8;
-  --text-hint: #606878;
-  --white: #eef3fb;
-  --combat-bg: #151922;
-  --ground: #292e3d;
-  --mist: rgba(201, 220, 229, 0.1);
-  --teal: #4dd0c8;
-  --blue: #42a5f5;
-  --green: #66bb6a;
-  --orange: #ff8f00;
-  --orange-soft: rgba(255, 143, 0, 0.16);
-  --red: #ef5350;
-  --gold: #ffc107;
-  --peach: #d59ba7;
-  --wine: #7f4056;
-  --ink: #0a0d14;
-  --q-common: #b0b0b0;
-  --q-uncommon: #4caf50;
-  --q-rare: #42a5f5;
-  --q-epic: #ab47bc;
-  --q-legendary: #ff8f00;
-  --q-ancient: #ef5350;
-  --shadow-strong: 0 26px 54px rgba(0, 0, 0, 0.34);
-  --shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.24);
+  --bg: #0c1118;
+  --panel: rgba(20, 27, 36, 0.96);
+  --panel-soft: rgba(26, 34, 48, 0.92);
+  --panel-title: #243247;
+  --border: #60728f;
+  --text: #d9e1ef;
+  --muted: #8c99af;
+  --gold: #d4a44b;
+  --blue: #5fa8ff;
+  --green: #58c27d;
+  --orange: #ff9a3d;
+  --red: #d45b5b;
+  --shadow: 0 22px 40px rgba(0,0,0,.35);
 }
-
 html, body {
   width: 1280px;
   height: 720px;
   overflow: hidden;
-  background: #07090d;
+  background: #070b10;
   color: var(--text);
-  font: 14px/1.45 "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  user-select: none;
+  font: 14px/1.45 "Noto Sans CJK SC", "PingFang SC", sans-serif;
 }
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 1280px;
-  min-height: 720px;
-}
-
+body { display: flex; justify-content: center; align-items: center; }
 #app {
   position: relative;
   width: 1280px;
   height: 720px;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 22%, rgba(166, 194, 182, 0.08), transparent 26%), linear-gradient(180deg, #0f141d 0%, #141826 38%, #191d2c 100%);
+  background:
+    radial-gradient(circle at 50% 15%, rgba(212,164,75,.14), transparent 18%),
+    radial-gradient(circle at 80% 20%, rgba(95,168,255,.08), transparent 20%),
+    linear-gradient(180deg, #0d131c 0%, #111823 42%, #0f141b 100%);
 }
-
 .card {
-  background: linear-gradient(180deg, rgba(20, 22, 32, 0.96), rgba(16, 19, 28, 0.94));
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--shadow-soft);
+  background: linear-gradient(180deg, var(--panel), rgba(17, 22, 30, 0.98));
+  border: 1px solid rgba(96,114,143,.72);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.title {
+  color: #f1f4fa;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.tiny { font-size: 11px; color: var(--muted); }
+.muted { color: var(--muted); }
+.topbar {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  width: 1256px;
+  height: 46px;
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(96,114,143,.36);
+  background: rgba(12, 16, 23, .82);
   backdrop-filter: blur(10px);
 }
-
-.card-title {
-  font-size: 13px;
-  color: var(--white);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+.topbar strong { color: var(--gold); font-weight: 700; }
+.highlight {
+  position: absolute;
+  left: 430px;
+  top: 70px;
+  width: 420px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(212,164,75,.5);
+  background: linear-gradient(180deg, rgba(36,50,71,.88), rgba(17,22,30,.96));
+  text-align: center;
 }
-
-.subtle {
-  color: var(--text-dim);
+.battle-card {
+  position: absolute;
+  left: 16px;
+  top: 88px;
+  width: 324px;
+  padding: 16px;
 }
-
-.tiny {
-  font-size: 11px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 24px;
-  padding: 0 10px;
+.battle-card .hp {
+  margin: 12px 0 8px;
+  height: 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-dim);
-  font-size: 11px;
+  background: rgba(255,255,255,.06);
+  overflow: hidden;
 }
-
-.icon-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  flex-shrink: 0;
-}
-
-#world {
-  position: absolute;
-  inset: 0;
-}
-
-.sky {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 15%, rgba(216, 193, 158, 0.15), transparent 18%),
-    radial-gradient(circle at 26% 18%, rgba(214, 155, 167, 0.12), transparent 22%),
-    linear-gradient(180deg, #0d1118 0%, #141927 42%, #191c29 100%);
-}
-
-.halo {
-  position: absolute;
-  top: 58px;
-  left: 50%;
-  width: 350px;
-  height: 350px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(225, 211, 164, 0.18), rgba(216, 160, 172, 0.08) 40%, transparent 66%);
-  filter: blur(6px);
-  opacity: 0.75;
-}
-
-.mountains-back,
-.mountains-front {
-  position: absolute;
-  width: 100%;
-  left: 0;
-  filter: saturate(0.88);
-}
-
-.mountains-back {
-  bottom: 214px;
-  height: 210px;
-  background: linear-gradient(180deg, transparent, rgba(20, 28, 38, 0.78));
-  clip-path: polygon(0 76%, 9% 46%, 17% 64%, 27% 20%, 39% 58%, 48% 12%, 61% 54%, 72% 28%, 80% 61%, 90% 36%, 100% 69%, 100% 100%, 0 100%);
-}
-
-.mountains-front {
-  bottom: 172px;
-  height: 170px;
-  background: linear-gradient(180deg, transparent, rgba(14, 18, 27, 0.94));
-  clip-path: polygon(0 84%, 11% 52%, 23% 70%, 34% 26%, 46% 62%, 57% 36%, 70% 72%, 83% 42%, 92% 68%, 100% 54%, 100% 100%, 0 100%);
-}
-
-.mist-band {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  background: linear-gradient(180deg, transparent, rgba(215, 225, 226, 0.08));
-  filter: blur(2px);
-}
-
-.mist-band.m1 { bottom: 228px; height: 56px; }
-.mist-band.m2 { bottom: 180px; height: 72px; opacity: 0.72; }
-
-.shrine {
-  position: absolute;
-  left: 50%;
-  bottom: 178px;
-  width: 186px;
-  height: 188px;
-  transform: translateX(-50%);
-  opacity: 0.92;
-}
-
-.shrine::before {
+.battle-card .hp::after {
   content: "";
+  display: block;
+  width: 78%;
+  height: 100%;
+  background: linear-gradient(90deg, #5fa8ff, #6fd1ff);
+}
+.stage {
   position: absolute;
-  inset: 38px 28px 0;
-  border-radius: 10px 10px 0 0;
+  left: 356px;
+  top: 116px;
+  width: 568px;
+  height: 420px;
+  border-radius: 22px;
+  border: 1px solid rgba(96,114,143,.24);
   background:
-    linear-gradient(180deg, rgba(40, 32, 31, 0.96), rgba(22, 18, 19, 0.98)),
-    linear-gradient(90deg, transparent 0 25%, rgba(255,255,255,0.04) 25% 27%, transparent 27% 48%, rgba(255,255,255,0.04) 48% 50%, transparent 50% 73%, rgba(255,255,255,0.04) 73% 75%, transparent 75% 100%);
-  border: 1px solid rgba(182, 164, 134, 0.18);
-  box-shadow: inset 0 -24px 38px rgba(0, 0, 0, 0.34);
+    radial-gradient(circle at 50% 18%, rgba(212,164,75,.12), transparent 16%),
+    linear-gradient(180deg, rgba(18,25,36,.12), rgba(18,25,36,.4)),
+    linear-gradient(180deg, #151d28 0%, #121720 54%, #1e2430 100%);
+  overflow: hidden;
 }
-
-.shrine::after {
+.stage::before {
   content: "";
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  top: 0;
-  height: 64px;
-  background: linear-gradient(180deg, rgba(72, 58, 52, 0.98), rgba(34, 28, 27, 0.98));
-  clip-path: polygon(4% 100%, 11% 28%, 50% 0, 89% 28%, 96% 100%);
-  border-radius: 18px 18px 8px 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
-}
-
-.lamp {
-  position: absolute;
-  width: 18px;
-  height: 30px;
-  bottom: 212px;
-  background: linear-gradient(180deg, rgba(255, 224, 161, 0.9), rgba(193, 124, 57, 0.66));
-  border-radius: 8px;
-  box-shadow: 0 0 18px rgba(255, 193, 91, 0.36);
-}
-
-.lamp.left { left: calc(50% - 148px); }
-.lamp.right { left: calc(50% + 130px); }
-
-.petal {
-  position: absolute;
-  width: 10px;
-  height: 18px;
-  border-radius: 8px 8px 12px 12px;
-  background: linear-gradient(180deg, rgba(234, 189, 197, 0.9), rgba(175, 97, 118, 0.58));
-  opacity: 0.7;
-  animation: drift 7s linear infinite;
-}
-
-.petal.p1 { left: 22%; top: 126px; animation-delay: -1s; }
-.petal.p2 { left: 29%; top: 188px; animation-delay: -3s; }
-.petal.p3 { left: 64%; top: 142px; animation-delay: -5s; }
-.petal.p4 { left: 72%; top: 170px; animation-delay: -2.5s; }
-
-@keyframes drift {
-  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.78; }
-  100% { transform: translate(-32px, 110px) rotate(180deg); opacity: 0; }
-}
-
-.ground-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 160px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
-}
-
-.ground {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 160px;
-  background:
-    linear-gradient(180deg, rgba(41, 46, 61, 0.96), rgba(25, 29, 40, 0.98)),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 84px);
+  height: 130px;
+  background: linear-gradient(180deg, rgba(40,51,68,.88), rgba(26,32,42,.98));
 }
-
-.path {
-  position: absolute;
-  left: 50%;
-  bottom: 56px;
-  width: 520px;
-  height: 128px;
-  transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(222, 208, 180, 0.2), rgba(118, 95, 76, 0.08) 50%, transparent 72%);
-  filter: blur(2px);
-}
-
-.battle-field {
-  position: absolute;
-  inset: 130px 360px 148px 390px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.stage-tag {
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(17, 22, 30, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(232, 239, 247, 0.88);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-}
-
-.highlight-bar {
-  position: absolute;
-  top: 42px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 440px;
-  padding: 12px 18px;
-  border-radius: 18px;
-  background: linear-gradient(90deg, rgba(19, 25, 35, 0.24), rgba(19, 25, 35, 0.76), rgba(19, 25, 35, 0.24));
-  border: 1px solid rgba(255, 198, 115, 0.24);
-  text-align: center;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
-}
-
-.highlight-bar strong {
-  display: block;
-  color: #f5d18a;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-}
-
-.highlight-bar span {
-  display: block;
-  margin-top: 4px;
-  color: rgba(225, 232, 242, 0.7);
-  font-size: 11px;
-}
-
-.unit {
-  position: absolute;
-  bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.unit .body {
-  position: relative;
-  border-radius: 18px 18px 10px 10px;
-}
-
-.unit.hero {
-  left: 44%;
-  transform: translateX(-50%);
-  animation: hero-pulse 2.4s ease-in-out infinite;
-}
-
-.unit.hero .body {
-  width: 56px;
-  height: 96px;
-  background:
-    linear-gradient(180deg, rgba(117, 170, 213, 1), rgba(33, 71, 104, 1) 56%, rgba(18, 31, 42, 1));
-  box-shadow: 0 0 24px rgba(77, 208, 200, 0.25);
-}
-
-.unit.hero .body::before {
+.stage::after {
   content: "";
   position: absolute;
-  left: 50%;
-  top: -20px;
-  width: 28px;
-  height: 28px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, #e7d4aa, #c0a66a 72%);
-  border: 2px solid rgba(77, 208, 200, 0.48);
+  left: 120px;
+  right: 120px;
+  bottom: 118px;
+  height: 1px;
+  background: rgba(255,255,255,.18);
 }
-
-.unit.hero .body::after {
-  content: "";
+.actor, .enemy {
   position: absolute;
-  right: -26px;
-  top: 18px;
-  width: 48px;
-  height: 24px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(111, 202, 246, 0.4), rgba(111, 202, 246, 0.04));
-  filter: blur(1px);
-}
-
-.unit.enemy {
-  animation: enemy-sway 1.8s ease-in-out infinite;
-}
-
-.unit.enemy .body {
-  width: 44px;
-  height: 72px;
-  background: linear-gradient(180deg, rgba(123, 57, 69, 1), rgba(57, 28, 36, 1));
-}
-
-.unit.enemy .body::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -14px;
-  width: 22px;
-  height: 22px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, #dba5ae, #7b4056 72%);
-}
-
-.unit.enemy.elite .body {
-  width: 52px;
+  bottom: 112px;
+  width: 54px;
   height: 86px;
-  background: linear-gradient(180deg, rgba(114, 57, 132, 1), rgba(48, 24, 58, 1));
-  box-shadow: 0 0 20px rgba(171, 71, 188, 0.24);
+  border-radius: 18px 18px 12px 12px;
 }
-
-.unit.enemy.left-1 { left: 16%; bottom: 26px; }
-.unit.enemy.left-2 { left: 28%; bottom: 8px; animation-delay: -0.7s; }
-.unit.enemy.right-1 { right: 24%; bottom: 18px; animation-delay: -1s; }
-.unit.enemy.right-2 { right: 12%; bottom: 28px; animation-delay: -1.4s; }
-
-.unit-label {
-  margin-top: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(9, 11, 18, 0.44);
-  color: rgba(225, 232, 242, 0.72);
-  font-size: 10px;
+.actor {
+  left: 250px;
+  background: linear-gradient(180deg, #7db8ff, #2e5ea1);
+  box-shadow: 0 0 24px rgba(95,168,255,.28);
 }
-
-@keyframes hero-pulse {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-5px); }
+.enemy {
+  right: 230px;
+  background: linear-gradient(180deg, #ffb48e, #7b352e);
+  box-shadow: 0 0 24px rgba(212,91,91,.24);
 }
-
-@keyframes enemy-sway {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-.drop-orb {
+.drop {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  box-shadow: 0 0 18px currentColor;
-  opacity: 0.85;
-  animation: orb-float 3.2s ease-in-out infinite;
-}
-
-.drop-orb.o1 { left: 43%; top: 58%; color: #ffc107; animation-delay: -0.5s; }
-.drop-orb.o2 { left: 52%; top: 54%; color: #42a5f5; animation-delay: -2.1s; }
-.drop-orb.o3 { left: 59%; top: 60%; color: #ab47bc; animation-delay: -1.2s; }
-
-@keyframes orb-float {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 0.18; }
-  35% { transform: translateY(-16px) scale(1.15); opacity: 0.95; }
-  75% { transform: translateY(-6px) scale(0.9); opacity: 0.5; }
-}
-
-#topbar {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  border-radius: 8px;
-  background: rgba(28, 33, 46, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  z-index: 20;
-}
-
-.resource-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-right: 16px;
-  color: var(--text);
-  font-size: 13px;
-}
-
-.resource-icon {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.gold { background: linear-gradient(135deg, #ffcf52, #d28b10); }
-.ash { background: linear-gradient(135deg, #9ca8b3, #5c6770); }
-.core { background: linear-gradient(135deg, #7fdbd8, #0f7980); }
-.shard { background: linear-gradient(135deg, #f1ad98, #b0532d); }
-
-.divider {
-  width: 1px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.08);
-  margin-right: 16px;
-}
-
-.topbar-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-dim);
-  font-size: 12px;
-}
-
-.demo-buttons {
-  position: absolute;
-  top: 72px;
-  left: 390px;
-  display: flex;
-  gap: 8px;
-  z-index: 20;
-}
-
-.demo-btn {
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(20, 22, 32, 0.72);
-  color: var(--text-dim);
-  height: 26px;
-  padding: 0 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 11px;
-  transition: 0.18s ease;
-}
-
-.demo-btn:hover,
-.demo-btn.active {
-  border-color: rgba(255, 202, 115, 0.34);
-  color: #f3d28f;
-  background: rgba(39, 28, 22, 0.72);
-}
-
-#battleCard {
-  position: absolute;
-  left: 16px;
-  top: 72px;
-  width: 372px;
-  height: 166px;
-  padding: 14px 14px 12px;
-  z-index: 20;
-}
-
-.battle-node {
-  color: var(--white);
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.battle-status {
-  color: var(--blue);
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-
-.hp-wrap {
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.hp-fill {
-  width: 84%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #47a4f8, #7cc3ff);
-}
-
-.battle-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  color: var(--text);
-  font-size: 12px;
-}
-
-.style-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 143, 0, 0.1);
-  color: #f6bc63;
-}
-
-.style-icon {
+  bottom: 168px;
+  right: 312px;
   width: 18px;
   height: 18px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #64c5ff, #234a67);
+  background: linear-gradient(180deg, #ffb85a, #cf6b1e);
 }
-
-.battle-hint {
-  color: var(--text-dim);
-  font-size: 11px;
-  line-height: 1.65;
-}
-
-#targetCard,
-#dailyCard {
+.build-card {
   position: absolute;
   right: 16px;
-  width: 328px;
-  z-index: 20;
-  padding: 12px 14px;
+  top: 88px;
+  width: 340px;
+  padding: 16px;
 }
-
-#targetCard { top: 118px; height: 120px; }
-#dailyCard { top: 250px; height: 138px; }
-
-.tracking-line,
-.goal-line {
-  font-size: 11px;
-  line-height: 1.72;
-  color: var(--text);
-}
-
-.tracking-line strong {
-  color: #f1c16b;
-  font-weight: 600;
-}
-
-.tracking-line .good,
-.goal-line .good {
-  color: var(--green);
-}
-
-.tracking-line .warn,
-.goal-line .warn {
-  color: #ffb55e;
-}
-
-.daily-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.daily-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, #ffdb79, #ff8f00);
-}
-
-.progress-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 4px 0 6px;
-  font-size: 11px;
-  color: var(--text-dim);
-}
-
-.progress-track {
-  height: 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.progress-fill {
-  width: 32%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #ffbf54, #ffd57e);
-}
-
-#safeFrame {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 110px;
-  height: 210px;
-  padding: 12px 16px;
-  border: 1.5px solid rgba(77, 208, 225, 0.2);
-  border-radius: 10px;
-  background: rgba(77, 208, 225, 0.025);
-  z-index: 14;
-  display: flex;
-  gap: 18px;
-}
-
-#equipCard {
-  width: 356px;
-  padding: 12px;
-}
-
-.equip-grid {
+.build-card .summary {
+  margin-top: 10px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 10px;
 }
-
-.equip-slot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 64px;
-  padding: 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.build-chip {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
 }
-
-.equip-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #1d3043, #10202c);
-  border: 2px solid var(--q-rare);
-  flex-shrink: 0;
+.safe-rail {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 108px;
+  height: 122px;
+  border: 1px solid rgba(95,168,255,.2);
+  border-radius: 18px;
+  background: rgba(10,14,20,.28);
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 12px;
+  padding: 14px;
 }
-
-.equip-icon.epic { border-color: var(--q-epic); }
-.equip-icon.uncommon { border-color: var(--q-uncommon); }
-
-.equip-main {
-  color: var(--white);
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.equip-sub {
-  color: var(--text-dim);
-  font-size: 10px;
-}
-
-#recentLoot {
-  flex: 1;
+.rail-box {
   padding: 12px;
+  border-radius: 14px;
+  background: rgba(20,27,36,.86);
+  border: 1px solid rgba(96,114,143,.28);
 }
-
-.loot-list {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.loot-row {
-  display: flex;
-  align-items: center;
+.slots {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  font-size: 11px;
 }
-
-.loot-rarity {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.slot {
+  min-height: 54px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(88,194,125,.4);
+  font-size: 12px;
 }
-
-.loot-node {
-  margin-left: auto;
-  color: var(--text-dim);
-  font-size: 10px;
-}
-
-#navbar {
+.navbar {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 92px;
-  background: rgba(20, 22, 32, 0.98);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  z-index: 30;
-  transition: transform 0.18s ease, opacity 0.18s ease;
+  padding: 8px 14px 10px;
+  border-top: 1px solid rgba(96,114,143,.6);
+  background: rgba(10,14,19,.97);
 }
-
-#navbar.hidden {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-.nav-buttons {
+.nav-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 0;
-  height: 66px;
+  gap: 10px;
 }
-
 .nav-btn {
-  border: none;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  transition: background 0.18s ease;
-}
-
-.nav-btn:last-child { border-right: none; }
-
-.nav-btn:hover,
-.nav-btn.active {
-  background: linear-gradient(180deg, rgba(57, 79, 111, 0.24), rgba(22, 28, 40, 0.18));
-}
-
-.nav-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.nav-icon.inv { background: linear-gradient(135deg, #6489ff, #314aa5); }
-.nav-icon.dao { background: linear-gradient(135deg, #4dd0c8, #0b7578); }
-.nav-icon.codex { background: linear-gradient(135deg, #ec9f7f, #a6522f); }
-.nav-icon.stats { background: linear-gradient(135deg, #ffcb63, #b7710f); }
-.nav-icon.gm { background: linear-gradient(135deg, #8e96ab, #475064); }
-
-.nav-main {
-  color: var(--white);
-  font-size: 14px;
-}
-
-.nav-sub {
-  color: var(--text-dim);
-  font-size: 11px;
-}
-
-.nav-hint {
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-hint);
-  font-size: 11px;
-  border-top: 1px solid rgba(255,255,255,0.04);
-}
-
-#overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.18s ease;
-  z-index: 50;
-}
-
-#overlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal-panel {
-  position: absolute;
-  inset: 96px 140px auto;
-  height: 528px;
-  display: none;
-  flex-direction: column;
-  background: rgba(20, 22, 32, 0.98);
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--shadow-strong);
-  z-index: 60;
-  overflow: hidden;
-}
-
-.modal-panel.show {
-  display: flex;
-}
-
-.modal-header {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background: var(--bg-title);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.modal-title {
-  font-size: 16px;
-  color: var(--white);
-  font-weight: 700;
-}
-
-.close-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.06);
-  color: var(--white);
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.modal-body {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-}
-
-.filter-bar {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px 0;
-}
-
-.filter-btn {
-  height: 30px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: transparent;
-  color: var(--text-dim);
-  cursor: pointer;
-}
-
-.filter-btn.active {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: var(--white);
-}
-
-.list-pane {
-  width: 380px;
-  padding: 12px;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  overflow-y: auto;
-}
-
-.detail-pane {
-  flex: 1;
-  padding: 18px 20px;
-  overflow-y: auto;
-}
-
-.list-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 0 12px 0 0;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.02);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.list-item.selected {
-  background: rgba(65, 88, 121, 0.28);
-}
-
-.quality-bar {
-  width: 4px;
-  height: 46px;
-  border-radius: 8px 0 0 8px;
-}
-
-.item-main {
-  flex: 1;
-  color: var(--white);
-  font-size: 14px;
-}
-
-.item-extra {
-  color: var(--text-dim);
-  font-size: 12px;
-}
-
-.detail-name {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.detail-sub {
-  color: var(--text-dim);
-  font-size: 12px;
-  margin-bottom: 12px;
-}
-
-.divider-line {
-  height: 1px;
-  background: rgba(255,255,255,0.06);
-  margin: 12px 0;
-}
-
-.detail-line {
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.detail-note {
-  color: var(--text-dim);
-  font-size: 11px;
-  line-height: 1.7;
-}
-
-.btn-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.btn {
-  height: 34px;
-  padding: 0 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn-primary {
-  border: none;
-  background: var(--blue);
-  color: var(--white);
-}
-
-.btn-outline {
-  border: 1px solid rgba(255,255,255,0.14);
-  background: transparent;
-  color: var(--white);
-}
-
-.btn-danger {
-  border: 1px solid rgba(239, 83, 80, 0.5);
-  background: rgba(239, 83, 80, 0.08);
-  color: #ff978f;
-}
-
-.research-wrap {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-}
-
-.research-list {
-  padding: 12px 16px 18px;
-  overflow-y: auto;
-}
-
-.research-item {
-  margin-bottom: 10px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.research-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 8px;
-}
-
-.research-name {
-  color: var(--white);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.research-level {
-  color: #ffc570;
-  font-size: 13px;
-}
-
-.research-desc,
-.research-cost {
-  font-size: 12px;
-  color: var(--text);
-}
-
-.research-cost {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.cost-piece {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-dim);
-}
-
-.cost-piece .resource-icon {
-  width: 14px;
-  height: 14px;
-}
-
-.research-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.codex-detail {
-  line-height: 1.75;
-  font-size: 14px;
-}
-
-.codex-detail .note {
-  color: var(--text-dim);
-  font-size: 13px;
-}
-
-.stats-wrap {
-  padding: 14px 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow-y: auto;
-}
-
-.stats-overview {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.stats-box {
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.stats-box strong {
-  display: block;
-  color: var(--white);
-  font-size: 15px;
-  margin-top: 4px;
-}
-
-.node-list {
-  max-height: 168px;
-  overflow-y: auto;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.node-row {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr;
-  gap: 12px;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 12px;
-}
-
-.node-row:last-child { border-bottom: none; }
-
-.bars-wrap {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.bar-row { margin-bottom: 12px; }
-
-.bar-label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  color: var(--text-dim);
-  font-size: 12px;
-}
-
-.bar-track {
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.08);
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  border-radius: inherit;
-}
-
-.gm-wrap {
-  padding: 14px;
-  overflow-y: auto;
-}
-
-.gm-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.gm-card {
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.gm-card h4 {
-  color: var(--text-dim);
-  font-size: 13px;
-  margin-bottom: 10px;
-}
-
-.gm-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 12px;
-}
-
-.gm-input {
-  width: 72px;
-  height: 26px;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(10, 13, 20, 0.9);
-  color: var(--text);
-  text-align: center;
-}
-
-.gm-small {
-  padding: 0 10px;
-  height: 26px;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-}
-
-#popupOverlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.2s ease;
-  z-index: 70;
-}
-
-#popupOverlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.popup-card {
-  position: relative;
-  width: 640px;
-  min-height: 480px;
-  padding: 26px 30px;
+  height: 56px;
+  padding: 8px 12px;
   border-radius: 14px;
-  border: 2px solid rgba(87, 106, 143, 0.85);
-  background: linear-gradient(160deg, rgba(25, 30, 44, 0.98), rgba(17, 20, 29, 0.98));
-  box-shadow: var(--shadow-strong);
-}
-
-.popup-card.event {
-  border-color: rgba(255, 162, 77, 0.56);
-  background: linear-gradient(160deg, rgba(41, 29, 19, 0.98), rgba(25, 18, 14, 0.98));
-}
-
-.popup-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.popup-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #65b8ff, #225d90);
-}
-
-.popup-card.event .popup-icon {
-  background: linear-gradient(135deg, #ffc468, #b05a12);
-}
-
-.popup-title {
-  font-size: 18px;
-  color: var(--white);
-  font-weight: 700;
-}
-
-.popup-highlight {
-  margin-bottom: 16px;
+  border: 1px solid rgba(96,114,143,.38);
+  background: linear-gradient(180deg, rgba(28,36,49,.96), rgba(17,22,30,.98));
   color: var(--text);
-  font-size: 13px;
-}
-
-.popup-block {
-  margin-bottom: 14px;
-  padding: 14px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.04);
-  line-height: 1.8;
-  font-size: 13px;
-}
-
-.popup-block-title {
-  color: var(--text-dim);
-  font-size: 12px;
-  margin-bottom: 8px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.popup-close {
-  margin-top: 8px;
-  height: 38px;
-  padding: 0 42px;
-  border: none;
-  border-radius: 10px;
-  background: var(--blue);
-  color: var(--white);
+  text-align: left;
   cursor: pointer;
-  font-size: 14px;
 }
-
-.popup-card.event .popup-close {
-  background: var(--orange);
+.nav-btn strong { display: block; color: #f3f6fb; }
+.nav-btn.active { border-color: rgba(212,164,75,.65); box-shadow: 0 0 0 1px rgba(212,164,75,.18) inset; }
+.hint {
+  margin-top: 7px;
+  text-align: center;
+  font-size: 11px;
+  color: #6d7789;
 }
-
-.popup-actions {
-  display: flex;
-  justify-content: center;
-}
-
-.boss-mark {
+.overlay {
   position: absolute;
-  top: 24px;
-  right: 28px;
-  width: 90px;
-  height: 90px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 186, 120, 0.22);
-  background: radial-gradient(circle, rgba(255, 174, 98, 0.18), rgba(255, 174, 98, 0.04));
+  inset: 0;
+  background: rgba(0,0,0,.52);
   display: none;
   align-items: center;
   justify-content: center;
-  color: #ffca70;
-  font-size: 34px;
+  padding: 20px;
 }
-
-.popup-card.event .boss-mark {
+.overlay.show { display: flex; }
+.modal {
+  width: 1040px;
+  min-height: 548px;
+  max-height: 640px;
+  display: grid;
+  grid-template-rows: 52px 1fr;
+  overflow: hidden;
+}
+.modal-head {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px;
+  background: linear-gradient(180deg, #2a3b53, #223042);
+  border-bottom: 1px solid rgba(255,255,255,.08);
 }
-
-@media (max-width: 1300px) {
-  body {
-    transform-origin: top left;
-    transform: scale(calc(100vw / 1280));
-  }
+.close {
+  border: 0;
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.modal-body {
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(20,27,36,.98), rgba(16,20,27,.98));
+  display: grid;
+  gap: 14px;
+}
+.panel-grid.inventory { grid-template-columns: 280px 1fr 280px; }
+.panel-grid.cube { grid-template-columns: 180px 1fr; }
+.panel-grid.codex { grid-template-columns: 260px 1fr; }
+.panel-grid.progression { grid-template-columns: 220px 1fr; }
+.panel-grid.analysis { grid-template-columns: 220px 1fr; }
+.column, .detail {
+  border-radius: 14px;
+  border: 1px solid rgba(96,114,143,.26);
+  background: rgba(255,255,255,.03);
+  padding: 14px;
+}
+.list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96,114,143,.34);
+  background: rgba(255,255,255,.04);
+  font-size: 12px;
+}
+.tab.active { border-color: rgba(212,164,75,.62); color: #f1d28a; }
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.action {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(96,114,143,.34);
+  background: rgba(255,255,255,.05);
 }
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="world">
-    <div class="sky"></div>
-    <div class="halo"></div>
-    <div class="mountains-back"></div>
-    <div class="mountains-front"></div>
-    <div class="mist-band m1"></div>
-    <div class="mist-band m2"></div>
-    <div class="shrine"></div>
-    <div class="lamp left"></div>
-    <div class="lamp right"></div>
-    <div class="petal p1"></div>
-    <div class="petal p2"></div>
-    <div class="petal p3"></div>
-    <div class="petal p4"></div>
-    <div class="ground-line"></div>
-    <div class="ground"></div>
-    <div class="path"></div>
+  <div class="topbar">
+    <div><strong>银两 12,480</strong>  ·  锻材 612  ·  灵核 41  ·  残页 12  ·  背包 7</div>
+    <div>击杀 184  ·  清图 23  ·  当前节点 chapter_2/boss</div>
   </div>
 
-  <div id="topbar">
-    <div class="resource-group"><span class="resource-icon gold"></span>香火钱 1,200</div>
-    <div class="resource-group"><span class="resource-icon ash"></span>祠灰 45</div>
-    <div class="resource-group"><span class="resource-icon core"></span>灵核 3</div>
-    <div class="resource-group"><span class="resource-icon shard"></span>真意残片 0</div>
-    <div class="divider"></div>
-    <div class="resource-group subtle">背包 12</div>
-    <div class="topbar-right">
-      <span class="chip">击杀 17</span>
-      <span class="chip">清图 3</span>
-      <span class="chip">当前节点 ch1_n1</span>
-    </div>
+  <div class="highlight card">
+    <div class="title">传承 4 件激活</div>
+    <div class="tiny">御风传承 · 旋风持续期间减伤提升，范围外圈追加风压斩</div>
   </div>
 
-  <div class="demo-buttons">
-    <button class="demo-btn active" data-popup="none">主界面</button>
-    <button class="demo-btn" data-popup="offline">闭关所得</button>
-    <button class="demo-btn" data-popup="event">破局要闻</button>
+  <div class="battle-card card">
+    <div class="title">桃溪渡口 · chapter_2/boss</div>
+    <div class="muted" style="margin-top:6px;">状态：首领战第 2 段</div>
+    <div class="hp"></div>
+    <div>生命 1860 / 2400</div>
+    <div style="margin-top:10px;">流派：<span style="color:var(--gold)">御风道</span></div>
+    <div class="tiny" style="margin-top:10px;">掉落方向：护手、腰带、首领传奇、传承护甲</div>
   </div>
 
-  <div id="battleCard" class="card">
-    <div class="battle-node">桃溪外渡 · ch1_n1 · normal</div>
-    <div class="battle-status">第 1 波战斗中</div>
-    <div class="hp-wrap"><div class="hp-fill"></div></div>
-    <div class="battle-meta">
-      <span>生命: 160 / 160</span>
-      <span class="style-pill"><span class="style-icon"></span>御风道</span>
-    </div>
-    <div class="battle-hint">掉落方向: 普通真意、基础底材、香火钱与祠灰。当前建议优先观察群怪聚拢后的回环斩收益。</div>
+  <div class="stage">
+    <div class="actor"></div>
+    <div class="enemy"></div>
+    <div class="drop"></div>
   </div>
 
-  <div id="targetCard" class="card">
-    <div class="card-title" style="margin-bottom:6px;">机缘追踪</div>
-    <div class="tracking-line">追踪: <strong>风眼</strong> → 桃溪外渡 / 伏祠山君</div>
-    <div class="tracking-line">缺口: 功能词条(范围) → <span class="warn">度厄范围 0% / 16%</span></div>
-    <div class="tracking-line">下一件: 风眼 / 扩厄 / 静参类</div>
-    <div class="tracking-line">建议: 先闭关 <span class="good">桃溪外渡·近岸</span>，补旋风范围后再推灵田。</div>
-  </div>
-
-  <div id="dailyCard" class="card">
-    <div class="daily-head">
-      <div class="daily-icon"></div>
-      <div class="card-title">今日机缘</div>
-    </div>
-    <div class="goal-line">主机缘: 先补当前卡点</div>
-    <div class="progress-row"><span>进度</span><span class="good">1 / 3</span></div>
-    <div class="progress-track"><div class="progress-fill"></div></div>
-    <div class="goal-line">建议: 先刷 <span class="warn">桃溪外渡·近岸</span>，优先补旋风范围与聚怪效率。</div>
-    <div class="goal-line subtle">支线: 分解 5 件装备 (2/5) / 完成 1 次悟道 (0/1)</div>
-  </div>
-
-  <div class="battle-field">
-    <div class="stage-tag">战斗舞台 · 伪桃源入口 · 自动推进演示</div>
-    <div class="highlight-bar">
-      <strong>御风回斩 · 斩过香灯廊桥</strong>
-      <span>风痕已经成形，保持贴近怪群，你的回环收益会明显更高。</span>
-    </div>
-
-    <div class="unit enemy left-1">
-      <div class="body"></div>
-      <div class="unit-label">桃瘴鼠</div>
-    </div>
-    <div class="unit enemy elite left-2">
-      <div class="body"></div>
-      <div class="unit-label">纸甲巡祠</div>
-    </div>
-    <div class="unit hero">
-      <div class="body"></div>
-      <div class="unit-label">外来修士</div>
-    </div>
-    <div class="unit enemy right-1">
-      <div class="body"></div>
-      <div class="unit-label">桃瘴鼠</div>
-    </div>
-    <div class="unit enemy right-2">
-      <div class="body"></div>
-      <div class="unit-label">香灰巫祝</div>
-    </div>
-
-    <div class="drop-orb o1"></div>
-    <div class="drop-orb o2"></div>
-    <div class="drop-orb o3"></div>
-  </div>
-
-  <div id="safeFrame">
-    <div id="equipCard" class="card">
-      <div class="card-title">装备概览</div>
-      <div class="equip-grid">
-        <div class="equip-slot">
-          <div class="equip-icon"></div>
-          <div>
-            <div class="equip-main" style="color:var(--q-rare);">御风·残月刀</div>
-            <div class="equip-sub">武器 · 稀有 ★★★</div>
-          </div>
-        </div>
-        <div class="equip-slot">
-          <div class="equip-icon epic"></div>
-          <div>
-            <div class="equip-main" style="color:var(--q-epic);">玄铁盔</div>
-            <div class="equip-sub">头盔 · 史诗 ★★★★</div>
-          </div>
-        </div>
-        <div class="equip-slot">
-          <div class="equip-icon"></div>
-          <div>
-            <div class="equip-main" style="color:var(--q-rare);">铁背甲</div>
-            <div class="equip-sub">铠甲 · 稀有 ★★★</div>
-          </div>
-        </div>
-        <div class="equip-slot">
-          <div class="equip-icon uncommon"></div>
-          <div>
-            <div class="equip-main" style="color:var(--q-uncommon);">粗布手套</div>
-            <div class="equip-sub">手套 · 精良 ★★</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="recentLoot" class="card">
-      <div class="card-title">最近掉落</div>
-      <div class="loot-list">
-        <div class="loot-row"><span class="loot-rarity" style="background:var(--q-legendary);"></span><span style="color:var(--q-legendary);">真意·风眼</span><span class="loot-node">@ ch1_boss</span></div>
-        <div class="loot-row"><span class="loot-rarity" style="background:var(--q-epic);"></span><span style="color:var(--q-epic);">血劫·裂甲手</span><span class="loot-node">@ ch1_n3</span></div>
-        <div class="loot-row"><span class="loot-rarity" style="background:var(--q-rare);"></span><span>御风·残月刀</span><span class="loot-node">@ ch1_n2</span></div>
-        <div class="loot-row"><span class="loot-rarity" style="background:var(--q-rare);"></span><span>五雷·引电符</span><span class="loot-node">@ ch1_n3</span></div>
-        <div class="loot-row"><span class="loot-rarity" style="background:var(--q-uncommon);"></span><span>铁背护肩</span><span class="loot-node">@ ch1_n1</span></div>
-        <div class="loot-row"><span class="loot-rarity" style="background:var(--q-common);"></span><span>朽木短弓</span><span class="loot-node">@ ch1_n1</span></div>
-      </div>
+  <div class="build-card card">
+    <div class="title">Build 摘要</div>
+    <div class="summary">
+      <div class="build-chip"><strong>传承</strong><br>御风传承 4/6，已激活 2件 / 4件</div>
+      <div class="build-chip"><strong>武学秘录</strong><br>兵器：风眼 · 护甲：山君壳 · 饰品：雷池</div>
+      <div class="build-chip"><strong>下一件</strong><br>御风护手，优先补 6 件成型</div>
+      <div class="build-chip"><strong>推荐刷图</strong><br>桃溪渡口 / 首领，预计 7.2 次见目标</div>
     </div>
   </div>
 
-  <div id="navbar">
-    <div class="nav-buttons">
-      <button class="nav-btn" data-panel="inventory">
-        <div class="nav-icon inv">包</div>
-        <div class="nav-main">背包 I</div>
-        <div class="nav-sub">12件可管理</div>
-      </button>
-      <button class="nav-btn" data-panel="research">
-        <div class="nav-icon dao">悟</div>
-        <div class="nav-main">悟道 U</div>
-        <div class="nav-sub">可悟道 3 项</div>
-      </button>
-      <button class="nav-btn" data-panel="codex">
-        <div class="nav-icon codex">闻</div>
-        <div class="nav-main">异闻录 O</div>
-        <div class="nav-sub">机缘: 风眼</div>
-      </button>
-      <button class="nav-btn" data-panel="stats">
-        <div class="nav-icon stats">推</div>
-        <div class="nav-main">推演 P</div>
-        <div class="nav-sub">节点 4 个 | 最近 6 条</div>
-      </button>
-      <button class="nav-btn" data-panel="gm">
-        <div class="nav-icon gm">GM</div>
-        <div class="nav-main">GM G</div>
-        <div class="nav-sub">调试入口</div>
-      </button>
-    </div>
-    <div class="nav-hint">1/2/3 切道统　R 重开　T 切机缘　G GM　F5/F8 档1　Esc 关闭</div>
-  </div>
-
-  <div id="overlay"></div>
-
-  <div class="modal-panel" id="panel-inventory">
-    <div class="modal-header">
-      <div class="modal-title">背包</div>
-      <button class="close-btn" type="button" onclick="closePanel()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="list-pane">
-        <div class="list-item selected">
-          <div class="quality-bar" style="background:var(--q-rare);"></div>
-          <div class="item-main">御风·残月刀</div>
-          <div class="item-extra">★★★</div>
-        </div>
-        <div class="list-item">
-          <div class="quality-bar" style="background:var(--q-epic);"></div>
-          <div class="item-main">血劫·裂甲手</div>
-          <div class="item-extra">★★★★</div>
-        </div>
-        <div class="list-item">
-          <div class="quality-bar" style="background:var(--q-rare);"></div>
-          <div class="item-main">寒铁护手</div>
-          <div class="item-extra">★★★</div>
-        </div>
-        <div class="list-item">
-          <div class="quality-bar" style="background:var(--q-uncommon);"></div>
-          <div class="item-main">铁背护肩</div>
-          <div class="item-extra">★★</div>
-        </div>
-        <div class="list-item">
-          <div class="quality-bar" style="background:var(--q-common);"></div>
-          <div class="item-main">朽木短弓</div>
-          <div class="item-extra">★</div>
-        </div>
-        <div class="list-item">
-          <div class="quality-bar" style="background:var(--q-legendary);"></div>
-          <div class="item-main">真意·风眼</div>
-          <div class="item-extra">★★★★★</div>
-        </div>
+  <div class="safe-rail">
+    <div class="rail-box">
+      <div class="title">装备概览</div>
+      <div class="slots">
+        <div class="slot">兵器<br>绝影刀</div>
+        <div class="slot">头冠<br>风纹冠</div>
+        <div class="slot">护甲<br>御风衣</div>
+        <div class="slot">护手<br>未成型</div>
       </div>
-      <div class="detail-pane">
-        <div class="detail-name" style="color:var(--q-rare);">御风·残月刀</div>
-        <div class="detail-sub">武器 · 稀有</div>
-        <div class="divider-line"></div>
-        <div class="detail-line">攻击力 +15</div>
-        <div class="detail-line">攻速 +5%</div>
-        <div class="divider-line"></div>
-        <div class="detail-line" style="color:var(--green);">暴击率 +3%</div>
-        <div class="detail-line" style="color:var(--blue);">御风伤害 +5%</div>
-        <div class="detail-line">生命值 +20</div>
-        <div class="divider-line"></div>
-        <div class="btn-row">
-          <button class="btn btn-primary" type="button">装备</button>
-          <button class="btn btn-outline" type="button">锁定</button>
-          <button class="btn btn-danger" type="button">分解</button>
-        </div>
-        <div class="detail-note" style="margin-top:14px;">自动分解: <span style="color:#f4c06a;">稀有以下</span>（点击循环切换）</div>
-      </div>
+    </div>
+    <div class="rail-box">
+      <div class="title">高价值掉落</div>
+      <div class="tiny" style="margin-top:8px;">[传承] 御风腰封</div>
+      <div class="tiny">[传奇] 风眼</div>
+      <div class="tiny">[材料] 华戒残纹</div>
+    </div>
+    <div class="rail-box">
+      <div class="title">当前目标</div>
+      <div class="tiny" style="margin-top:8px;">追踪：风眼</div>
+      <div class="tiny">卡点：范围够了，缺 6 件与秘录第三槽</div>
+      <div class="tiny">建议：先首领，再回刷精英节点</div>
     </div>
   </div>
 
-  <div class="modal-panel" id="panel-research">
-    <div class="modal-header">
-      <div class="modal-title">悟道</div>
-      <button class="close-btn" type="button" onclick="closePanel()">×</button>
+  <div class="navbar">
+    <div class="nav-row">
+      <button class="nav-btn" data-panel="inventory"><strong>背包 I</strong><span class="tiny">7 件待处理</span></button>
+      <button class="nav-btn" data-panel="cube"><strong>百炼坊 B</strong><span class="tiny">2 项可精炼</span></button>
+      <button class="nav-btn" data-panel="codex"><strong>江湖见闻录 O</strong><span class="tiny">追踪 风眼</span></button>
+      <button class="nav-btn" data-panel="progression"><strong>成长中心 U</strong><span class="tiny">3 点可分配</span></button>
+      <button class="nav-btn" data-panel="analysis"><strong>推演与秘境 P</strong><span class="tiny">秘境 12 层</span></button>
     </div>
-    <div class="research-wrap">
-      <div class="filter-bar">
-        <button class="filter-btn active" type="button">全部</button>
-        <button class="filter-btn" type="button">战法</button>
-        <button class="filter-btn" type="button">闭关</button>
-        <button class="filter-btn" type="button">机缘</button>
-      </div>
-      <div class="research-list">
-        <div class="research-item">
-          <div class="research-head">
-            <div class="research-name">御风·破阵</div>
-            <div class="research-level">Lv.3 → Lv.4</div>
-          </div>
-          <div class="research-desc">效果: 御风道伤害 +12% → <span style="color:var(--green);">+16%</span></div>
-          <div class="research-foot">
-            <div class="research-cost">
-              <span class="cost-piece"><span class="resource-icon ash"></span>祠灰 200</span>
-              <span class="cost-piece"><span class="resource-icon core"></span>灵核 5</span>
-            </div>
-            <button class="btn btn-primary" type="button">悟道</button>
-          </div>
-        </div>
-        <div class="research-item">
-          <div class="research-head">
-            <div class="research-name">闭关·时流</div>
-            <div class="research-level">Lv.1 → Lv.2</div>
-          </div>
-          <div class="research-desc">效果: 闭关效率 +10% → <span style="color:var(--green);">+15%</span></div>
-          <div class="research-foot">
-            <div class="research-cost">
-              <span class="cost-piece"><span class="resource-icon ash"></span>祠灰 100</span>
-            </div>
-            <button class="btn btn-primary" type="button">悟道</button>
-          </div>
-        </div>
-        <div class="research-item">
-          <div class="research-head">
-            <div class="research-name">机缘·拾遗</div>
-            <div class="research-level">Lv.0 → Lv.1</div>
-          </div>
-          <div class="research-desc">效果: 高价值掉落率 +0% → <span style="color:var(--green);">+3%</span></div>
-          <div class="research-foot">
-            <div class="research-cost">
-              <span class="cost-piece"><span class="resource-icon ash"></span>祠灰 80</span>
-              <span class="cost-piece"><span class="resource-icon core"></span>灵核 2</span>
-            </div>
-            <button class="btn btn-outline" type="button">资源不足</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="hint">I 背包 · B 百炼坊 · O 江湖见闻录 · U 成长中心 · P 推演与秘境 · Esc 关闭</div>
   </div>
 
-  <div class="modal-panel" id="panel-codex">
-    <div class="modal-header">
-      <div class="modal-title">异闻录</div>
-      <button class="close-btn" type="button" onclick="closePanel()">×</button>
-    </div>
-    <div class="research-wrap">
-      <div class="filter-bar">
-        <button class="filter-btn active" type="button">全部</button>
-        <button class="filter-btn" type="button">底材</button>
-        <button class="filter-btn" type="button">词条</button>
-        <button class="filter-btn" type="button">异宝</button>
-      </div>
-      <div class="modal-body">
-        <div class="list-pane" style="width:350px;">
-          <div class="list-item selected"><div class="quality-bar" style="background:var(--green);"></div><div class="item-main">✓ 残月刀</div></div>
-          <div class="list-item"><div class="quality-bar" style="background:var(--green);"></div><div class="item-main">✓ 寒铁护手</div></div>
-          <div class="list-item"><div class="quality-bar" style="background:#616161;"></div><div class="item-main" style="color:#8c93a1;">? 未发现</div></div>
-          <div class="list-item"><div class="quality-bar" style="background:var(--green);"></div><div class="item-main">✓ 暴击词条</div></div>
-          <div class="list-item"><div class="quality-bar" style="background:var(--q-legendary);"></div><div class="item-main" style="color:var(--q-legendary);">✓ 御风·裂空</div></div>
-        </div>
-        <div class="detail-pane">
-          <div class="detail-name" style="color:var(--white);">残月刀 · 底材</div>
-          <div class="detail-sub">异闻条目 / 已发现</div>
-          <div class="divider-line"></div>
-          <div class="codex-detail">
-            <div>首次发现: ch1_n2</div>
-            <div>掉落节点: ch1_n1、ch1_n2、ch1_n3</div>
-            <div>基础掉落率: 约 12%</div>
-            <div class="note" style="margin-top:10px;">刀身轻薄，刃口带祠风冷气。越靠近廊桥与祠灯处，越容易掉出高攻速与回环类词条。</div>
-          </div>
-          <div class="divider-line"></div>
-          <div class="btn-row">
-            <button class="btn btn-outline" type="button" style="border-color:rgba(255,143,0,0.45);color:#f5bd6a;">设为机缘追踪</button>
-          </div>
-          <div class="detail-note" style="margin-top:12px;">按 T 快速切换追踪目标</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-panel" id="panel-stats">
-    <div class="modal-header">
-      <div class="modal-title">机缘推演</div>
-      <button class="close-btn" type="button" onclick="closePanel()">×</button>
-    </div>
-    <div class="stats-wrap">
-      <div class="stats-overview">
-        <div class="stats-box"><div class="subtle tiny">当前节点</div><strong>ch1_n1 · 桃溪外渡</strong></div>
-        <div class="stats-box"><div class="subtle tiny">推荐机缘</div><strong>ch1_n3 · 近岸</strong></div>
-        <div class="stats-box"><div class="subtle tiny">当前追踪</div><strong>风眼 / 旋风范围</strong></div>
-      </div>
-      <div class="node-list">
-        <div class="node-row"><span>ch1_n1</span><span>清图 12 次</span><span>装备 23 件</span><span>传奇 0 件</span></div>
-        <div class="node-row"><span>ch1_n2</span><span>清图 8 次</span><span>装备 15 件</span><span>传奇 1 件</span></div>
-        <div class="node-row"><span>ch1_n3</span><span>清图 9 次</span><span>装备 19 件</span><span>传奇 1 件</span></div>
-        <div class="node-row"><span>ch1_boss</span><span>清图 2 次</span><span>装备 8 件</span><span>传奇 1 件</span></div>
-      </div>
-      <div class="bars-wrap">
-        <div class="stats-box">
-          <div class="card-title" style="margin-bottom:12px;">效率分析</div>
-          <div class="bar-row">
-            <div class="bar-label"><span>装备 / 轮</span><span>80%</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:80%;background:linear-gradient(90deg,#53bbff,#1d6dc0);"></div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label"><span>稀有+ / 轮</span><span>30%</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:30%;background:linear-gradient(90deg,#68c77d,#2a7a43);"></div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-label"><span>传奇 / 轮</span><span>10%</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:10%;background:linear-gradient(90deg,#ffc55d,#b96d09);"></div></div>
-          </div>
-        </div>
-        <div class="stats-box">
-          <div class="card-title" style="margin-bottom:12px;">最近掉落</div>
-          <div class="loot-list">
-            <div class="loot-row"><span class="loot-rarity" style="background:var(--q-rare);"></span><span>御风·残月刀</span><span class="loot-node">@ ch1_n2</span></div>
-            <div class="loot-row"><span class="loot-rarity" style="background:var(--q-epic);"></span><span>血劫·裂甲手</span><span class="loot-node">@ ch1_n3</span></div>
-            <div class="loot-row"><span class="loot-rarity" style="background:var(--q-legendary);"></span><span>真意·风眼</span><span class="loot-node">@ ch1_boss</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-panel" id="panel-gm">
-    <div class="modal-header">
-      <div class="modal-title">GM 调试面板</div>
-      <button class="close-btn" type="button" onclick="closePanel()">×</button>
-    </div>
-    <div class="gm-wrap">
-      <div class="gm-grid">
-        <div class="gm-card">
-          <h4>资源操作</h4>
-          <div class="gm-row">香火钱 <input class="gm-input" value="10000"><button class="gm-small">添加</button><button class="gm-small">设置</button></div>
-          <div class="gm-row">祠灰 <input class="gm-input" value="500"><button class="gm-small">添加</button><button class="gm-small">设置</button></div>
-          <div class="gm-row">灵核 <input class="gm-input" value="50"><button class="gm-small">添加</button><button class="gm-small">设置</button></div>
-        </div>
-        <div class="gm-card">
-          <h4>物品操作</h4>
-          <div class="gm-row">品质 <input class="gm-input" value="传奇"><button class="gm-small">生成装备</button></div>
-          <div class="gm-row">数量 <input class="gm-input" value="5"><button class="gm-small">批量生成</button></div>
-        </div>
-        <div class="gm-card">
-          <h4>进度操作</h4>
-          <div class="gm-row">跳转节点 <input class="gm-input" value="ch1_boss"><button class="gm-small">跳转</button></div>
-          <div class="gm-row"><button class="gm-small">解锁全部悟道</button><button class="gm-small">解锁全部异闻录</button></div>
-        </div>
-        <div class="gm-card">
-          <h4>清理 / 存档</h4>
-          <div class="gm-row"><button class="gm-small">清空背包</button><button class="gm-small">清空掉落统计</button></div>
-          <div class="gm-row">存档 <input class="gm-input" value="槽1"><button class="gm-small">保存</button><button class="gm-small">读取</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="popupOverlay">
-    <div class="popup-card" id="popupCard">
-      <div class="boss-mark">祠</div>
-      <div class="popup-head">
-        <div class="popup-icon"></div>
-        <div class="popup-title">闭关所得</div>
-      </div>
-      <div class="popup-highlight">高光收益: 获得 <span style="color:var(--q-epic);font-weight:700;">[史诗] 血劫·裂甲手</span></div>
-      <div class="popup-block">
-        <div class="popup-block-title">本次闭关所得</div>
-        香火钱 +1,200<br>
-        祠灰 +45<br>
-        灵核 +1<br>
-        装备 ×3（1史诗, 1稀有, 1普通）
-      </div>
-      <div class="popup-block">
-        <div class="popup-block-title">回来先做什么</div>
-        先补当前卡点，优先刷桃溪外渡·近岸，补旋风范围后再回头推进灵田。<br>
-        今日机缘进度：主目标 1/3，支线 2/5。
-      </div>
-      <div class="popup-actions">
-        <button class="popup-close" type="button" onclick="closePopup()">确认</button>
-      </div>
-    </div>
+  <div id="overlay" class="overlay">
+    <div id="modal" class="modal card"></div>
   </div>
 </div>
 
 <script>
-const overlay = document.getElementById("overlay");
-const navbar = document.getElementById("navbar");
-const popupOverlay = document.getElementById("popupOverlay");
-const popupCard = document.getElementById("popupCard");
-let currentPanel = null;
+const panels = {
+  inventory: `
+    <div class="modal-head"><div class="title">背包</div><button class="close" data-close>×</button></div>
+    <div class="modal-body panel-grid inventory">
+      <section class="column"><div class="title">物品列表</div><div class="list">
+        <div class="item">[传承] 御风护手</div>
+        <div class="item">[传奇] 风眼腰封</div>
+        <div class="item">[真意] 山君铁靴</div>
+        <div class="item">[玄品] 裂纹臂甲</div>
+      </div></section>
+      <section class="detail"><div class="title">装备详情</div><div style="margin-top:10px;">御风护手</div><div class="tiny">部位：护手 · 品质：传承 · 可凑 6 件</div><div class="list">
+        <div class="item">基础：攻击 +86，攻速 +7%</div>
+        <div class="item">词缀：旋风范围 +12%，对精英伤害 +10%</div>
+        <div class="item">传奇特效：风眼 · 旋风外圈追加风压</div>
+      </div><div class="actions"><div class="action">穿戴</div><div class="action">锁定</div><div class="action">分解</div></div></section>
+      <section class="column"><div class="title">当前对比</div><div class="list">
+        <div class="item">已穿戴：旧护手</div>
+        <div class="item">传承件数：4/6 → 5/6</div>
+        <div class="item">是否已萃取：否</div>
+      </div></section>
+    </div>`,
+  cube: `
+    <div class="modal-head"><div class="title">百炼坊</div><button class="close" data-close>×</button></div>
+    <div class="modal-body panel-grid cube">
+      <section class="column"><div class="title">工坊页签</div><div class="list">
+        <div class="item">萃取武学</div>
+        <div class="item">精钢化真</div>
+        <div class="item">回炉重铸</div>
+        <div class="item">传承互转</div>
+        <div class="item">淬火精炼</div>
+        <div class="item" style="border-color:rgba(212,164,75,.45)">武学秘录</div>
+      </div></section>
+      <section class="detail"><div class="title">武学秘录</div><div class="tabs" style="margin-top:10px;"><div class="tab active">兵器</div><div class="tab">护甲</div><div class="tab">饰品</div></div><div class="list">
+        <div class="item">已萃取：风眼、山君壳、雷池、血诏</div>
+        <div class="item">当前激活：兵器 风眼 / 护甲 山君壳 / 饰品 雷池</div>
+        <div class="item">工坊状态：可执行 2 次精钢化真，1 次淬火精炼</div>
+      </div></section>
+    </div>`,
+  codex: `
+    <div class="modal-head"><div class="title">江湖见闻录</div><button class="close" data-close>×</button></div>
+    <div class="modal-body panel-grid codex">
+      <section class="column"><div class="tabs"><div class="tab active">传奇</div><div class="tab">底材</div><div class="tab">词缀</div><div class="tab">传承</div></div><div class="list">
+        <div class="item">风眼</div><div class="item">山君壳</div><div class="item">雷池</div>
+      </div></section>
+      <section class="detail"><div class="title">风眼</div><div class="list" style="margin-top:10px;">
+        <div class="item">状态：已发现</div>
+        <div class="item">来源：桃溪渡口首领 / 试剑秘境高层</div>
+        <div class="item">推荐刷图：桃溪渡口 / 首领，预计 7.2 次见 1 次</div>
+        <div class="item">Build 相关度：御风道核心</div>
+      </div><div class="actions"><div class="action">设为追踪</div></div></section>
+    </div>`,
+  progression: `
+    <div class="modal-head"><div class="title">成长中心</div><button class="close" data-close>×</button></div>
+    <div class="modal-body panel-grid progression">
+      <section class="column"><div class="list">
+        <div class="item">武学参悟</div>
+        <div class="item">宗师修为</div>
+        <div class="item">重入江湖</div>
+      </div></section>
+      <section class="detail"><div class="title">成长总览</div><div class="list" style="margin-top:10px;">
+        <div class="item">武学参悟：当前可升级 2 项</div>
+        <div class="item">宗师修为：未解锁，角色满级后开启</div>
+        <div class="item">重入江湖：未开放，需通关第二章并完成秘境入门</div>
+      </div></section>
+    </div>`,
+  analysis: `
+    <div class="modal-head"><div class="title">推演与秘境</div><button class="close" data-close>×</button></div>
+    <div class="modal-body panel-grid analysis">
+      <section class="column"><div class="list">
+        <div class="item">机缘推演</div>
+        <div class="item">试剑秘境</div>
+      </div></section>
+      <section class="detail"><div class="title">试剑秘境</div><div class="list" style="margin-top:10px;">
+        <div class="item">钥石：4 枚</div>
+        <div class="item">当前层数：12</div>
+        <div class="item">最高层：15</div>
+        <div class="item">最近结算：雷池宝石 +1，御风华戒残纹 ×2</div>
+      </div><div class="actions"><div class="action">进入秘境</div><div class="action">查看层数记录</div></div></section>
+    </div>`
+};
 
-function setActiveNav(panelId) {
-  document.querySelectorAll(".nav-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.panel === panelId);
-  });
-}
+const overlay = document.getElementById("overlay");
+const modal = document.getElementById("modal");
+const buttons = [...document.querySelectorAll(".nav-btn")];
 
 function openPanel(id) {
-  if (currentPanel === id) {
-    closePanel();
-    return;
-  }
-  if (currentPanel) {
-    document.getElementById("panel-" + currentPanel).classList.remove("show");
-  }
-  currentPanel = id;
-  document.getElementById("panel-" + id).classList.add("show");
+  buttons.forEach(btn => btn.classList.toggle("active", btn.dataset.panel === id));
+  modal.innerHTML = panels[id];
   overlay.classList.add("show");
-  navbar.classList.add("hidden");
-  setActiveNav(id);
-  closePopup();
 }
 
 function closePanel() {
-  if (!currentPanel) return;
-  document.getElementById("panel-" + currentPanel).classList.remove("show");
-  currentPanel = null;
+  buttons.forEach(btn => btn.classList.remove("active"));
   overlay.classList.remove("show");
-  navbar.classList.remove("hidden");
-  setActiveNav(null);
 }
 
-function showPopup(mode) {
-  closePanel();
-  popupCard.classList.toggle("event", mode === "event");
-  if (mode === "event") {
-    popupCard.querySelector(".popup-title").textContent = "破局要闻";
-    popupCard.querySelector(".popup-highlight").innerHTML = "首诛 <span style='color:var(--q-legendary);font-weight:700;'>伏祠山君</span>，探境已开：祠下灵田。";
-    popupCard.querySelectorAll(".popup-block")[0].innerHTML = "<div class='popup-block-title'>本次破局收获</div>香火钱 +3,500<br>祠灰 +120<br>灵核 +5<br>真意残片 +1<br>装备 ×5（1传奇, 2史诗, 2稀有）";
-    popupCard.querySelectorAll(".popup-block")[1].innerHTML = "<div class='popup-block-title'>后续建议</div>先进入祠下灵田查看新掉落池，再把目标切到风眼或扩厄类真意。<br>今日机缘：首领首杀已完成 ✓";
-  } else {
-    popupCard.querySelector(".popup-title").textContent = "闭关所得";
-    popupCard.querySelector(".popup-highlight").innerHTML = "高光收益: 获得 <span style='color:var(--q-epic);font-weight:700;'>[史诗] 血劫·裂甲手</span>";
-    popupCard.querySelectorAll(".popup-block")[0].innerHTML = "<div class='popup-block-title'>本次闭关所得</div>香火钱 +1,200<br>祠灰 +45<br>灵核 +1<br>装备 ×3（1史诗, 1稀有, 1普通）";
-    popupCard.querySelectorAll(".popup-block")[1].innerHTML = "<div class='popup-block-title'>回来先做什么</div>先补当前卡点，优先刷桃溪外渡·近岸，补旋风范围后再回头推进灵田。<br>今日机缘进度：主目标 1/3，支线 2/5。";
+buttons.forEach(btn => btn.addEventListener("click", () => {
+  if (overlay.classList.contains("show") && btn.classList.contains("active")) {
+    closePanel();
+    return;
   }
-  popupOverlay.classList.add("show");
-  document.querySelectorAll(".demo-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.popup === mode);
-  });
-}
+  openPanel(btn.dataset.panel);
+}));
 
-function closePopup() {
-  popupOverlay.classList.remove("show");
-  document.querySelectorAll(".demo-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.popup === "none");
-  });
-}
-
-document.querySelectorAll(".nav-btn").forEach((btn) => {
-  btn.addEventListener("click", () => openPanel(btn.dataset.panel));
-});
-
-document.querySelectorAll(".demo-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const mode = btn.dataset.popup;
-    if (mode === "none") {
-      closePopup();
-      closePanel();
-    } else {
-      showPopup(mode);
-    }
-  });
-});
-
-overlay.addEventListener("click", closePanel);
-
-document.querySelectorAll(".list-pane").forEach((pane) => {
-  pane.querySelectorAll(".list-item").forEach((item) => {
-    item.addEventListener("click", () => {
-      pane.querySelectorAll(".list-item").forEach((node) => node.classList.remove("selected"));
-      item.classList.add("selected");
-    });
-  });
-});
-
-document.querySelectorAll(".filter-bar").forEach((bar) => {
-  bar.querySelectorAll(".filter-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      bar.querySelectorAll(".filter-btn").forEach((node) => node.classList.remove("active"));
-      btn.classList.add("active");
-    });
-  });
-});
-
-document.addEventListener("keydown", (event) => {
-  const key = event.key.toLowerCase();
-  if (key === "escape") {
-    closePopup();
+overlay.addEventListener("click", (event) => {
+  if (event.target === overlay || event.target.hasAttribute("data-close")) {
     closePanel();
   }
-  if (key === "i") openPanel("inventory");
-  if (key === "u") openPanel("research");
-  if (key === "o") openPanel("codex");
-  if (key === "p") openPanel("stats");
-  if (key === "g") openPanel("gm");
+});
+
+window.addEventListener("keydown", (event) => {
+  const map = { i: "inventory", b: "cube", o: "codex", u: "progression", p: "analysis" };
+  const panel = map[event.key.toLowerCase()];
+  if (panel) {
+    openPanel(panel);
+  }
+  if (event.key === "Escape") {
+    closePanel();
+  }
 });
 </script>
 </body>

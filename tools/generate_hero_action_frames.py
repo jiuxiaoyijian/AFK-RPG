@@ -9,12 +9,14 @@ from typing import List, Sequence
 
 import generate_art_assets as asset_specs
 import generate_openai_art_assets as openai_assets
+import hero_run_pipeline as run_pipeline
 
 
 ROOT = Path("/Users/hehe/Documents/AIProject/AFK-RPG")
 RAW_DIR = ROOT / "assets" / "generated" / "_openai_raw" / "hero_action_frames"
 LOG_PATH = ROOT / "文档" / "hero_action_frames_openai生成日志_v1.jsonl"
 REVIEW_PATH = ROOT / "文档" / "hero_action_frames_review_v1.md"
+RUN6_STABILIZE_REPORT_PATH = ROOT / "assets" / "generated" / "hero_run_review" / "hero_run6_stabilize_report.json"
 
 BASE_NEGATIVE = (
 	"grimdark, horror, realistic anatomy, baby toddler proportions, giant anime eyes, "
@@ -53,12 +55,25 @@ def _spec(
 
 
 def build_specs() -> List[asset_specs.AssetSpec]:
+	return build_specs_for_mode("legacy", True, True)
+
+
+def build_specs_for_mode(mode: str, include_move: bool, include_attack: bool) -> List[asset_specs.AssetSpec]:
 	move_prompts = [
 		"side-scrolling move frame 1, rightward jog anticipation, front foot planted, rear foot lifting, calm forward focus",
 		"side-scrolling move frame 2, rightward run contact pose, body leaning forward, cape and sash trailing, readable stride",
 		"side-scrolling move frame 3, rightward passing pose, opposite leg forward, sword hand stable, dynamic but clean silhouette",
 		"side-scrolling move frame 4, rightward push-off pose, rear leg extended, slight bounce, ready to loop back to frame 1",
 	]
+	if mode == "run6":
+		move_prompts = [
+			"side-scrolling run frame 1, rightward front-foot contact pose, forward lean, same hero identity as hero_formal_stand_v1 and hero_formal_action_v1, stable sword hand, readable stride start",
+			"side-scrolling run frame 2, rightward compression pose, body settles over leading foot, trailing leg folding inward, cloth overlap controlled, consistent costume silhouette",
+			"side-scrolling run frame 3, rightward passing pose, rear leg swings through, torso stable, head angle consistent, clean readable overlap",
+			"side-scrolling run frame 4, rightward flight pose, both feet briefly off the ground, short cape trailing, same facial structure and robe family, strong loop silhouette",
+			"side-scrolling run frame 5, opposite-foot contact pose, mirrored stride energy but same camera, same costume, same dao sword placement, no character drift",
+			"side-scrolling run frame 6, opposite-side passing pose, trailing foot crossing through, ready to loop back to frame 1, stable root and clean readable limbs",
+		]
 	attack_prompts = [
 		"side-scrolling attack frame 1, wind-up pose, dao drawn back, body coiled, readable anticipation",
 		"side-scrolling attack frame 2, early slash, dao moving forward, weight shift, cape flaring, strong readable line of action",
@@ -66,22 +81,24 @@ def build_specs() -> List[asset_specs.AssetSpec]:
 		"side-scrolling attack frame 4, recovery pose, body settling, dao lowering, pose readable for loop back to combat",
 	]
 	specs: List[asset_specs.AssetSpec] = []
-	for index, suffix in enumerate(move_prompts, start=1):
-		specs.append(
-			_spec(
-				f"hero_formal_move_anim_{index:02d}",
-				f"assets/generated/afk_rpg_formal/characters/hero_move_anim_{index:02d}.png",
-				f"{BASE_CHARACTER}, {suffix}",
+	if include_move:
+		for index, suffix in enumerate(move_prompts, start=1):
+			specs.append(
+				_spec(
+					f"hero_formal_move_anim_{index:02d}",
+					f"assets/generated/afk_rpg_formal/characters/hero_move_anim_{index:02d}.png",
+					f"{BASE_CHARACTER}, {suffix}",
+				)
 			)
-		)
-	for index, suffix in enumerate(attack_prompts, start=1):
-		specs.append(
-			_spec(
-				f"hero_formal_attack_anim_{index:02d}",
-				f"assets/generated/afk_rpg_formal/characters/hero_attack_anim_{index:02d}.png",
-				f"{BASE_CHARACTER}, {suffix}",
+	if include_attack:
+		for index, suffix in enumerate(attack_prompts, start=1):
+			specs.append(
+				_spec(
+					f"hero_formal_attack_anim_{index:02d}",
+					f"assets/generated/afk_rpg_formal/characters/hero_attack_anim_{index:02d}.png",
+					f"{BASE_CHARACTER}, {suffix}",
+				)
 			)
-		)
 	return specs
 
 
@@ -134,6 +151,28 @@ def _write_review_md(specs: Sequence[asset_specs.AssetSpec]) -> None:
 	REVIEW_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _stabilize_run6_frames(specs: Sequence[asset_specs.AssetSpec]) -> None:
+	move_specs = [spec for spec in specs if spec.logical_id.startswith("hero_formal_move_anim_")]
+	if len(move_specs) != 6:
+		return
+	frame_paths = [ROOT / spec.output_path for spec in move_specs]
+	run_pipeline.stabilize_rgba_sequence(
+		frame_paths,
+		frame_paths,
+		anchor_x=384,
+		foot_y=729,
+		canvas_width=768,
+		canvas_height=768,
+	)
+	report: list[dict] = []
+	for frame_path in frame_paths:
+		metrics = run_pipeline.compute_frame_metrics(frame_path)
+		if metrics is not None:
+			report.append(metrics)
+	RUN6_STABILIZE_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+	RUN6_STABILIZE_REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def generate_frames(
 	specs: Sequence[asset_specs.AssetSpec],
 	api_key: str,
@@ -160,13 +199,17 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
 	parser.add_argument("--model", default="gpt-image-1.5")
 	parser.add_argument("--quality", choices=["low", "medium", "high"], default="high")
 	parser.add_argument("--sleep-seconds", type=float, default=12.0)
+	parser.add_argument("--mode", choices=["legacy", "run6"], default="legacy")
+	parser.add_argument("--animation", choices=["all", "move", "attack"], default="all")
 	parser.add_argument("--skip-generate", action="store_true")
 	return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str]) -> int:
 	args = _parse_args(argv)
-	specs = build_specs()
+	include_move = args.animation in {"all", "move"}
+	include_attack = args.animation in {"all", "attack"}
+	specs = build_specs_for_mode(args.mode, include_move, include_attack)
 	_write_review_md(specs)
 	if args.skip_generate:
 		print(f"Wrote review scaffold to {REVIEW_PATH.relative_to(ROOT)}", flush=True)
@@ -178,6 +221,8 @@ def main(argv: Sequence[str]) -> int:
 		flush=True,
 	)
 	generate_frames(specs, api_key, args.model, args.quality, args.sleep_seconds)
+	if args.mode == "run6":
+		_stabilize_run6_frames(specs)
 	asset_specs.verify_sizes(specs)
 	print(f"Done. Verified {len(specs)} hero action frames.", flush=True)
 	print(f"Review notes: {REVIEW_PATH.relative_to(ROOT)}", flush=True)

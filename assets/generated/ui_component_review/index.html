@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AFK-RPG UI Component Review</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 28px;
+      background: linear-gradient(180deg, #0f1117, #171c28);
+      color: #eef2f8;
+      font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { max-width: 1200px; margin: 0 auto; display: grid; gap: 18px; }
+    .hero, .card {
+      background: rgba(27, 31, 40, 0.96);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+    }
+    .hero { padding: 22px; }
+    .hero h1 { margin: 0 0 8px; font-size: 30px; }
+    .hero p { margin: 0; color: #a5afc1; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { padding: 18px; }
+    .card h2 { margin: 0 0 8px; font-size: 22px; }
+    .card p { margin: 0 0 14px; color: #a5afc1; }
+    .links { display: flex; gap: 12px; flex-wrap: wrap; }
+    a { color: #8fb3ff; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>AFK-RPG UI 控件评审总览</h1>
+      <p>本页汇总 HUD 与背包两组示意图切控件结果。当前仅产出评审与清单，不接入场景资源。</p>
+    </section>
+    <section class="grid">
+      
+			<section class="card">
+			  <h2>HUD Round2 V1 UI Component Review</h2>
+			  <p>基于 round2_main_hud_v1 切出的 HUD 控件候选。首轮只产出评审切图，不接入 HUD 场景。</p>
+			  <div class="links">
+			    <a href="hud_round2_v1.html">打开评审页</a>
+			    <a href="hud_round2_v1.md">查看清单</a>
+			  </div>
+			</section>
+			
+			<section class="card">
+			  <h2>Inventory Formal V1 UI Component Review</h2>
+			  <p>基于 inventory_formal_v1 切出的背包控件候选。首轮聚焦框体、槽位与格子资源，不接入 InventoryPanel。</p>
+			  <div class="links">
+			    <a href="inventory_formal_v1.html">打开评审页</a>
+			    <a href="inventory_formal_v1.md">查看清单</a>
+			  </div>
+			</section>
+			
+    </section>
+  </main>
+</body>
+</html>

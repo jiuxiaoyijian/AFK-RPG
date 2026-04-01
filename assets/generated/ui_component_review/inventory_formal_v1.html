@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Formal V1 UI Component Review</title>
+  <style>
+    :root {
+      --bg: #111319;
+      --panel: #1b1f28;
+      --panel-soft: #232938;
+      --border: rgba(255,255,255,.12);
+      --text: #eef2f8;
+      --muted: #a5afc1;
+      --accent: #8fb3ff;
+      --warn: #e3ba6c;
+      --good: #8fd6a7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 28px;
+      background: linear-gradient(180deg, #0f1117, #151925);
+      color: var(--text);
+      font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent); }
+    .page { max-width: 1600px; margin: 0 auto; display: grid; gap: 20px; }
+    .hero, .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; }
+    .hero { padding: 20px 22px; }
+    .hero h1 { margin: 0 0 10px; font-size: 28px; }
+    .hero p { margin: 0; color: var(--muted); }
+    .panel { padding: 18px; }
+    .source-wrap { overflow: auto; }
+    .source-canvas {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #000;
+    }
+    .source-canvas img { display: block; width: 1280px; height: 720px; }
+    .overlay {
+      position: absolute;
+      border: 2px solid rgba(143, 179, 255, 0.9);
+      background: rgba(143, 179, 255, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
+    }
+    .overlay span {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(17, 19, 25, 0.86);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .component-card {
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .component-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display: grid;
+      gap: 4px;
+    }
+    .component-id { color: var(--warn); font-weight: 700; letter-spacing: .06em; }
+    .component-name { font-size: 17px; font-weight: 700; }
+    .component-body {
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+    .thumb {
+      width: 100%;
+      min-height: 140px;
+      object-fit: contain;
+      border-radius: 12px;
+      background:
+        linear-gradient(45deg, rgba(255,255,255,.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.03) 75%),
+        linear-gradient(45deg, rgba(255,255,255,.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.03) 75%);
+      background-position: 0 0, 12px 12px;
+      background-size: 24px 24px;
+      border: 1px solid rgba(255,255,255,.08);
+      display: block;
+    }
+    .thumb.empty {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    dl {
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+    dl div {
+      display: grid;
+      gap: 4px;
+    }
+    dt {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    dd {
+      margin: 0;
+      color: var(--text);
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <a href="index.html">返回总览</a>
+      <h1>Inventory Formal V1 UI Component Review</h1>
+      <p>基于 inventory_formal_v1 切出的背包控件候选。首轮聚焦框体、槽位与格子资源，不接入 InventoryPanel。</p>
+    </section>
+    <section class="panel">
+      <h2>源图标注</h2>
+      <div class="source-wrap">
+        <div class="source-canvas">
+          <img src="../formal_replacement_samples/ui/inventory_formal_v1.png" alt="Inventory Formal V1 UI Component Review">
+          <div class="overlay" style="left:34px;top:44px;width:1188px;height:566px;"><span>INV01</span></div><div class="overlay" style="left:366px;top:0px;width:548px;height:74px;"><span>INV02</span></div><div class="overlay" style="left:40px;top:78px;width:292px;height:556px;"><span>INV03</span></div><div class="overlay" style="left:398px;top:76px;width:434px;height:540px;"><span>INV04</span></div><div class="overlay" style="left:874px;top:184px;width:332px;height:190px;"><span>INV05</span></div><div class="overlay" style="left:126px;top:650px;width:1006px;height:58px;"><span>INV06</span></div><div class="overlay" style="left:86px;top:92px;width:82px;height:80px;"><span>INV07</span></div><div class="overlay" style="left:529px;top:266px;width:64px;height:68px;"><span>INV08</span></div><div class="overlay" style="left:881px;top:78px;width:294px;height:66px;"><span>INV09</span></div>
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>控件候选与映射</h2>
+      <div class="component-grid">
+        
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV01</div>
+			    <div class="component-name">inventory_main_frame_9patch</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/inventory_main_frame_9patch.png" alt="inventory_main_frame_9patch">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; Panel</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>34, 44, 1188, 566</dd></div>
+			      <div><dt>9-slice</dt><dd>30, 30, 30, 30</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/inventory_main_frame_9patch.png</dd></div>
+			      <div><dt>备注</dt><dd>整张主框的控件化抠除仍混入分区示意，先保留为评审参考，不作为首轮接入资源。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV02</div>
+			    <div class="component-name">inventory_header_bar_9patch</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/inventory_header_bar_9patch.png" alt="inventory_header_bar_9patch">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; Panel / HeaderBar</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>366, 0, 548, 74</dd></div>
+			      <div><dt>9-slice</dt><dd>24, 18, 24, 18</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/inventory_header_bar_9patch.png</dd></div>
+			      <div><dt>备注</dt><dd>顶部标题条仍混入背景纹理，先保留为评审参考。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV03</div>
+			    <div class="component-name">paper_doll_panel_9patch</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/paper_doll_panel_9patch.png" alt="paper_doll_panel_9patch">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; Panel / PaperDollSection</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>40, 78, 292, 556</dd></div>
+			      <div><dt>9-slice</dt><dd>20, 20, 20, 20</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/paper_doll_panel_9patch.png</dd></div>
+			      <div><dt>备注</dt><dd>纸娃娃区边缘仍混入装备位示意，先保留为评审参考。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV04</div>
+			    <div class="component-name">inventory_grid_panel_9patch</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/inventory_grid_panel_9patch.png" alt="inventory_grid_panel_9patch">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; Panel / InventorySection</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>398, 76, 434, 540</dd></div>
+			      <div><dt>9-slice</dt><dd>22, 22, 22, 22</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/inventory_grid_panel_9patch.png</dd></div>
+			      <div><dt>备注</dt><dd>中央格包外框仍混入右侧相邻示意，先保留为评审参考。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV05</div>
+			    <div class="component-name">detail_panel_9patch</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/detail_panel_9patch.png" alt="detail_panel_9patch">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; Panel / DetailSection</dd></div>
+			      <div><dt>状态</dt><dd>candidate</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>874, 184, 332, 190</dd></div>
+			      <div><dt>9-slice</dt><dd>20, 20, 20, 20</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/detail_panel_9patch.png</dd></div>
+			      <div><dt>备注</dt><dd>提取右侧详情卡边框，内部尽量挖空，只留下详情区外框。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV06</div>
+			    <div class="component-name">toolbar_panel_9patch</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/toolbar_panel_9patch.png" alt="toolbar_panel_9patch">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; Panel / ToolbarSection</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>126, 650, 1006, 58</dd></div>
+			      <div><dt>9-slice</dt><dd>20, 16, 20, 16</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/toolbar_panel_9patch.png</dd></div>
+			      <div><dt>备注</dt><dd>底部快捷条仍混入器物示意，先保留为评审参考。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV07</div>
+			    <div class="component-name">equipment_slot_frame</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/equipment_slot_frame.png" alt="equipment_slot_frame">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; PaperDollGrid &gt; Equipment_*</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>86, 92, 82, 80</dd></div>
+			      <div><dt>9-slice</dt><dd>--</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/equipment_slot_frame.png</dd></div>
+			      <div><dt>备注</dt><dd>装备槽小图仍残留底图，先保留为评审参考。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV08</div>
+			    <div class="component-name">inventory_cell_frame</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/inventory_cell_frame.png" alt="inventory_cell_frame">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; InventoryGrid &gt; InventoryCell_*</dd></div>
+			      <div><dt>状态</dt><dd>candidate</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>529, 266, 64, 68</dd></div>
+			      <div><dt>9-slice</dt><dd>--</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/inventory_cell_frame.png</dd></div>
+			      <div><dt>备注</dt><dd>提取空白格子单元，作为动态物品按钮背景候选。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+			<section class="component-card">
+			  <div class="component-head">
+			    <div class="component-id">INV09</div>
+			    <div class="component-name">section_divider</div>
+			  </div>
+			  <div class="component-body">
+			    <img class="thumb" src="../afk_rpg_formal/ui/inventory/section_divider.png" alt="section_divider">
+			    <dl>
+			      <div><dt>映射</dt><dd>InventoryPanel &gt; 顶部装饰 / 可选分区横幅</dd></div>
+			      <div><dt>状态</dt><dd>review_only</dd></div>
+			      <div><dt>模式</dt><dd>crop</dd></div>
+			      <div><dt>源框</dt><dd>881, 78, 294, 66</dd></div>
+			      <div><dt>9-slice</dt><dd>--</dd></div>
+			      <div><dt>输出</dt><dd>assets/generated/afk_rpg_formal/ui/inventory/section_divider.png</dd></div>
+			      <div><dt>备注</dt><dd>装饰性候选，尽量清掉横幅内部景片，只保留边框装饰，不默认纳入首轮替换。</dd></div>
+			    </dl>
+			  </div>
+			</section>
+			
+      </div>
+    </section>
+  </main>
+</body>
+</html>

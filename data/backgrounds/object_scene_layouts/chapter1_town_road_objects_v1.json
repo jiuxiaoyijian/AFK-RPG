@@ -1,0 +1,192 @@
+{
+  "scene_id": "chapter1_town_road_objects_v1",
+  "scene_summary": "第一章山镇道路，基于本地已有物件图重新组织景深关系，并把挂角装饰从世界视差层抽离到固定镜头角 overlay。",
+  "repeat_size": [3072, 720],
+  "screen_size": [1280, 720],
+  "preview_offset_x": 896,
+  "ground_band": {
+    "source_path": "assets/generated/afk_rpg_formal/backgrounds/bg_chapter1_travel_road_v2_loopsafe.png",
+    "source_rect": [384, 432, 1280, 288],
+    "output_size": [1280, 220],
+    "output_path": "assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__ground_band.png",
+    "position": [0, 500],
+    "brightness": 0.82,
+    "top_fade": 56
+  },
+  "assets": [
+    {
+      "id": "sky_wash",
+      "path": "assets/generated/afk_rpg_formal/backgrounds/object_parts/chapter1_town_road_objects_v1/sky_wash.png",
+      "resource_type": "panoramic_strip",
+      "recommended_layer": "sky",
+      "recommended_anchor": "top_left",
+      "scale_range": [2.0, 2.0],
+      "allow_repeat": false,
+      "allow_flip": false,
+      "lock_corner": false
+    },
+    {
+      "id": "far_mountain_ridge",
+      "path": "assets/generated/afk_rpg_formal/backgrounds/object_parts/chapter1_town_road_objects_v1/far_mountain_ridge.png",
+      "resource_type": "panoramic_strip",
+      "recommended_layer": "far",
+      "recommended_anchor": "horizon",
+      "scale_range": [1.02, 1.18],
+      "allow_repeat": true,
+      "allow_flip": false,
+      "lock_corner": false
+    },
+    {
+      "id": "gate_bridge_cluster",
+      "path": "assets/generated/afk_rpg_formal/backgrounds/object_parts/chapter1_town_road_objects_v1/gate_bridge_cluster.png",
+      "resource_type": "cluster_prop",
+      "recommended_layer": "mid",
+      "recommended_anchor": "bottom_center",
+      "scale_range": [0.62, 0.82],
+      "allow_repeat": false,
+      "allow_flip": false,
+      "lock_corner": false
+    },
+    {
+      "id": "teahouse_market_row",
+      "path": "assets/generated/afk_rpg_formal/backgrounds/object_parts/chapter1_town_road_objects_v1/teahouse_market_row.png",
+      "resource_type": "panoramic_strip",
+      "recommended_layer": "mid",
+      "recommended_anchor": "bottom_left",
+      "scale_range": [0.82, 1.0],
+      "allow_repeat": true,
+      "allow_flip": false,
+      "lock_corner": false
+    },
+    {
+      "id": "stall_awning_fence",
+      "path": "assets/generated/afk_rpg_formal/backgrounds/object_parts/chapter1_town_road_objects_v1/stall_awning_fence.png",
+      "resource_type": "cluster_prop",
+      "recommended_layer": "near_back",
+      "recommended_anchor": "bottom_left",
+      "scale_range": [0.72, 0.9],
+      "allow_repeat": false,
+      "allow_flip": true,
+      "lock_corner": false
+    },
+    {
+      "id": "lantern_branch_foreground",
+      "path": "assets/generated/afk_rpg_formal/backgrounds/object_parts/chapter1_town_road_objects_v1/lantern_branch_foreground.png",
+      "resource_type": "corner_overlay",
+      "recommended_layer": "corner_overlay",
+      "recommended_anchor": "top_left",
+      "scale_range": [0.62, 0.85],
+      "allow_repeat": false,
+      "allow_flip": true,
+      "lock_corner": true
+    }
+  ],
+  "world_layers": {
+    "sky": [
+      {
+        "asset_id": "sky_wash",
+        "mode": "strip",
+        "x": 0,
+        "y": 0,
+        "scale": 2.0,
+        "alpha": 255
+      }
+    ],
+    "far": [
+      {
+        "asset_id": "far_mountain_ridge",
+        "mode": "strip",
+        "x": 140,
+        "y": 96,
+        "scale": 1.12,
+        "alpha": 164
+      },
+      {
+        "asset_id": "far_mountain_ridge",
+        "mode": "strip",
+        "x": 1540,
+        "y": 112,
+        "scale": 1.03,
+        "alpha": 136
+      }
+    ],
+    "mid": [
+      {
+        "asset_id": "gate_bridge_cluster",
+        "mode": "cluster",
+        "x": 1180,
+        "y": 124,
+        "scale": 0.7,
+        "alpha": 202
+      },
+      {
+        "asset_id": "teahouse_market_row",
+        "mode": "strip",
+        "x": 150,
+        "y": 248,
+        "scale": 0.94,
+        "alpha": 255
+      },
+      {
+        "asset_id": "teahouse_market_row",
+        "mode": "strip",
+        "x": 1880,
+        "y": 266,
+        "scale": 0.82,
+        "alpha": 214
+      }
+    ],
+    "near_back": [
+      {
+        "asset_id": "stall_awning_fence",
+        "mode": "cluster",
+        "source_rect": [0, 0, 460, 320],
+        "x": 28,
+        "y": 346,
+        "scale": 0.82,
+        "alpha": 212
+      },
+      {
+        "asset_id": "stall_awning_fence",
+        "mode": "cluster",
+        "source_rect": [566, 0, 430, 310],
+        "x": 2580,
+        "y": 354,
+        "scale": 0.8,
+        "alpha": 204,
+        "flip_x": true
+      }
+    ],
+    "near_front": []
+  },
+  "corner_overlays": [
+    {
+      "id": "top_left_lantern",
+      "asset_id": "lantern_branch_foreground",
+      "mode": "corner_overlay",
+      "source_rect": [0, 0, 620, 620],
+      "corner": "top_left",
+      "offset": [-34, -16],
+      "scale": 0.62,
+      "alpha": 240,
+      "flip_x": false,
+      "output_path": "assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__corner_top_left.png"
+    },
+    {
+      "id": "top_right_branch",
+      "asset_id": "lantern_branch_foreground",
+      "mode": "corner_overlay",
+      "source_rect": [642, 0, 330, 170],
+      "corner": "top_right",
+      "offset": [0, 8],
+      "scale": 0.84,
+      "alpha": 216,
+      "flip_x": true,
+      "output_path": "assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__corner_top_right.png"
+    }
+  ],
+  "preview_outputs": {
+    "stack_preview": "assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__stack_preview.png",
+    "overlay_preview": "assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__overlay_preview.png"
+  }
+}

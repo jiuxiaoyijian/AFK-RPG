@@ -141,6 +141,79 @@
         "required_legendary_source_type": "boss"
       },
       "pity_rules": {}
+    },
+    {
+      "id": "drop_normal_ch3",
+      "profile_type": "normal",
+      "drop_focus": "高阶真意底材、玄品/真意、更多真意残片",
+      "equipment_rolls": 2,
+      "equipment_chance": 0.72,
+      "offline_seconds_per_run": 24,
+      "offline_efficiency": 0.64,
+      "max_offline_seconds": 28800,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 22, "max_count": 36, "weight": 100 },
+        { "item_id": "scrap", "min_count": 5, "max_count": 8, "weight": 90 },
+        { "item_id": "core", "min_count": 2, "max_count": 4, "weight": 70 },
+        { "item_id": "legend_shard", "min_count": 1, "max_count": 1, "weight": 22 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["rare", "epic", "legendary"],
+        "item_level_min": 5,
+        "item_level_max": 7,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": false
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_elite_ch3",
+      "profile_type": "elite",
+      "drop_focus": "真意/远古真意、Build 核心件、真意残片爆发",
+      "equipment_rolls": 2,
+      "equipment_chance": 1.0,
+      "offline_seconds_per_run": 28,
+      "offline_efficiency": 0.7,
+      "max_offline_seconds": 32400,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 34, "max_count": 52, "weight": 100 },
+        { "item_id": "scrap", "min_count": 7, "max_count": 12, "weight": 100 },
+        { "item_id": "core", "min_count": 3, "max_count": 5, "weight": 90 },
+        { "item_id": "legend_shard", "min_count": 1, "max_count": 2, "weight": 75 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["epic", "legendary", "ancient"],
+        "item_level_min": 6,
+        "item_level_max": 8,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": false
+      },
+      "pity_rules": {}
+    },
+    {
+      "id": "drop_boss_ch3",
+      "profile_type": "boss",
+      "drop_focus": "首领真意池、上古真意、成套冲顶胚子与残片爆发",
+      "equipment_rolls": 3,
+      "equipment_chance": 1.0,
+      "offline_seconds_per_run": 36,
+      "offline_efficiency": 0.76,
+      "max_offline_seconds": 36000,
+      "material_entries": [
+        { "item_id": "gold", "min_count": 62, "max_count": 88, "weight": 100 },
+        { "item_id": "scrap", "min_count": 10, "max_count": 16, "weight": 100 },
+        { "item_id": "core", "min_count": 5, "max_count": 8, "weight": 90 },
+        { "item_id": "legend_shard", "min_count": 3, "max_count": 5, "weight": 100 }
+      ],
+      "equipment_rules": {
+        "allowed_rarities": ["legendary", "ancient"],
+        "item_level_min": 7,
+        "item_level_max": 9,
+        "prefer_current_build": true,
+        "guaranteed_legendary_affix": true,
+        "required_legendary_source_type": "boss"
+      },
+      "pity_rules": {}
     }
   ]
 }

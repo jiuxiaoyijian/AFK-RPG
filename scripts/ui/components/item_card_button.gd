@@ -75,6 +75,7 @@ func configure(card_data: Dictionary) -> void:
 	var card_disabled: bool = bool(card_data.get("disabled", false))
 	var is_selected: bool = bool(card_data.get("selected", false))
 	var is_placeholder: bool = bool(card_data.get("is_placeholder", false))
+	var compact_mode: String = String(card_data.get("compact_mode", "default"))
 
 	custom_minimum_size = card_data.get("min_size", Vector2(72, 72))
 	disabled = card_disabled
@@ -85,12 +86,11 @@ func configure(card_data: Dictionary) -> void:
 	var badges: Array = card_data.get("badges", [])
 	badge_label.text = "" if badges.is_empty() else " | ".join(badges)
 	badge_label.visible = not badges.is_empty()
-	_apply_frame(String(card_data.get("rarity", "common")), is_placeholder)
+	var has_frame_texture: bool = _apply_frame(String(card_data.get("rarity", "common")), is_placeholder, card_data)
 	_apply_icon(card_data)
 	_apply_corner_badge(card_data, badges, accent, is_placeholder)
 
-	var compact_mode: String = String(card_data.get("compact_mode", "default"))
-	_apply_compact_mode(compact_mode, is_placeholder)
+	_apply_compact_mode(compact_mode, is_placeholder, has_frame_texture)
 	UI_STYLE.style_button(self, accent, card_disabled)
 
 	modulate = card_data.get(
@@ -142,10 +142,10 @@ func _apply_panel_styles() -> void:
 	corner_badge.add_theme_stylebox_override("panel", badge_style)
 
 
-func _apply_compact_mode(compact_mode: String, is_placeholder: bool) -> void:
+func _apply_compact_mode(compact_mode: String, is_placeholder: bool, has_frame_texture: bool) -> void:
 	subtitle_label.visible = true
 	badge_label.visible = not badge_label.text.is_empty()
-	frame_texture.visible = false
+	frame_texture.visible = has_frame_texture
 	match compact_mode:
 		"grid":
 			title_label.add_theme_font_size_override("font_size", 9)
@@ -181,10 +181,23 @@ func _apply_compact_mode(compact_mode: String, is_placeholder: bool) -> void:
 	icon_panel.modulate = Color(1, 1, 1, 0.35) if is_placeholder else Color(1, 1, 1, 0.9)
 
 
-func _apply_frame(rarity: String, is_placeholder: bool) -> void:
-	var frame_path: String = RARITY_FRAME_PATHS.get(rarity, RARITY_FRAME_PATHS["common"])
+func _apply_frame(rarity: String, is_placeholder: bool, card_data: Dictionary) -> bool:
+	var frame_path: String = String(card_data.get("frame_texture_path", ""))
+	var should_show_frame: bool = bool(card_data.get("show_frame", false)) or not frame_path.is_empty()
+	if frame_path.is_empty() and should_show_frame:
+		frame_path = RARITY_FRAME_PATHS.get(rarity, RARITY_FRAME_PATHS["common"])
+	if frame_path.is_empty():
+		frame_texture.texture = null
+		frame_texture.visible = false
+		return false
+
 	frame_texture.texture = RuntimeTextureLoaderScript.load_texture(frame_path)
-	frame_texture.modulate = Color(1, 1, 1, 0.16) if is_placeholder else Color(1, 1, 1, 0.40)
+	frame_texture.modulate = card_data.get(
+		"frame_modulate",
+		Color(1, 1, 1, 0.16) if is_placeholder else Color(1, 1, 1, 0.40)
+	)
+	frame_texture.visible = should_show_frame and frame_texture.texture != null
+	return frame_texture.visible
 
 
 func _apply_icon(card_data: Dictionary) -> void:

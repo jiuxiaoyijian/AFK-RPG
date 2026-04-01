@@ -1,44 +1,142 @@
 {
   "scene_defs": [
     {
-      "id": "chapter1_town_road_v2",
+      "id": "chapter1_town_road_v1",
+      "base_scene_id": "chapter1_town_road",
+      "repeat_size": [3072, 720],
+      "ground_y": 540,
+      "player_spawn_y": 500,
+      "ground_band_path": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__ground_band.png",
+      "ground_band_position": [0, 500],
+      "lane_clear_region": [0.22, 0.54, 0.46, 0.24],
       "scroll_speed_multipliers": {
-        "sky": 0.05,
-        "far": 0.15,
-        "mid": 0.35,
-        "near_back": 0.65,
-        "near_front": 0.85
+        "sky": 0.08,
+        "far": 0.18,
+        "mid": 0.42,
+        "near_back": 0.72,
+        "near_front": 1.0
+      },
+      "parallax_distances": {
+        "sky": 8.0,
+        "far": 14.0,
+        "mid": 22.0,
+        "near_back": 30.0,
+        "near_front": 36.0
+      },
+      "anchor_bias": {
+        "sky": 0.0,
+        "far": -16.0,
+        "mid": -10.0,
+        "near_back": -4.0,
+        "near_front": 0.0
       },
       "layer_paths": {
-        "sky": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__sky_v2.png",
-        "far": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__far_v2.png",
-        "mid": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__mid_v2.png",
-        "near_back": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__near_back_v2.png",
-        "near_front": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__near_front_v2.png"
+        "sky": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__sky_v1.png",
+        "far": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__far_v1.png",
+        "mid": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__mid_v1.png",
+        "near_back": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__near_back_v1.png",
+        "near_front": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road__near_front_v1.png"
       }
     },
     {
-      "id": "chapter2_shrine_fields_v2",
+      "id": "legacy_validation_scroll_v1",
+      "base_scene_id": "legacy_validation_scroll",
+      "repeat_size": [1280, 720],
+      "ground_y": 540,
+      "player_spawn_y": 500,
+      "lane_clear_region": [0.22, 0.54, 0.46, 0.24],
       "scroll_speed_multipliers": {
-        "sky": 0.05,
-        "far": 0.15,
-        "mid": 0.35,
-        "near_back": 0.65,
-        "near_front": 0.85
+        "sky": 0.08,
+        "far": 0.18,
+        "mid": 0.42,
+        "near_back": 0.72,
+        "near_front": 1.0
+      },
+      "parallax_distances": {
+        "sky": 8.0,
+        "far": 12.0,
+        "mid": 20.0,
+        "near_back": 28.0,
+        "near_front": 34.0
+      },
+      "anchor_bias": {
+        "sky": 0.0,
+        "far": -12.0,
+        "mid": -8.0,
+        "near_back": -2.0,
+        "near_front": 0.0
       },
       "layer_paths": {
-        "sky": "res://assets/generated/afk_rpg_formal/backgrounds/chapter2_shrine_fields__sky_v2.png",
-        "far": "res://assets/generated/afk_rpg_formal/backgrounds/chapter2_shrine_fields__far_v2.png",
-        "mid": "res://assets/generated/afk_rpg_formal/backgrounds/chapter2_shrine_fields__mid_v2.png",
-        "near_back": "res://assets/generated/afk_rpg_formal/backgrounds/chapter2_shrine_fields__near_back_v2.png",
-        "near_front": "res://assets/generated/afk_rpg_formal/backgrounds/chapter2_shrine_fields__near_front_v2.png"
+        "sky": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__far.png",
+        "far": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__far.png",
+        "mid": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__mid.png",
+        "near_back": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__near.png",
+        "near_front": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__near.png"
       }
+    },
+    {
+      "id": "chapter1_town_road_objects_v1",
+      "base_scene_id": "chapter1_town_road_objects",
+      "repeat_size": [3072, 720],
+      "ground_y": 540,
+      "player_spawn_y": 500,
+      "lane_clear_region": [0.22, 0.54, 0.46, 0.24],
+      "scroll_speed_multipliers": {
+        "sky": 0.08,
+        "far": 0.18,
+        "mid": 0.42,
+        "near_back": 0.72,
+        "near_front": 1.0
+      },
+      "parallax_distances": {
+        "sky": 8.0,
+        "far": 14.0,
+        "mid": 22.0,
+        "near_back": 30.0,
+        "near_front": 36.0
+      },
+      "anchor_bias": {
+        "sky": 0.0,
+        "far": -16.0,
+        "mid": -10.0,
+        "near_back": -4.0,
+        "near_front": 0.0
+      },
+      "layer_paths": {
+        "sky": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__sky.png",
+        "far": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__far.png",
+        "mid": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__mid.png",
+        "near_back": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__near_back.png",
+        "near_front": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__near_front.png"
+      },
+      "corner_overlays": [
+        {
+          "id": "top_left_lantern",
+          "path": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__corner_top_left.png",
+          "corner": "top_left",
+          "offset": [-34, -16],
+          "position": [-34, -16],
+          "scale": 0.62,
+          "alpha": 240,
+          "flip_x": false
+        },
+        {
+          "id": "top_right_branch",
+          "path": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_objects_v1__corner_top_right.png",
+          "corner": "top_right",
+          "offset": [0, 8],
+          "position": [1003, 8],
+          "scale": 0.84,
+          "alpha": 216,
+          "flip_x": true
+        }
+      ]
     }
   ],
   "chapter_defaults": {
-    "chapter_1": "chapter1_town_road_v2",
-    "chapter_2": "chapter2_shrine_fields_v2",
-    "chapter_3": "chapter2_shrine_fields_v2"
+    "chapter_1": "chapter1_town_road_objects_v1",
+    "chapter_2": "legacy_validation_scroll_v1",
+    "chapter_3": "legacy_validation_scroll_v1"
   },
   "node_overrides": {}
 }

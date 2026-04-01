@@ -14,6 +14,7 @@ const CONTENT_SECTION_ICON_PATHS := {
 const BOSS_PORTRAIT_PATHS_BY_ID := {
 	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_v2.png",
 	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_v2.png",
+	"boss_silver_hook_elder": "res://assets/generated/afk_rpg_formal/bosses/boss_yingou_laoren_v1.png",
 }
 
 @onready var panel: Panel = $Panel

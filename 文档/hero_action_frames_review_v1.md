@@ -6,10 +6,8 @@
 - `hero_formal_move_anim_02`: `assets/generated/afk_rpg_formal/characters/hero_move_anim_02.png`
 - `hero_formal_move_anim_03`: `assets/generated/afk_rpg_formal/characters/hero_move_anim_03.png`
 - `hero_formal_move_anim_04`: `assets/generated/afk_rpg_formal/characters/hero_move_anim_04.png`
-- `hero_formal_attack_anim_01`: `assets/generated/afk_rpg_formal/characters/hero_attack_anim_01.png`
-- `hero_formal_attack_anim_02`: `assets/generated/afk_rpg_formal/characters/hero_attack_anim_02.png`
-- `hero_formal_attack_anim_03`: `assets/generated/afk_rpg_formal/characters/hero_attack_anim_03.png`
-- `hero_formal_attack_anim_04`: `assets/generated/afk_rpg_formal/characters/hero_attack_anim_04.png`
+- `hero_formal_move_anim_05`: `assets/generated/afk_rpg_formal/characters/hero_move_anim_05.png`
+- `hero_formal_move_anim_06`: `assets/generated/afk_rpg_formal/characters/hero_move_anim_06.png`
 
 ## 目标
 
