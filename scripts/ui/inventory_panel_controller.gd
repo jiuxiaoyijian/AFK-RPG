@@ -5,11 +5,20 @@ const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const InventoryViewModelService = preload("res://scripts/utils/inventory_view_model_service.gd")
 const RuntimeTextureLoader = preload("res://scripts/utils/runtime_texture_loader.gd")
 
-const MAIN_PANEL_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/result_card_template_common.png"
-const HEADER_BAR_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/scroll_texture_bar.png"
-const SECTION_FRAME_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/detail_panel_9patch.png"
+const MAIN_PANEL_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/inventory_main_frame_9patch.png"
+const HEADER_BAR_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/inventory_header_bar_9patch.png"
+const PAPER_DOLL_PANEL_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/paper_doll_panel_9patch.png"
+const INVENTORY_GRID_PANEL_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/inventory_grid_panel_9patch.png"
+const DETAIL_PANEL_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/detail_panel_9patch.png"
+const TOOLBAR_PANEL_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/toolbar_panel_9patch.png"
 const GRID_CELL_FRAME_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/inventory/inventory_cell_frame.png"
 const EQUIPMENT_SLOT_FRAME_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/equipment_slot_base.png"
+const OPTION_DROPDOWN_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/controls/option_dropdown_base.png"
+const PAGE_ARROW_LEFT_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/controls/page_arrow_left.png"
+const PAGE_ARROW_RIGHT_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/controls/page_arrow_right.png"
+const BUTTON_PRIMARY_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/controls/button_primary_base.png"
+const BUTTON_SECONDARY_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/controls/button_secondary_base.png"
+const BUTTON_DANGER_TEXTURE_PATH := "res://assets/generated/afk_rpg_formal/ui/controls/button_danger_base.png"
 
 @onready var panel: Panel = $Panel
 @onready var header_bar: Panel = $Panel/HeaderBar
@@ -233,6 +242,7 @@ func _refresh_detail(screen_state: Dictionary) -> void:
 	UI_STYLE.style_button(lock_button, UI_STYLE.COLOR_GOLD, lock_button.disabled)
 	UI_STYLE.style_button(salvage_button, UI_STYLE.COLOR_RED, salvage_button.disabled)
 	UI_STYLE.style_button(close_button, UI_STYLE.COLOR_TEXT_MUTED, false)
+	_apply_inventory_control_textures()
 
 
 func _build_equipment_buttons() -> void:
@@ -447,6 +457,7 @@ func _apply_visual_style() -> void:
 	UI_STYLE.style_option_button(sort_option, UI_STYLE.COLOR_BLUE)
 	UI_STYLE.style_button(prev_page_button, UI_STYLE.COLOR_BLUE, false)
 	UI_STYLE.style_button(next_page_button, UI_STYLE.COLOR_BLUE, false)
+	_apply_inventory_control_textures()
 
 
 func _apply_inventory_panel_styles() -> void:
@@ -457,12 +468,12 @@ func _apply_inventory_panel_styles() -> void:
 	_apply_warm_panel_style(detail_section, Color(0.18, 0.15, 0.12, 0.88), Color(0.72, 0.60, 0.40, 0.82), 16, Vector2(14, 12))
 	_apply_warm_panel_style(toolbar_section, Color(0.18, 0.15, 0.12, 0.90), Color(0.68, 0.56, 0.38, 0.78), 16, Vector2(14, 10))
 
-	_apply_panel_texture_overlay(panel, MAIN_PANEL_TEXTURE_PATH, Color(1, 1, 1, 0.88), "MainTextureFrame")
-	_apply_panel_texture_overlay(header_bar, HEADER_BAR_TEXTURE_PATH, Color(0.94, 0.88, 0.76, 0.32), "HeaderTextureFrame")
-	_apply_panel_texture_overlay(paper_doll_section, SECTION_FRAME_TEXTURE_PATH, Color(1, 1, 1, 0.84), "SectionTextureFrame")
-	_apply_panel_texture_overlay(inventory_section, SECTION_FRAME_TEXTURE_PATH, Color(1, 1, 1, 0.80), "SectionTextureFrame")
-	_apply_panel_texture_overlay(detail_section, SECTION_FRAME_TEXTURE_PATH, Color(1, 1, 1, 0.92), "SectionTextureFrame")
-	_apply_panel_texture_overlay(toolbar_section, SECTION_FRAME_TEXTURE_PATH, Color(1, 1, 1, 0.76), "SectionTextureFrame")
+	_apply_panel_texture_overlay(panel, MAIN_PANEL_TEXTURE_PATH, Color(1, 1, 1, 0.92), "MainTextureFrame")
+	_apply_panel_texture_overlay(header_bar, HEADER_BAR_TEXTURE_PATH, Color(1, 1, 1, 0.96), "HeaderTextureFrame")
+	_apply_panel_texture_overlay(paper_doll_section, PAPER_DOLL_PANEL_TEXTURE_PATH, Color(1, 1, 1, 0.92), "SectionTextureFrame")
+	_apply_panel_texture_overlay(inventory_section, INVENTORY_GRID_PANEL_TEXTURE_PATH, Color(1, 1, 1, 0.92), "SectionTextureFrame")
+	_apply_panel_texture_overlay(detail_section, DETAIL_PANEL_TEXTURE_PATH, Color(1, 1, 1, 0.94), "SectionTextureFrame")
+	_apply_panel_texture_overlay(toolbar_section, TOOLBAR_PANEL_TEXTURE_PATH, Color(1, 1, 1, 0.92), "SectionTextureFrame")
 
 
 func _apply_warm_panel_style(
@@ -498,8 +509,8 @@ func _apply_panel_texture_overlay(target_panel: Control, texture_path: String, t
 		overlay = TextureRect.new()
 		overlay.name = overlay_name
 		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		overlay.z_index = -8
-		overlay.show_behind_parent = true
+		overlay.z_index = 0
+		overlay.show_behind_parent = false
 		overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		target_panel.add_child(overlay)
 		target_panel.move_child(overlay, 0)
@@ -507,3 +518,21 @@ func _apply_panel_texture_overlay(target_panel: Control, texture_path: String, t
 	overlay.expand_mode = 1
 	overlay.stretch_mode = 6
 	overlay.modulate = tint
+
+
+func _apply_inventory_control_textures() -> void:
+	_apply_panel_texture_overlay(filter_option, OPTION_DROPDOWN_TEXTURE_PATH, Color(1, 1, 1, 0.98), "OptionTextureFrame")
+	_apply_panel_texture_overlay(sort_option, OPTION_DROPDOWN_TEXTURE_PATH, Color(1, 1, 1, 0.98), "OptionTextureFrame")
+	_apply_panel_texture_overlay(threshold_button, BUTTON_PRIMARY_TEXTURE_PATH, Color(1, 1, 1, 0.98), "ButtonTextureFrame")
+	_apply_panel_texture_overlay(equip_button, BUTTON_PRIMARY_TEXTURE_PATH, Color(1, 1, 1, 0.98), "ButtonTextureFrame")
+	_apply_panel_texture_overlay(unequip_button, BUTTON_SECONDARY_TEXTURE_PATH, Color(1, 1, 1, 0.98), "ButtonTextureFrame")
+	_apply_panel_texture_overlay(lock_button, BUTTON_SECONDARY_TEXTURE_PATH, Color(1, 1, 1, 0.98), "ButtonTextureFrame")
+	_apply_panel_texture_overlay(close_button, BUTTON_SECONDARY_TEXTURE_PATH, Color(1, 1, 1, 0.98), "ButtonTextureFrame")
+	_apply_panel_texture_overlay(salvage_button, BUTTON_DANGER_TEXTURE_PATH, Color(1, 1, 1, 0.98), "ButtonTextureFrame")
+	_apply_icon_button_texture(prev_page_button, PAGE_ARROW_LEFT_TEXTURE_PATH, "ArrowTextureFrame")
+	_apply_icon_button_texture(next_page_button, PAGE_ARROW_RIGHT_TEXTURE_PATH, "ArrowTextureFrame")
+
+
+func _apply_icon_button_texture(target_button: Button, texture_path: String, overlay_name: String) -> void:
+	target_button.text = ""
+	_apply_panel_texture_overlay(target_button, texture_path, Color(1, 1, 1, 0.98), overlay_name)

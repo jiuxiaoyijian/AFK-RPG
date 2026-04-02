@@ -26,19 +26,24 @@ const LOOT_ICON_PATHS := {
 	"salvage": "res://assets/generated/icons/drop_salvage.png",
 }
 const CLEAN_HUD_TEXTURE_PATHS := {
-	"bar": "res://assets/generated/ui_runtime_extracts_clean/hud_bottom_bar_clean_v3.png",
-	"left_orb": "res://assets/generated/ui_runtime_extracts_clean/hud_left_orb_clean_v3.png",
-	"right_orb": "res://assets/generated/ui_runtime_extracts_clean/hud_right_orb_clean_v3.png",
+	"bar": "res://assets/generated/afk_rpg_formal/ui/hud/combat_plate_frame.png",
+	"left_orb": "res://assets/generated/afk_rpg_formal/ui/hud/left_orb_shell.png",
+	"right_orb": "res://assets/generated/afk_rpg_formal/ui/hud/right_orb_shell.png",
 }
 const HUD_PANEL_TEXTURE_PATHS := {
+	"player": "res://assets/generated/afk_rpg_formal/ui/hud/player_header_frame.png",
+	"portrait_ring": "res://assets/generated/afk_rpg_formal/ui/hud/portrait_ring_frame.png",
+	"stage": "res://assets/generated/afk_rpg_formal/ui/hud/stage_header_frame.png",
 	"objective": "res://assets/generated/afk_rpg_formal/ui/hud/objective_card_frame.png",
+	"loot": "res://assets/generated/afk_rpg_formal/ui/hud/loot_card_frame.png",
+	"drop_toast": "res://assets/generated/afk_rpg_formal/ui/hud/drop_toast_frame.png",
 }
-const COMBAT_BAR_WIDTH := 520.0
-const COMBAT_BAR_HEIGHT := 156.0
-const COMBAT_BAR_BOTTOM_GAP := 16.0
+const COMBAT_BAR_WIDTH := 600.0
+const COMBAT_BAR_HEIGHT := 168.0
+const COMBAT_BAR_BOTTOM_GAP := 10.0
 const COMBAT_PLATE_BOTTOM_GAP := 2.0
-const ORB_SIDE_OVERHANG := 26.0
-const ORB_BOTTOM_GAP := -8.0
+const ORB_SIDE_OVERHANG := 18.0
+const ORB_BOTTOM_GAP := -2.0
 
 @onready var player_header: Panel = $PlayerHeader
 @onready var portrait_ring: Panel = $PlayerHeader/PortraitRing
@@ -160,11 +165,11 @@ func _wire_interactions() -> void:
 
 
 func _apply_visual_style() -> void:
-	_apply_panel_tint(player_header, Color(0.08, 0.10, 0.14, 0.86))
-	_apply_panel_tint(stage_header, Color(0.08, 0.10, 0.14, 0.84))
-	_apply_panel_tint(objective_card, Color(0.08, 0.10, 0.14, 0.82))
-	_apply_panel_tint(loot_card, Color(0.08, 0.10, 0.14, 0.82))
-	_apply_panel_tint(drop_toast, Color(0.12, 0.16, 0.22, 0.96))
+	_apply_panel_tint(player_header, Color(0.08, 0.10, 0.14, 0.30))
+	_apply_panel_tint(stage_header, Color(0.08, 0.10, 0.14, 0.26))
+	_apply_panel_tint(objective_card, Color(0.08, 0.10, 0.14, 0.24))
+	_apply_panel_tint(loot_card, Color(0.08, 0.10, 0.14, 0.24))
+	_apply_panel_tint(drop_toast, Color(0.10, 0.12, 0.16, 0.26))
 	_apply_battle_safe_frame_style()
 	_apply_combat_plate_style()
 	_apply_orb_mount_style(left_orb_mount)
@@ -174,7 +179,12 @@ func _apply_visual_style() -> void:
 	_apply_panel_tint(buff_strip, Color(0.06, 0.08, 0.11, 0.78))
 	_apply_panel_tint(combat_highlight_panel, Color(0.18, 0.22, 0.30, 0.92))
 	_apply_portrait_ring_style()
+	_apply_panel_texture_overlay(player_header, HUD_PANEL_TEXTURE_PATHS["player"], Color(1, 1, 1, 0.98), "FrameTexture")
+	_apply_panel_texture_overlay(portrait_ring, HUD_PANEL_TEXTURE_PATHS["portrait_ring"], Color(1, 1, 1, 0.98), "RingTexture")
+	_apply_panel_texture_overlay(stage_header, HUD_PANEL_TEXTURE_PATHS["stage"], Color(1, 1, 1, 0.98), "FrameTexture")
 	_apply_panel_texture_overlay(objective_card, HUD_PANEL_TEXTURE_PATHS["objective"], Color(1, 1, 1, 0.96), "FrameTexture")
+	_apply_panel_texture_overlay(loot_card, HUD_PANEL_TEXTURE_PATHS["loot"], Color(1, 1, 1, 0.96), "FrameTexture")
+	_apply_panel_texture_overlay(drop_toast, HUD_PANEL_TEXTURE_PATHS["drop_toast"], Color(1, 1, 1, 0.96), "FrameTexture")
 
 	combat_plate_texture.texture = _load_runtime_texture(CLEAN_HUD_TEXTURE_PATHS["bar"])
 	left_orb_texture.texture = _load_runtime_texture(CLEAN_HUD_TEXTURE_PATHS["left_orb"])
@@ -697,8 +707,8 @@ func _apply_panel_texture_overlay(panel: Control, texture_path: String, tint: Co
 		overlay = TextureRect.new()
 		overlay.name = overlay_name
 		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		overlay.z_index = -4
-		overlay.show_behind_parent = true
+		overlay.z_index = 0
+		overlay.show_behind_parent = false
 		overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		panel.add_child(overlay)
 		panel.move_child(overlay, 0)

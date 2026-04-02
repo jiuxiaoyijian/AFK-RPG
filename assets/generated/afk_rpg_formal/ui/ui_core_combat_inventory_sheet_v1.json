@@ -1,0 +1,391 @@
+{
+  "sheet": {
+    "path": "assets/generated/afk_rpg_formal/ui/ui_core_combat_inventory_sheet_v1.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "padding": 16,
+    "gap": 24,
+    "version": 1
+  },
+  "items": [
+    {
+      "name": "player_header_frame",
+      "rect": [
+        16,
+        16,
+        352,
+        118
+      ],
+      "slice": [
+        22,
+        22,
+        22,
+        22
+      ],
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "portrait_ring_frame",
+      "rect": [
+        392,
+        16,
+        104,
+        104
+      ],
+      "slice": null,
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "stage_header_frame",
+      "rect": [
+        520,
+        16,
+        320,
+        64
+      ],
+      "slice": [
+        20,
+        18,
+        20,
+        18
+      ],
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "drop_toast_frame",
+      "rect": [
+        864,
+        16,
+        248,
+        84
+      ],
+      "slice": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "thin_divider",
+      "rect": [
+        1136,
+        20,
+        220,
+        24
+      ],
+      "slice": null,
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "objective_card_frame",
+      "rect": [
+        16,
+        156,
+        252,
+        296
+      ],
+      "slice": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "loot_card_frame",
+      "rect": [
+        292,
+        156,
+        216,
+        296
+      ],
+      "slice": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "combat_plate_frame",
+      "rect": [
+        532,
+        156,
+        600,
+        148
+      ],
+      "slice": [
+        28,
+        24,
+        28,
+        20
+      ],
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "left_orb_shell",
+      "rect": [
+        1156,
+        156,
+        156,
+        156
+      ],
+      "slice": null,
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "right_orb_shell",
+      "rect": [
+        1336,
+        156,
+        156,
+        156
+      ],
+      "slice": null,
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "skill_slot_frame",
+      "rect": [
+        1186,
+        336,
+        96,
+        96
+      ],
+      "slice": null,
+      "use_in_scene": "HUD"
+    },
+    {
+      "name": "inventory_main_frame_9patch",
+      "rect": [
+        16,
+        476,
+        560,
+        258
+      ],
+      "slice": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "inventory_header_bar_9patch",
+      "rect": [
+        600,
+        476,
+        420,
+        60
+      ],
+      "slice": [
+        18,
+        16,
+        18,
+        16
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "paper_doll_panel_9patch",
+      "rect": [
+        1044,
+        476,
+        180,
+        260
+      ],
+      "slice": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "inventory_grid_panel_9patch",
+      "rect": [
+        1248,
+        476,
+        272,
+        260
+      ],
+      "slice": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "detail_panel_9patch",
+      "rect": [
+        16,
+        758,
+        280,
+        160
+      ],
+      "slice": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "toolbar_panel_9patch",
+      "rect": [
+        320,
+        758,
+        520,
+        72
+      ],
+      "slice": [
+        18,
+        16,
+        18,
+        16
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "inventory_cell_frame",
+      "rect": [
+        864,
+        758,
+        76,
+        76
+      ],
+      "slice": null,
+      "use_in_scene": "ItemCardButton"
+    },
+    {
+      "name": "equipment_slot_frame",
+      "rect": [
+        964,
+        758,
+        84,
+        84
+      ],
+      "slice": null,
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "section_divider",
+      "rect": [
+        1072,
+        758,
+        220,
+        52
+      ],
+      "slice": null,
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "option_dropdown_base",
+      "rect": [
+        16,
+        860,
+        180,
+        52
+      ],
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "page_arrow_left",
+      "rect": [
+        220,
+        860,
+        64,
+        64
+      ],
+      "slice": null,
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "page_arrow_right",
+      "rect": [
+        308,
+        860,
+        64,
+        64
+      ],
+      "slice": null,
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "button_primary_base",
+      "rect": [
+        396,
+        860,
+        180,
+        56
+      ],
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "button_secondary_base",
+      "rect": [
+        600,
+        860,
+        180,
+        56
+      ],
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "button_danger_base",
+      "rect": [
+        804,
+        860,
+        180,
+        56
+      ],
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "use_in_scene": "InventoryPanel"
+    },
+    {
+      "name": "rarity_frame_strip_common_to_ancient",
+      "rect": [
+        1008,
+        848,
+        512,
+        96
+      ],
+      "slice": null,
+      "use_in_scene": "ItemCardButton"
+    }
+  ]
+}
