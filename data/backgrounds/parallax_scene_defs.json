@@ -1,6 +1,19 @@
 {
   "scene_defs": [
     {
+      "id": "chapter1_town_road_single_v1",
+      "base_scene_id": "chapter1_town_road_single",
+      "background_mode": "single_native",
+      "ground_y": 540,
+      "player_spawn_y": 500,
+      "lane_clear_region": [0.22, 0.54, 0.46, 0.24],
+      "backdrop_path": "res://assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_single_native_v1.png",
+      "backdrop_native_size": [1536, 1024],
+      "backdrop_position": [0, -168],
+      "scroll_range_x": 256.0,
+      "scroll_distance": 20.0
+    },
+    {
       "id": "chapter1_town_road_v1",
       "base_scene_id": "chapter1_town_road",
       "repeat_size": [3072, 720],
@@ -134,7 +147,7 @@
     }
   ],
   "chapter_defaults": {
-    "chapter_1": "chapter1_town_road_objects_v1",
+    "chapter_1": "chapter1_town_road_single_v1",
     "chapter_2": "legacy_validation_scroll_v1",
     "chapter_3": "legacy_validation_scroll_v1"
   },

@@ -23,6 +23,16 @@ polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
 color = Color(0.1, 0.11, 0.16, 1)
 z_index = -30
 
+[node name="BackdropLayer" type="Node2D" parent="WorldLayer"]
+z_index = -29
+
+[node name="BackdropSpriteA" type="Sprite2D" parent="WorldLayer/BackdropLayer"]
+centered = false
+
+[node name="BackdropSpriteB" type="Sprite2D" parent="WorldLayer/BackdropLayer"]
+position = Vector2(3072, 0)
+centered = false
+
 [node name="SkyLayer" type="Parallax2D" parent="WorldLayer"]
 repeat_size = Vector2(3072, 720)
 scroll_scale = Vector2(1, 1)

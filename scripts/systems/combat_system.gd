@@ -16,12 +16,18 @@ const CHAPTER_GROUND_COLORS := {
 const SCREEN_CENTER := Vector2(640.0, 360.0)
 const SCREEN_SIZE := Vector2(1280.0, 720.0)
 const PARALLAX_LAYER_IDS := ["sky", "far", "mid", "near_back", "near_front"]
+const BACKGROUND_MODE_PARALLAX := "parallax_layers"
+const BACKGROUND_MODE_SINGLE_STRIP := "single_strip"
+const BACKGROUND_MODE_SINGLE_NATIVE := "single_native"
 const HERO_LEFT_BOUND := 332.0
 const HERO_RIGHT_BOUND := 472.0
 const RIGHT_SPAWN_X := 1368.0
 const FORWARD_SCROLL_SPEED := 96.0
 
 @onready var background_fill: Polygon2D = $"../../WorldLayer/Background"
+@onready var backdrop_layer: Node2D = $"../../WorldLayer/BackdropLayer"
+@onready var backdrop_sprite_a: Sprite2D = $"../../WorldLayer/BackdropLayer/BackdropSpriteA"
+@onready var backdrop_sprite_b: Sprite2D = $"../../WorldLayer/BackdropLayer/BackdropSpriteB"
 @onready var ground_fill: Polygon2D = $"../../WorldLayer/Ground"
 @onready var sky_layer: Parallax2D = $"../../WorldLayer/SkyLayer"
 @onready var far_layer: Parallax2D = $"../../WorldLayer/FarLayer"
@@ -58,6 +64,7 @@ var forward_scroll_distance: float = 0.0
 var parallax_layers: Dictionary = {}
 var parallax_sprites: Dictionary = {}
 var current_parallax_scene: Dictionary = {}
+var current_background_mode: String = BACKGROUND_MODE_PARALLAX
 var corner_overlay_sprites: Array[Sprite2D] = []
 
 
@@ -398,13 +405,21 @@ func _merge_string_arrays(primary: Array, secondary: Array) -> Array[String]:
 func _apply_chapter_visuals(chapter_id: String, node_id: String = "") -> void:
 	background_fill.color = CHAPTER_BACKGROUND_COLORS.get(chapter_id, Color(0.1, 0.11, 0.16, 1.0))
 	ground_fill.color = CHAPTER_GROUND_COLORS.get(chapter_id, Color(0.16, 0.18, 0.24, 1.0))
+	background_fill.visible = true
+	ground_fill.visible = true
 	current_parallax_scene = _resolve_parallax_scene(chapter_id, node_id)
+	current_background_mode = String(current_parallax_scene.get("background_mode", BACKGROUND_MODE_PARALLAX))
+	_clear_single_backdrop()
+	_clear_parallax_layers()
+	_clear_ground_band()
+	_clear_corner_overlays()
 	if current_parallax_scene.is_empty():
-		_clear_parallax_layers()
-		_clear_ground_band()
-		_clear_corner_overlays()
+		current_background_mode = BACKGROUND_MODE_PARALLAX
 		return
-	_apply_parallax_scene(current_parallax_scene)
+	if current_background_mode in [BACKGROUND_MODE_SINGLE_STRIP, BACKGROUND_MODE_SINGLE_NATIVE]:
+		_apply_single_native_scene(current_parallax_scene)
+	else:
+		_apply_parallax_scene(current_parallax_scene)
 	_update_background_parallax()
 
 
@@ -437,6 +452,15 @@ func _setup_parallax_runtime() -> void:
 		parallax_layer.scroll_offset = Vector2.ZERO
 		sprite.position = Vector2.ZERO
 		sprite.centered = false
+	if backdrop_layer != null:
+		backdrop_layer.visible = false
+	if backdrop_sprite_a != null:
+		backdrop_sprite_a.centered = false
+		backdrop_sprite_a.position = Vector2.ZERO
+	if backdrop_sprite_b != null:
+		backdrop_sprite_b.centered = false
+		backdrop_sprite_b.position = Vector2.ZERO
+		backdrop_sprite_b.visible = false
 
 
 func _resolve_parallax_scene(chapter_id: String, node_id: String) -> Dictionary:
@@ -493,6 +517,28 @@ func _apply_parallax_scene(scene_def: Dictionary) -> void:
 		var texture_path: String = String(layer_paths.get(layer_id, ""))
 		_apply_parallax_layer(layer_id, _load_runtime_texture(texture_path), scene_def)
 	_apply_corner_overlays(scene_def)
+
+
+func _apply_single_native_scene(scene_def: Dictionary) -> void:
+	_apply_scene_lane_metrics(scene_def)
+	var texture_path: String = String(scene_def.get("backdrop_path", ""))
+	var texture: Texture2D = _load_runtime_texture(texture_path)
+	if backdrop_layer == null or backdrop_sprite_a == null or backdrop_sprite_b == null or texture == null:
+		return
+	var position_values: Array = scene_def.get("backdrop_position", [0, 0])
+	var backdrop_position := Vector2.ZERO
+	if position_values.size() >= 2:
+		backdrop_position = Vector2(float(position_values[0]), float(position_values[1]))
+	backdrop_layer.visible = true
+	backdrop_sprite_a.texture = texture
+	backdrop_sprite_a.centered = false
+	backdrop_sprite_a.scale = Vector2.ONE
+	backdrop_sprite_a.modulate = Color.WHITE
+	backdrop_sprite_a.position = backdrop_position
+	backdrop_sprite_b.texture = null
+	backdrop_sprite_b.visible = false
+	background_fill.visible = false
+	ground_fill.visible = false
 
 
 func _apply_scene_lane_metrics(scene_def: Dictionary) -> void:
@@ -555,6 +601,18 @@ func _clear_parallax_layers() -> void:
 			sprite.texture = null
 		if parallax_layer != null:
 			parallax_layer.scroll_offset = Vector2.ZERO
+
+
+func _clear_single_backdrop() -> void:
+	if backdrop_layer != null:
+		backdrop_layer.visible = false
+	if backdrop_sprite_a != null:
+		backdrop_sprite_a.texture = null
+		backdrop_sprite_a.position = Vector2.ZERO
+	if backdrop_sprite_b != null:
+		backdrop_sprite_b.texture = null
+		backdrop_sprite_b.position = Vector2.ZERO
+		backdrop_sprite_b.visible = false
 
 
 func _clear_ground_band() -> void:
@@ -624,8 +682,36 @@ func _update_background_parallax() -> void:
 		travel_ratio = inverse_lerp(HERO_LEFT_BOUND, HERO_RIGHT_BOUND, player.global_position.x)
 	travel_ratio = clampf(travel_ratio, 0.0, 1.0)
 	var centered_ratio: float = (travel_ratio - 0.5) * 2.0
+	if current_background_mode in [BACKGROUND_MODE_SINGLE_STRIP, BACKGROUND_MODE_SINGLE_NATIVE]:
+		_update_single_native_background(centered_ratio)
+		return
 	for layer_id in PARALLAX_LAYER_IDS:
 		_update_background_parallax_to_layer(layer_id, centered_ratio)
+
+
+func _update_single_native_background(centered_ratio: float) -> void:
+	if backdrop_sprite_a == null or backdrop_sprite_a.texture == null:
+		return
+	var position_values: Array = current_parallax_scene.get("backdrop_position", [0, 0])
+	var base_position := Vector2.ZERO
+	if position_values.size() >= 2:
+		base_position = Vector2(float(position_values[0]), float(position_values[1]))
+	var native_size: Vector2 = _resolve_native_backdrop_size(current_parallax_scene, backdrop_sprite_a.texture)
+	var max_scroll: float = maxf(0.0, native_size.x - SCREEN_SIZE.x)
+	var scroll_range_x: float = minf(float(current_parallax_scene.get("scroll_range_x", 256.0)), max_scroll)
+	var centered_start: float = scroll_range_x * 0.5
+	var directional_shift: float = centered_ratio * float(current_parallax_scene.get("scroll_distance", 20.0))
+	var max_forward_shift: float = maxf(0.0, scroll_range_x - centered_start)
+	var forward_shift: float = clampf(forward_scroll_distance * 0.18, 0.0, max_forward_shift)
+	var crop_start: float = clampf(centered_start + forward_shift + directional_shift, 0.0, scroll_range_x)
+	backdrop_sprite_a.position = base_position + Vector2(-crop_start, 0.0)
+
+
+func _resolve_native_backdrop_size(scene_def: Dictionary, texture: Texture2D) -> Vector2:
+	var raw_native_size: Variant = scene_def.get("backdrop_native_size", [texture.get_width(), texture.get_height()])
+	if raw_native_size is Array and raw_native_size.size() >= 2:
+		return Vector2(float(raw_native_size[0]), float(raw_native_size[1]))
+	return Vector2(float(texture.get_width()), float(texture.get_height()))
 
 
 func _update_background_parallax_to_layer(layer_id: String, centered_ratio: float) -> void:

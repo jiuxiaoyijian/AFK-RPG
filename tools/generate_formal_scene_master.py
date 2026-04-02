@@ -23,15 +23,39 @@ BASE_NEGATIVE = (
 )
 
 
-def build_spec(output_path: str) -> asset_specs.AssetSpec:
-    return asset_specs.AssetSpec(
-        logical_id="chapter1_master_concept_v1",
-        category="backgrounds",
-        wired_now=False,
-        output_path=output_path,
-        target_size="1536x1024",
-        background_mode="opaque",
-        prompt=(
+def build_spec(output_path: str, preset: str) -> asset_specs.AssetSpec:
+    if preset == "single_native_v1":
+        logical_id = "chapter1_town_road_single_native_v1"
+        prompt = (
+            "stylized polished new guofeng wuxia side-scrolling final combat backdrop for chapter one, "
+            "one complete native horizontal battle scene, not a source plate, not a layer split concept, "
+            "bright jianghu mountain lake town in warm daylight, "
+            "clear open combat road and shore path across the lower middle area for character battles, "
+            "integrated depth inside one image with distant mountains, lake water, bridges, lakeside inns, village houses, trees, rocks and grasses, "
+            "balanced side-view composition for action gameplay, readable central battle corridor, "
+            "left and right edges calm and natural without oversized cut-off landmark, "
+            "foreground only low rocks, grass and gentle framing, no giant prop blocking the lane, "
+            "midground bridge and waterside buildings clearly readable, "
+            "clean perspective, crisp painted details, coherent scale, no stretched architecture, no distorted roofs, no warped ground plane, no blurry upscale look"
+        )
+    elif preset == "single_strip_v2":
+        logical_id = "chapter1_single_strip_master_v2"
+        prompt = (
+            "stylized polished new guofeng wuxia side-scrolling final combat backdrop for chapter one, "
+            "single finished panoramic scene by a bright mountain lake town, "
+            "one coherent playable location, wide open combat road across the lower third, "
+            "clear side-view action game lane for characters, "
+            "integrated depth inside one image with distant mountains, lake water, bridges, waterside houses, trees, rocks and grass, "
+            "balanced composition, readable center battle corridor, "
+            "foreground details only as low rocks, grass edges and light framing, no giant close props, "
+            "midground bridge, inns and lakeside buildings clearly readable, "
+            "peaceful warm daylight jianghu travel atmosphere, clean perspective, crisp painted details, "
+            "intended as one final scrolling battle background, not for layer splitting, not for transparent cut layers, "
+            "avoid stretched architecture, avoid oversized roofs, avoid distorted ground scale, avoid blurry upscale look"
+        )
+    else:
+        logical_id = "chapter1_master_concept_v1"
+        prompt = (
             "stylized trendy new guofeng wuxia side-scrolling master background for chapter one, "
             "single continuous scenic river-town road outside an inn station, warm daylight travel atmosphere, "
             "one coherent location, side-view action game lane, center combat corridor kept open, "
@@ -43,7 +67,15 @@ def build_spec(output_path: str) -> asset_specs.AssetSpec:
             "no foreground object crossing the center combat corridor, no doubled props, no mirrored repetition, "
             "horizontal scrolling background with clean repeatable edge silhouettes and seam-safe left and right margins, "
             "clean perspective, tourism-like jianghu feeling, Steam-friendly indie game art"
-        ),
+        )
+    return asset_specs.AssetSpec(
+        logical_id=logical_id,
+        category="backgrounds",
+        wired_now=False,
+        output_path=output_path,
+        target_size="1536x1024",
+        background_mode="opaque",
+        prompt=prompt,
         negative_prompt=BASE_NEGATIVE,
         source_doc="16_潮流新国风Q版美术规范",
         replace_mode="new",
@@ -80,10 +112,15 @@ def _append_log(spec: asset_specs.AssetSpec, payload: dict, model: str, quality:
 
 
 def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate a formal chapter-one scene master for loop-safe parallax splitting.")
+    parser = argparse.ArgumentParser(description="Generate a formal chapter-one scene master.")
     parser.add_argument(
         "--output",
-        default="assets/generated/formal_replacement_samples/backgrounds/chapter1_master_concept_v1.png",
+        default="assets/generated/afk_rpg_formal/backgrounds/chapter1_town_road_single_native_v1.png",
+    )
+    parser.add_argument(
+        "--preset",
+        choices=["parallax_master_v1", "single_strip_v2", "single_native_v1"],
+        default="single_native_v1",
     )
     parser.add_argument("--model", default="gpt-image-1.5")
     parser.add_argument("--quality", choices=["low", "medium", "high"], default="high")
@@ -92,7 +129,7 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
 def main(argv: Sequence[str]) -> int:
     args = _parse_args(argv)
-    spec = build_spec(args.output)
+    spec = build_spec(args.output, args.preset)
     api_key = openai_assets._load_api_key()
     payload = openai_assets._request_image(api_key, spec, args.model, args.quality)
     raw_path = _save_raw_image(spec, payload, args.model, args.quality)
