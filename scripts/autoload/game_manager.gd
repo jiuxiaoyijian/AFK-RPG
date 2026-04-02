@@ -1209,6 +1209,43 @@ func _ensure_progression_unlocks(emit_signals: bool = true) -> void:
 			EventBus.combat_state_changed.emit("宗师修为已开启")
 
 
+func reset_for_public_demo() -> void:
+	current_chapter_id = "chapter_1"
+	current_node_id = ConfigDB.get_chapter_first_node(current_chapter_id)
+	stable_node_id = current_node_id
+	selected_core_skill_id = "core_whirlwind"
+	current_run_kills = 0
+	current_run_clears = 0
+	inventory.clear()
+	for slot_id in EQUIPMENT_SLOT_ORDER:
+		equipped_items[slot_id] = {}
+	MetaProgressionSystem.gm_reset_all_resources()
+	MetaProgressionSystem.research_levels = {}
+	auto_salvage_below_rarity = "rare"
+	last_loot_summary = "暂无掉落"
+	last_loot_highlight = {}
+	martial_codex_state = MartialCodexSystem.create_default_state()
+	set_summary = {
+		"counts": {},
+		"active_sets": [],
+		"total_bonuses": {},
+		"primary_active_set": {},
+	}
+	rift_state = RiftSystem.create_default_state()
+	gem_state = GemSystem.create_default_state()
+	paragon_state = ParagonSystem.create_default_state()
+	season_state = SeasonSystem.create_default_state()
+	pending_ui_focus = {}
+	LootCodexSystem.reset_runtime_state()
+	DailyGoalSystem.reset_runtime_state()
+	StageEventSystem.reset_runtime_state()
+	refresh_build_state(true)
+	EventBus.core_skill_changed.emit(selected_core_skill_id)
+	_emit_progression_state_changed()
+	EventBus.loot_summary_changed.emit(last_loot_summary)
+	EventBus.combat_state_changed.emit("已开启新的试玩进度")
+
+
 func _grant_paragon_progress(base_amount: float) -> Dictionary:
 	_ensure_progression_unlocks(false)
 	var meta_bonuses: Dictionary = get_meta_progression_bonuses()

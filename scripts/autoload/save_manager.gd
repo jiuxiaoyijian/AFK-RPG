@@ -8,28 +8,31 @@ const DEFAULT_SAVE_SLOT := 1
 const SAVE_PATH_TEMPLATE := "user://desktop_idle_save_%d.json"
 const CURRENT_SAVE_VERSION := 3
 
+var active_save_slot: int = DEFAULT_SAVE_SLOT
+
 
 func _ready() -> void:
-	call_deferred("load_game", DEFAULT_SAVE_SLOT)
+	active_save_slot = DEFAULT_SAVE_SLOT
 
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_quick_save"):
-		save_game(DEFAULT_SAVE_SLOT)
-		EventBus.combat_state_changed.emit("手动存档完成 [档位 %d]" % DEFAULT_SAVE_SLOT)
+		save_game(active_save_slot)
+		EventBus.combat_state_changed.emit("手动存档完成 [档位 %d]" % active_save_slot)
 	elif event.is_action_pressed("ui_quick_load"):
-		load_game(DEFAULT_SAVE_SLOT)
-		EventBus.combat_state_changed.emit("手动读档完成 [档位 %d]" % DEFAULT_SAVE_SLOT)
+		load_game(active_save_slot)
+		EventBus.combat_state_changed.emit("手动读档完成 [档位 %d]" % active_save_slot)
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		save_game(DEFAULT_SAVE_SLOT)
+		save_game(active_save_slot)
 
 
 func save_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	if not _is_valid_slot(slot):
 		return false
+	active_save_slot = slot
 	var payload: Dictionary = {
 		"save_version": CURRENT_SAVE_VERSION,
 		"current_chapter_id": GameManager.current_chapter_id,
@@ -77,6 +80,7 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 	var payload: Variant = JSON.parse_string(text)
 	if not payload is Dictionary:
 		return false
+	active_save_slot = slot
 
 	var saved_version: int = int(payload.get("save_version", 0))
 	if saved_version < CURRENT_SAVE_VERSION:
@@ -122,6 +126,68 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 
 func get_save_slot_count() -> int:
 	return SAVE_SLOT_COUNT
+
+
+func get_active_save_slot() -> int:
+	return active_save_slot
+
+
+func set_active_save_slot(slot: int) -> bool:
+	if not _is_valid_slot(slot):
+		return false
+	active_save_slot = slot
+	return true
+
+
+func start_new_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
+	if not _is_valid_slot(slot):
+		return false
+	active_save_slot = slot
+	GameManager.reset_for_public_demo()
+	save_game(slot)
+	return true
+
+
+func delete_save_slot(slot: int) -> bool:
+	if not _is_valid_slot(slot):
+		return false
+	_wipe_save(slot)
+	return true
+
+
+func get_save_slot_summary(slot: int) -> Dictionary:
+	var summary := {
+		"slot": slot,
+		"has_save": false,
+		"title": "空档位",
+		"subtitle": "尚未创建试玩进度",
+		"saved_unix_time": 0,
+	}
+	if not _is_valid_slot(slot):
+		return summary
+	var save_path: String = _get_save_path(slot)
+	if not FileAccess.file_exists(save_path):
+		return summary
+	var file: FileAccess = FileAccess.open(save_path, FileAccess.READ)
+	if file == null:
+		return summary
+	var text: String = file.get_as_text()
+	file.close()
+	var payload: Variant = JSON.parse_string(text)
+	if not payload is Dictionary:
+		return summary
+	var node_id: String = String(payload.get("current_node_id", "ch1_n1"))
+	var chapter_id: String = String(payload.get("current_chapter_id", "chapter_1"))
+	var chapter_name: String = String(ConfigDB.get_chapter(chapter_id).get("name", chapter_id))
+	var inventory_entries: Array = payload.get("inventory", [])
+	summary["has_save"] = true
+	summary["title"] = "%s · %s" % [chapter_name, ConfigDB.get_chapter_node_name(node_id)]
+	summary["subtitle"] = "香火钱 %d | 背包 %d" % [
+		int(payload.get("gold", 0)),
+		inventory_entries.size(),
+	]
+	summary["saved_unix_time"] = int(payload.get("saved_unix_time", 0))
+	return summary
 
 
 func get_save_slot_path(slot: int) -> String:

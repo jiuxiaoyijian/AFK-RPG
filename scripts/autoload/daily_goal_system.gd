@@ -54,6 +54,15 @@ func load_save_data(payload: Dictionary) -> void:
 	refresh_daily_goals_if_needed()
 
 
+func reset_runtime_state() -> void:
+	last_refresh_date = ""
+	primary_goal = {}
+	side_goals.clear()
+	last_recommendation_snapshot = {}
+	_refresh_internal_snapshots()
+	refresh_daily_goals_if_needed()
+
+
 func get_daily_goal_data() -> Dictionary:
 	return {
 		"last_refresh_date": last_refresh_date,

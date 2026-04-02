@@ -7,7 +7,7 @@ const NAV_ICON_PATHS := {
 	"research": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
 	"codex": "res://assets/generated/afk_rpg_formal/icons/system_yiwenlu.png",
 	"drop_stats": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
-	"gm": "res://assets/generated/afk_rpg_formal/icons/icon_orb_common.png",
+	"settings": "res://assets/generated/afk_rpg_formal/icons/icon_orb_common.png",
 }
 
 @onready var inventory_button: Button = $Panel/InventoryButton
@@ -15,7 +15,7 @@ const NAV_ICON_PATHS := {
 @onready var research_button: Button = $Panel/ResearchButton
 @onready var codex_button: Button = $Panel/CodexButton
 @onready var stats_button: Button = $Panel/StatsButton
-@onready var gm_button: Button = $Panel/GMButton
+@onready var settings_button: Button = $Panel/SettingsButton
 @onready var hint_label: Label = $Panel/HintLabel
 @onready var panel: Panel = $Panel
 
@@ -28,7 +28,7 @@ func _ready() -> void:
 	research_button.pressed.connect(_request_panel.bind("research"))
 	codex_button.pressed.connect(_request_panel.bind("codex"))
 	stats_button.pressed.connect(_request_panel.bind("drop_stats"))
-	gm_button.pressed.connect(_request_panel.bind("gm"))
+	settings_button.pressed.connect(_request_panel.bind("settings"))
 
 	EventBus.resources_changed.connect(_refresh)
 	EventBus.research_changed.connect(_refresh)
@@ -53,13 +53,13 @@ func _refresh(_payload: Variant = null) -> void:
 	research_button.text = "成长中心  U"
 	codex_button.text = "异闻录  O"
 	stats_button.text = "推演 / 秘境  P"
-	gm_button.text = "GM"
+	settings_button.text = "设置"
 	inventory_button.tooltip_text = "%d 件可管理装备" % GameManager.get_inventory_count()
 	cube_button.tooltip_text = "萃取、重铸与武学秘录"
 	research_button.tooltip_text = _get_research_button_summary()
 	codex_button.tooltip_text = _get_codex_button_summary()
 	stats_button.tooltip_text = _get_stats_button_summary()
-	gm_button.tooltip_text = "调试入口"
+	settings_button.tooltip_text = "音量、存档、反馈与版本信息"
 	hint_label.text = "I 背包   B 百炼坊   U 成长中心   O 异闻录   P 推演/秘境   Esc 关闭"
 	_update_button_states()
 
@@ -87,7 +87,7 @@ func _update_button_states() -> void:
 	research_button.disabled = active_panel_id == "research"
 	codex_button.disabled = active_panel_id == "codex"
 	stats_button.disabled = active_panel_id == "drop_stats"
-	gm_button.disabled = active_panel_id == "gm"
+	settings_button.disabled = active_panel_id == "settings"
 	_style_nav_buttons()
 
 
@@ -119,7 +119,7 @@ func _apply_button_icons() -> void:
 	_apply_button_icon(research_button, "research")
 	_apply_button_icon(codex_button, "codex")
 	_apply_button_icon(stats_button, "drop_stats")
-	_apply_button_icon(gm_button, "gm")
+	_apply_button_icon(settings_button, "settings")
 
 
 func _apply_button_icon(button: Button, icon_id: String) -> void:
@@ -167,13 +167,13 @@ func _style_nav_buttons() -> void:
 	UI_STYLE.style_button(research_button, UI_STYLE.COLOR_GOLD, research_button.disabled)
 	UI_STYLE.style_button(codex_button, UI_STYLE.COLOR_TEAL, codex_button.disabled)
 	UI_STYLE.style_button(stats_button, UI_STYLE.COLOR_PEACH, stats_button.disabled)
-	UI_STYLE.style_button(gm_button, UI_STYLE.COLOR_TEXT_DIM, gm_button.disabled)
-	for button in [inventory_button, cube_button, research_button, codex_button, stats_button]:
+	UI_STYLE.style_button(settings_button, UI_STYLE.COLOR_TEXT_DIM, settings_button.disabled)
+	for button in [inventory_button, cube_button, research_button, codex_button, stats_button, settings_button]:
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.expand_icon = true
 		button.custom_minimum_size = Vector2(0, 48)
-	gm_button.custom_minimum_size = Vector2(0, 32)
+	settings_button.custom_minimum_size = Vector2(0, 32)
 
 
 func _build_nav_panel_style() -> StyleBoxFlat:

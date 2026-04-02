@@ -8,9 +8,11 @@ const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 @onready var research_panel: Control = $ResearchPanel
 @onready var codex_panel: Control = $CodexPanel
 @onready var drop_stats_panel: Control = $DropStatsPanel
+@onready var settings_panel: Control = $SettingsPanel
 @onready var gm_panel: Control = $GMPanel
 @onready var offline_report_popup: Control = $OfflineReportPopup
 @onready var main_nav_bar: Control = $MainNavBar
+@onready var launch_menu: Control = $LaunchMenu
 @onready var collect_effects: Node2D = $CollectEffects
 
 var active_panel_id: String = ""
@@ -27,6 +29,8 @@ func _ready() -> void:
 	_apply_popup_panel_styles()
 	ui_dimmer.visible = false
 	offline_report_popup.visible = false
+	if gm_panel != null and not DemoManager.is_debug_tools_enabled():
+		gm_panel.visible = false
 	_emit_ui_state()
 
 
@@ -42,7 +46,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_drop_stats"):
 		_toggle_panel("drop_stats")
 	elif event.is_action_pressed("ui_gm_panel"):
-		_toggle_panel("gm")
+		if DemoManager.is_debug_tools_enabled():
+			_toggle_panel("gm")
 	elif event.is_action_pressed("ui_cancel"):
 		if offline_report_popup.visible:
 			_hide_offline_report()
@@ -76,7 +81,11 @@ func _open_panel(panel_id: String) -> void:
 			_show_panel(codex_panel)
 		"drop_stats":
 			_show_panel(drop_stats_panel)
+		"settings":
+			_show_panel(settings_panel)
 		"gm":
+			if not DemoManager.is_debug_tools_enabled():
+				return
 			_show_panel(gm_panel)
 		_:
 			return
@@ -98,7 +107,7 @@ func _close_active_panel() -> void:
 
 
 func _close_regular_panels() -> void:
-	for panel in [inventory_panel, cube_panel, research_panel, codex_panel, drop_stats_panel, gm_panel]:
+	for panel in [inventory_panel, cube_panel, research_panel, codex_panel, drop_stats_panel, settings_panel, gm_panel]:
 		if panel != null:
 			panel.visible = false
 
@@ -112,7 +121,7 @@ func _show_panel(panel: Control) -> void:
 
 
 func _apply_popup_panel_styles() -> void:
-	for panel_root in [inventory_panel, cube_panel, research_panel, codex_panel, drop_stats_panel, gm_panel, offline_report_popup]:
+	for panel_root in [inventory_panel, cube_panel, research_panel, codex_panel, drop_stats_panel, settings_panel, gm_panel, offline_report_popup]:
 		if panel_root != null:
 			_apply_modal_theme_recursive(panel_root)
 
@@ -224,6 +233,7 @@ func _hide_stage_event() -> void:
 func _emit_ui_state() -> void:
 	EventBus.ui_blocking_input = active_panel_id != ""
 	ui_dimmer.visible = EventBus.ui_blocking_input and active_panel_id != "offline_report" and active_panel_id != "stage_event"
-	main_nav_bar.visible = not EventBus.ui_blocking_input
-	collect_effects.visible = not EventBus.ui_blocking_input
+	var launch_menu_active: bool = launch_menu != null and launch_menu.visible
+	main_nav_bar.visible = not EventBus.ui_blocking_input and not launch_menu_active
+	collect_effects.visible = not EventBus.ui_blocking_input and not launch_menu_active
 	EventBus.ui_state_changed.emit(active_panel_id, EventBus.ui_blocking_input)

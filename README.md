@@ -3,6 +3,7 @@
 [![Godot](https://img.shields.io/badge/Godot-4.6.1-478cbf?logo=godot-engine&logoColor=white)](https://godotengine.org/)
 [![Status](https://img.shields.io/badge/Status-Prototype-orange)](https://github.com/jiuxiaoyijian/AFK-RPG)
 [![Play Online](https://img.shields.io/badge/Play-Web%20Demo-6f42c1)](https://jiuxiaoyijian.github.io/AFK-RPG/)
+[![Version](https://img.shields.io/badge/Public%20Demo-0.1.0-2ea043)](https://jiuxiaoyijian.github.io/AFK-RPG/)
 
 一个基于 `Godot 4.6` 制作的横版挂机 ARPG 原型。  
 项目当前正沿着 `反桃花源修真` 的方向推进，核心是把“自动战斗 + 探境刷装 + 道统成长 + 闭关所得”的循环，逐步收敛成一个可在线试玩、可持续迭代的独立项目。
@@ -11,6 +12,8 @@
 
 - 在线版本：[https://jiuxiaoyijian.github.io/AFK-RPG/](https://jiuxiaoyijian.github.io/AFK-RPG/)
 - 仓库地址：[https://github.com/jiuxiaoyijian/AFK-RPG](https://github.com/jiuxiaoyijian/AFK-RPG)
+- 试玩说明：[PUBLIC_DEMO.md](PUBLIC_DEMO.md)
+- 反馈入口：[GitHub Issues](https://github.com/jiuxiaoyijian/AFK-RPG/issues)
 
 > 当前阶段是“高可玩原型”，重点验证系统循环与体验方向，还不是最终美术完成版。
 
@@ -95,6 +98,12 @@
 - 更进一步的二级页面信息密度整理
 - 更完整的浏览器端与移动端体验适配
 
+## 公开试玩版补充说明
+
+- 当前公开版本已经补入启动菜单、存档位选择、试玩版设置与反馈入口。
+- 公开构建默认关闭 GM 调试入口，避免把测试能力暴露给普通玩家。
+- 试玩版优先面向桌面 Chrome 浏览器，移动端仍仅建议观摩，不建议作为主要体验环境。
+
 ## 路线图
 
 ### 近期重点
@@ -167,5 +176,5 @@ ComfyUI+LoRA/            美术资源生成与 LoRA 工作流维护资料
 
 ## License
 
-当前仓库尚未单独声明开源许可证。  
-如果后续需要开放协作、允许复用或接收外部贡献，建议补充明确的 License。
+当前仓库已补充根目录 [LICENSE](LICENSE)。  
+现阶段授权方式为公开试玩展示用途下的 `All Rights Reserved`，不开放复用、分发或二次创作。

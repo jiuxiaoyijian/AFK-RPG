@@ -42,6 +42,18 @@ func load_save_data(payload: Dictionary) -> void:
 	EventBus.loot_target_changed.emit()
 
 
+func reset_runtime_state() -> void:
+	discovered_base_ids.clear()
+	discovered_affix_ids.clear()
+	discovered_legendary_affix_ids.clear()
+	tracked_legendary_affix_id = ""
+	node_drop_stats.clear()
+	recent_drop_records.clear()
+	_ensure_valid_target()
+	EventBus.codex_changed.emit()
+	EventBus.loot_target_changed.emit()
+
+
 func register_item(item: Dictionary) -> void:
 	var changed: bool = false
 	var new_legendary_affix_id: String = ""

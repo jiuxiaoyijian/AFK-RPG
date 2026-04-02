@@ -41,6 +41,15 @@ func load_save_data(payload: Dictionary) -> void:
 	_bootstrap_progress_state()
 
 
+func reset_runtime_state() -> void:
+	cleared_boss_node_ids.clear()
+	unlocked_chapter_ids.clear()
+	celebrated_research_keys.clear()
+	celebrated_legendary_ids.clear()
+	tracked_target_completed_ids.clear()
+	_bootstrap_progress_state()
+
+
 func _on_config_loaded() -> void:
 	_bootstrap_progress_state()
 

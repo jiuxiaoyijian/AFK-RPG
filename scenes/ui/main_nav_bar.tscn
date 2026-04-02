@@ -60,12 +60,12 @@ offset_right = 242.0
 offset_bottom = 118.0
 text = "推演与秘境"
 
-[node name="GMButton" type="Button" parent="Panel"]
+[node name="SettingsButton" type="Button" parent="Panel"]
 offset_left = 248.0
 offset_top = 78.0
 offset_right = 358.0
 offset_bottom = 112.0
-text = "GM"
+text = "设置"
 
 [node name="HintLabel" type="Label" parent="Panel"]
 offset_left = 16.0

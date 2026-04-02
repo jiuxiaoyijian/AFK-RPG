@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://desktop_idle_root"]
+[gd_scene load_steps=16 format=3 uid="uid://desktop_idle_root"]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/systems/combat_system.gd" id="2_combat"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/ui/ui_overlay_manager.gd" id="11_ui_manager"]
 [ext_resource type="PackedScene" path="res://scenes/ui/gm_panel.tscn" id="12_gm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/cube_panel.tscn" id="13_cube"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="14_settings"]
+[ext_resource type="PackedScene" path="res://scenes/ui/launch_menu.tscn" id="15_launch"]
 
 [node name="GameRoot" type="Node2D"]
 
@@ -130,9 +132,13 @@ visible = false
 
 [node name="DropStatsPanel" parent="UILayer" instance=ExtResource("9_drop_stats")]
 
+[node name="SettingsPanel" parent="UILayer" instance=ExtResource("14_settings")]
+
 [node name="MainNavBar" parent="UILayer" instance=ExtResource("10_nav")]
 
 [node name="GMPanel" parent="UILayer" instance=ExtResource("12_gm")]
+
+[node name="LaunchMenu" parent="UILayer" instance=ExtResource("15_launch")]
 
 [node name="Systems" type="Node" parent="."]
 
