@@ -1,11 +1,16 @@
 .godot/
 .editorconfig
+.pycache/
+*.pyc
+*.pyo
 
 # Local exports and temporary build output
 build/
 dist/
 .vendor/
 assets/generated/_openai_raw/
+assets/generated/ui_component_review/
+文档/prototype/
 
 # ComfyUI / LoRA training workspace (kept local only)
 ComfyUI+LoRA/
@@ -17,3 +22,9 @@ ComfyUI+LoRA/
 # OS / editor noise
 .DS_Store
 Thumbs.db
+
+# Local review / preview / copy artifacts
+*_副本.png
+*_副本.png.import
+*_review_v*.md
+*_openai生成日志_v*.jsonl
