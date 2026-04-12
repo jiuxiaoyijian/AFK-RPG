@@ -1,7 +1,7 @@
 extends RefCounted
 
-const UNLOCK_NODE_ID := "ch2_boss"
 const BASE_EXPERIENCE := 24.0
+const PARAGON_UNLOCK_LEVEL := 70
 const STAT_DEFINITIONS := [
 	{
 		"id": "paragon_attack_training",
@@ -105,14 +105,18 @@ static func sanitize_state(state: Dictionary) -> Dictionary:
 	return sanitized
 
 
-static func is_unlocked_by_progress(stable_node_id: String) -> bool:
-	return stable_node_id == UNLOCK_NODE_ID
+static func is_unlocked_by_progress(progress_gate: Variant) -> bool:
+	if progress_gate is int:
+		return int(progress_gate) >= PARAGON_UNLOCK_LEVEL
+	if progress_gate is float:
+		return int(progress_gate) >= PARAGON_UNLOCK_LEVEL
+	return String(progress_gate) == "ch2_boss"
 
 
-static func ensure_unlocked(state: Dictionary, stable_node_id: String) -> Dictionary:
+static func ensure_unlocked(state: Dictionary, progress_gate: Variant) -> Dictionary:
 	var sanitized: Dictionary = sanitize_state(state)
 	var was_unlocked: bool = bool(sanitized.get("is_unlocked", false))
-	if not was_unlocked and is_unlocked_by_progress(stable_node_id):
+	if not was_unlocked and is_unlocked_by_progress(progress_gate):
 		sanitized["is_unlocked"] = true
 	return {
 		"state": sanitized,
@@ -266,7 +270,7 @@ static func build_runtime_summary(state: Dictionary) -> Dictionary:
 	var next_level_experience: int = get_experience_to_next_level(current_level)
 	var is_unlocked: bool = bool(sanitized.get("is_unlocked", false))
 	var status: String = "已开启" if is_unlocked else "未解锁"
-	var summary_text: String = "当前仍未完成宗师开关，需先击破第二章首领。" if not is_unlocked else "宗师等级: %d | 当前修为: %d/%d | 可用点数: %d | 已分配: %d" % [
+	var summary_text: String = "英雄达到 Lv.70 后开启宗师修为。" if not is_unlocked else "宗师等级: %d | 当前修为: %d/%d | 可用点数: %d | 已分配: %d" % [
 		current_level,
 		int(round(current_experience)),
 		next_level_experience,

@@ -81,7 +81,7 @@ func _refresh_comprehension_page() -> void:
 	detail_section_label.text = "参悟详情"
 	action_section_label.text = "参悟操作"
 	all_button.text = "全部"
-	combat_button.text = "战法"
+	combat_button.text = "战备"
 	idle_button.text = "闭关"
 	economy_button.text = "机缘"
 
@@ -405,7 +405,7 @@ func _set_page_layout(show_filters: bool, show_list: bool, show_status: bool, sh
 func _get_tree_type_label(tree_type: String) -> String:
 	match tree_type:
 		"combat":
-			return "战法"
+			return "战备"
 		"idle":
 			return "闭关"
 		"economy":

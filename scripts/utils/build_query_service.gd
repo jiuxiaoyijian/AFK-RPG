@@ -57,6 +57,7 @@ static func get_total_combat_bonuses(
 			_add_secondary_stat_to_totals(totals, legendary_affix)
 
 	MetaProgressionSystem.apply_combat_bonuses_to_totals(totals)
+	_merge_bonus_dict(totals, GameManager.get_passive_combat_bonuses())
 	_merge_bonus_dict(totals, set_summary.get("total_bonuses", {}))
 	_merge_bonus_dict(totals, MartialCodexSystem.build_combat_bonuses(martial_codex_state))
 	_merge_bonus_dict(totals, GemSystem.build_combat_bonuses(gem_state))

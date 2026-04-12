@@ -1,6 +1,8 @@
 extends Node
 
 const CORE_SKILLS_PATH := "res://data/skills/core_skills.json"
+const ACTIVE_SKILLS_PATH := "res://data/skills/active_skills.json"
+const PASSIVE_SKILLS_PATH := "res://data/skills/passive_skills.json"
 const ENEMIES_PATH := "res://data/enemies/enemy_defs.json"
 const CHAPTERS_PATH := "res://data/chapters/chapter_defs.json"
 const EQUIPMENT_BASES_PATH := "res://data/equipment/equipment_bases.json"
@@ -13,9 +15,15 @@ const DROP_TABLES_PATH := "res://data/drops/drop_tables.json"
 const RIFT_SCALING_PATH := "res://data/rift/rift_scaling.json"
 const RIFT_KEYS_PATH := "res://data/rift/rift_keys.json"
 const RESEARCH_TREE_PATH := "res://data/progression/research_tree.json"
+const HERO_LEVELS_PATH := "res://data/progression/hero_levels.json"
 const PARALLAX_SCENE_DEFS_PATH := "res://data/backgrounds/parallax_scene_defs.json"
 
 var core_skills: Dictionary = {}
+var active_skills: Dictionary = {}
+var passive_skills: Dictionary = {}
+var active_skills_by_school: Dictionary = {}
+var passive_skills_by_school: Dictionary = {}
+var hero_levels: Dictionary = {}
 var enemies: Dictionary = {}
 var chapters: Dictionary = {}
 var chapter_nodes: Dictionary = {}
@@ -41,6 +49,11 @@ func _ready() -> void:
 
 func load_all() -> void:
 	core_skills.clear()
+	active_skills.clear()
+	passive_skills.clear()
+	active_skills_by_school.clear()
+	passive_skills_by_school.clear()
+	hero_levels.clear()
 	enemies.clear()
 	chapters.clear()
 	chapter_nodes.clear()
@@ -61,6 +74,20 @@ func load_all() -> void:
 
 	for entry: Dictionary in _read_json_array(CORE_SKILLS_PATH):
 		core_skills[entry["id"]] = entry
+
+	for entry: Dictionary in _read_json_array(ACTIVE_SKILLS_PATH):
+		active_skills[entry["id"]] = entry
+		var school_id: String = String(entry.get("school_id", ""))
+		if not active_skills_by_school.has(school_id):
+			active_skills_by_school[school_id] = []
+		active_skills_by_school[school_id].append(entry)
+
+	for entry: Dictionary in _read_json_array(PASSIVE_SKILLS_PATH):
+		passive_skills[entry["id"]] = entry
+		var passive_school_id: String = String(entry.get("school_id", ""))
+		if not passive_skills_by_school.has(passive_school_id):
+			passive_skills_by_school[passive_school_id] = []
+		passive_skills_by_school[passive_school_id].append(entry)
 
 	for entry: Dictionary in _read_json_array(ENEMIES_PATH):
 		enemies[entry["id"]] = entry
@@ -108,6 +135,10 @@ func load_all() -> void:
 	for entry: Dictionary in research_payload.get("research_nodes", []):
 		research_nodes[entry["id"]] = entry
 
+	var hero_level_payload: Dictionary = _read_json_dict(HERO_LEVELS_PATH)
+	for entry: Dictionary in hero_level_payload.get("hero_levels", []):
+		hero_levels[int(entry.get("level", 1))] = entry
+
 	var parallax_scene_payload: Dictionary = _read_json_dict(PARALLAX_SCENE_DEFS_PATH)
 	for entry: Dictionary in parallax_scene_payload.get("scene_defs", []):
 		parallax_scene_defs[entry["id"]] = entry
@@ -118,7 +149,37 @@ func load_all() -> void:
 
 
 func get_core_skill(skill_id: String) -> Dictionary:
+	if active_skills.has(skill_id):
+		return active_skills.get(skill_id, {})
 	return core_skills.get(skill_id, {})
+
+
+func get_active_skill(skill_id: String) -> Dictionary:
+	return active_skills.get(skill_id, {})
+
+
+func get_all_active_skills() -> Array:
+	return active_skills.values()
+
+
+func get_active_skills_by_school(school_id: String) -> Array:
+	return active_skills_by_school.get(school_id, [])
+
+
+func get_passive_skill(skill_id: String) -> Dictionary:
+	return passive_skills.get(skill_id, {})
+
+
+func get_all_passive_skills() -> Array:
+	return passive_skills.values()
+
+
+func get_passive_skills_by_school(school_id: String) -> Array:
+	return passive_skills_by_school.get(school_id, [])
+
+
+func get_hero_level_entry(level: int) -> Dictionary:
+	return hero_levels.get(level, {})
 
 
 func get_enemy(enemy_id: String) -> Dictionary:

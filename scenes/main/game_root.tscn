@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://desktop_idle_root"]
+[gd_scene load_steps=17 format=3 uid="uid://desktop_idle_root"]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/systems/combat_system.gd" id="2_combat"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/cube_panel.tscn" id="13_cube"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="14_settings"]
 [ext_resource type="PackedScene" path="res://scenes/ui/launch_menu.tscn" id="15_launch"]
+[ext_resource type="PackedScene" path="res://scenes/ui/skill_panel.tscn" id="16_skill"]
 
 [node name="GameRoot" type="Node2D"]
 
@@ -127,6 +128,8 @@ visible = false
 [node name="CubePanel" parent="UILayer" instance=ExtResource("13_cube")]
 
 [node name="ResearchPanel" parent="UILayer" instance=ExtResource("6_research")]
+
+[node name="SkillPanel" parent="UILayer" instance=ExtResource("16_skill")]
 
 [node name="CodexPanel" parent="UILayer" instance=ExtResource("8_codex")]
 

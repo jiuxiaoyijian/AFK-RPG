@@ -57,7 +57,7 @@ func _refresh() -> void:
 	version_label.text = DemoManager.get_version_text()
 	hint_label.text = "当前档位 %d | F5 快速存档 | F8 快速读档" % SaveManager.get_active_save_slot()
 	slot_label.text = "当前存档位：%d" % SaveManager.get_active_save_slot()
-	guide_text.text = "[b]2 分钟上手[/b]\n1. 先看右上角任务目标。\n2. 背包看装备，成长中心看参悟。\n3. 推演与秘境会告诉你下一步刷哪里。"
+	guide_text.text = "[b]2 分钟上手[/b]\n1. 先看右上角任务目标。\n2. [b]K[/b] 看技能装配与符文，[b]I[/b] 看装备，[b]U[/b] 看参悟与宗师修为。\n3. [b]P[/b] 的推演与秘境会告诉你下一步刷哪里。"
 	master_slider.value = DemoManager.get_volume("master")
 	music_slider.value = DemoManager.get_volume("music")
 	sfx_slider.value = DemoManager.get_volume("sfx")

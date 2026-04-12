@@ -18,6 +18,7 @@ const RESEARCH_META_KEYS := {
 	"legend_shard_gain_percent": 0.0,
 	"salvage_scrap_percent": 0.0,
 	"paragon_exp_gain_percent": 0.0,
+	"hero_exp_gain_percent": 0.0,
 	"drop_quality_bonus": 0.0,
 }
 
@@ -248,12 +249,12 @@ func get_research_overview_text(tree_filter: String = "all") -> String:
 	var filter_label: String = "全部"
 	match tree_filter:
 		"combat":
-			filter_label = "战斗"
+			filter_label = "战备"
 		"idle":
 			filter_label = "挂机"
 		"economy":
 			filter_label = "经济"
-	lines.append("当前筛选: %s | 战斗 %d/%d | 挂机 %d/%d | 经济 %d/%d" % [
+	lines.append("当前筛选: %s | 战备 %d/%d | 挂机 %d/%d | 经济 %d/%d" % [
 		filter_label,
 		int(branch_stats["combat"]["current"]),
 		int(branch_stats["combat"]["max"]),
@@ -264,12 +265,12 @@ func get_research_overview_text(tree_filter: String = "all") -> String:
 	])
 
 	var meta_bonuses: Dictionary = get_meta_progression_bonuses()
-	lines.append("机缘加成: 香火钱 %+d%% | 祠灰 %+d%% | 灵核 %+d%% | 真意残片 %+d%% | 分解 %+d%%" % [
+	lines.append("参悟加成: 阅历 %+d%% | 香火钱 %+d%% | 祠灰 %+d%% | 灵核 %+d%% | 真意残片 %+d%%" % [
+		int(round(float(meta_bonuses.get("hero_exp_gain_percent", 0.0)) * 100.0)),
 		int(round(float(meta_bonuses.get("gold_gain_percent", 0.0)) * 100.0)),
 		int(round(float(meta_bonuses.get("scrap_gain_percent", 0.0)) * 100.0)),
 		int(round(float(meta_bonuses.get("core_gain_percent", 0.0)) * 100.0)),
 		int(round(float(meta_bonuses.get("legend_shard_gain_percent", 0.0)) * 100.0)),
-		int(round(float(meta_bonuses.get("salvage_scrap_percent", 0.0)) * 100.0)),
 	])
 	return "\n".join(lines)
 
@@ -307,16 +308,8 @@ func get_research_detail_text(node_id: String) -> String:
 
 
 func apply_combat_bonuses_to_totals(totals: Dictionary) -> void:
-	for research_id in research_levels.keys():
-		var level: int = int(research_levels.get(research_id, 0))
-		if level <= 0:
-			continue
-		var research_node: Dictionary = ConfigDB.get_research_node(String(research_id))
-		for bonus_entry in research_node.get("stat_bonuses", []):
-			var stat_key: String = String(bonus_entry.get("stat_key", ""))
-			var value_per_level: float = float(bonus_entry.get("value_per_level", 0.0))
-			if totals.has(stat_key):
-				totals[stat_key] += value_per_level * float(level)
+	# 参悟在当前版本只提供辅助与经济成长，不直接注入主战斗面板。
+	return
 
 
 func _get_research_upgrade_cost(research_node: Dictionary, target_level: int) -> Dictionary:

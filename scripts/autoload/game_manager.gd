@@ -13,12 +13,66 @@ const RiftSystem = preload("res://scripts/systems/rift_system.gd")
 const GemSystem = preload("res://scripts/systems/gem_system.gd")
 const ParagonSystem = preload("res://scripts/systems/paragon_system.gd")
 const SeasonSystem = preload("res://scripts/systems/season_system.gd")
+const HeroProgressionSystem = preload("res://scripts/systems/hero_progression_system.gd")
 
 const AVAILABLE_CORE_SKILLS := [
 	"core_whirlwind",
 	"core_deep_wound",
 	"core_chain_lightning",
 ]
+const ACTIVE_SKILL_SLOT_ORDER := ["basic", "core", "tactic", "burst"]
+const ACTIVE_SKILL_SLOT_LABELS := {
+	"basic": "基础",
+	"core": "核心",
+	"tactic": "战术",
+	"burst": "爆发",
+}
+const SCHOOL_DISPLAY_NAMES := {
+	"yufeng": "御风",
+	"xuejie": "血劫",
+	"wulei": "五雷",
+}
+const DEFAULT_SKILL_LOADOUTS := {
+	"yufeng": {
+		"active_slots": {
+			"basic": "basic_yufeng_slash",
+			"core": "core_whirlwind",
+			"tactic": "tactic_yufeng_step",
+			"burst": "burst_yufeng_tempest",
+		},
+		"passives": [
+			"passive_yufeng_zephyr",
+			"passive_yufeng_guard",
+			"passive_yufeng_maelstrom",
+		],
+	},
+	"xuejie": {
+		"active_slots": {
+			"basic": "basic_xuejie_cut",
+			"core": "core_deep_wound",
+			"tactic": "tactic_xuejie_mark",
+			"burst": "burst_xuejie_execution",
+		},
+		"passives": [
+			"passive_xuejie_bloodrush",
+			"passive_xuejie_killline",
+			"passive_xuejie_frenzy",
+		],
+	},
+	"wulei": {
+		"active_slots": {
+			"basic": "basic_wulei_spark",
+			"core": "core_chain_lightning",
+			"tactic": "tactic_wulei_field",
+			"burst": "burst_wulei_heavenfall",
+		},
+		"passives": [
+			"passive_wulei_conductive",
+			"passive_wulei_focus",
+			"passive_wulei_stormheart",
+		],
+	},
+}
 const BUILD_ARCHETYPE_PROFILES := {
 	"whirlwind": {
 		"display_name": "御风刀",
@@ -179,7 +233,7 @@ const RARITY_COLORS := {
 	"ancient": Color(1.0, 0.82, 0.18),
 }
 var research_levels: Dictionary = {}
-var auto_salvage_below_rarity: String = "rare"
+var auto_salvage_below_rarity: String = "common"
 var last_loot_summary: String = "暂无掉落"
 var last_loot_highlight: Dictionary = {}
 var martial_codex_state: Dictionary = MartialCodexSystem.create_default_state()
@@ -193,6 +247,13 @@ var rift_state: Dictionary = RiftSystem.create_default_state()
 var gem_state: Dictionary = GemSystem.create_default_state()
 var paragon_state: Dictionary = ParagonSystem.create_default_state()
 var season_state: Dictionary = SeasonSystem.create_default_state()
+var hero_progression_state: Dictionary = HeroProgressionSystem.create_default_state()
+var skill_loadout_state: Dictionary = {
+	"school_id": "yufeng",
+	"active_slots": DEFAULT_SKILL_LOADOUTS["yufeng"]["active_slots"].duplicate(true),
+}
+var selected_passives: Array = DEFAULT_SKILL_LOADOUTS["yufeng"]["passives"].duplicate(true)
+var skill_rune_state: Dictionary = {}
 var pending_ui_focus: Dictionary = {}
 const SALVAGE_THRESHOLDS := ["common", "uncommon", "rare", "epic", "set", "legendary", "ancient"]
 const RESEARCH_META_KEYS := {
@@ -220,6 +281,9 @@ func _on_config_loaded() -> void:
 	refresh_build_state(false)
 	EventBus.node_changed.emit(current_node_id)
 	EventBus.core_skill_changed.emit(selected_core_skill_id)
+	EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+	EventBus.hero_level_changed.emit(get_hero_progression_summary())
+	EventBus.hero_experience_changed.emit(get_hero_progression_summary())
 	EventBus.resources_changed.emit()
 	EventBus.equipment_changed.emit()
 	EventBus.loot_summary_changed.emit(last_loot_summary)
@@ -230,7 +294,14 @@ func _on_config_loaded() -> void:
 
 
 func get_selected_core_skill() -> Dictionary:
-	return ConfigDB.get_core_skill(selected_core_skill_id)
+	var active_slots: Dictionary = skill_loadout_state.get("active_slots", {})
+	var core_skill_id: String = String(active_slots.get("core", selected_core_skill_id))
+	if core_skill_id.is_empty():
+		core_skill_id = selected_core_skill_id
+	var skill_data: Dictionary = ConfigDB.get_active_skill(core_skill_id)
+	if not skill_data.is_empty():
+		return skill_data
+	return ConfigDB.get_core_skill(core_skill_id)
 
 
 func get_selected_archetype_tags() -> Array:
@@ -238,12 +309,402 @@ func get_selected_archetype_tags() -> Array:
 
 
 func select_core_skill(skill_id: String) -> void:
-	if not AVAILABLE_CORE_SKILLS.has(skill_id):
+	var skill_data: Dictionary = ConfigDB.get_active_skill(skill_id)
+	if skill_data.is_empty():
+		skill_data = ConfigDB.get_core_skill(skill_id)
+	if skill_data.is_empty():
 		return
-	if ConfigDB.get_core_skill(skill_id).is_empty():
+	if String(skill_data.get("slot_type", "core")) != "core":
 		return
-	selected_core_skill_id = skill_id
-	EventBus.core_skill_changed.emit(skill_id)
+	equip_active_skill("core", skill_id)
+
+
+func get_hero_progression_summary() -> Dictionary:
+	return HeroProgressionSystem.build_runtime_summary(hero_progression_state)
+
+
+func get_current_school_id() -> String:
+	return String(skill_loadout_state.get("school_id", "yufeng"))
+
+
+func get_unlocked_skill_slot_count() -> int:
+	return int(hero_progression_state.get("unlocked_skill_slots", 2))
+
+
+func get_unlocked_passive_slot_count() -> int:
+	return int(hero_progression_state.get("unlocked_passive_slots", 0))
+
+
+func get_unlocked_rune_tier_count() -> int:
+	return int(hero_progression_state.get("unlocked_rune_tiers", 0))
+
+
+func get_skill_screen_state() -> Dictionary:
+	_ensure_skill_progression_state()
+	var school_id: String = get_current_school_id()
+	var hero_summary: Dictionary = get_hero_progression_summary()
+	var slot_entries: Array[Dictionary] = []
+	var active_slots: Dictionary = skill_loadout_state.get("active_slots", {})
+	for slot_index in range(ACTIVE_SKILL_SLOT_ORDER.size()):
+		var slot_type: String = String(ACTIVE_SKILL_SLOT_ORDER[slot_index])
+		var skill_id: String = String(active_slots.get(slot_type, ""))
+		var skill_data: Dictionary = ConfigDB.get_active_skill(skill_id)
+		var rune_id: String = String(skill_rune_state.get(skill_id, ""))
+		slot_entries.append({
+			"slot_type": slot_type,
+			"slot_label": ACTIVE_SKILL_SLOT_LABELS.get(slot_type, slot_type),
+			"is_unlocked": slot_index < get_unlocked_skill_slot_count(),
+			"skill_id": skill_id,
+			"skill_name": String(skill_data.get("name", "未装配")),
+			"school_id": String(skill_data.get("school_id", school_id)),
+			"icon_path": String(skill_data.get("icon_path", "")),
+			"rune_id": rune_id,
+			"rune_name": _get_rune_name(skill_data, rune_id),
+			"description": String(skill_data.get("description", "")),
+		})
+
+	var active_skill_entries: Array[Dictionary] = []
+	for school_key_variant in SCHOOL_DISPLAY_NAMES.keys():
+		var entry_school_id: String = String(school_key_variant)
+		for skill_variant in ConfigDB.get_active_skills_by_school(entry_school_id):
+			var skill_entry: Dictionary = skill_variant
+			var entry_skill_id: String = String(skill_entry.get("id", ""))
+			var equipped_slot: String = _find_equipped_active_slot(entry_skill_id)
+			var rune_entries: Array[Dictionary] = []
+			for rune_variant in skill_entry.get("runes", []):
+				var rune: Dictionary = rune_variant
+				rune_entries.append({
+					"id": String(rune.get("id", "")),
+					"name": String(rune.get("name", "")),
+					"description": String(rune.get("description", "")),
+					"is_unlocked": int(rune.get("unlock_level", 999)) <= int(hero_summary.get("level", 1)),
+					"is_selected": String(skill_rune_state.get(entry_skill_id, "")) == String(rune.get("id", "")),
+				})
+			active_skill_entries.append({
+				"id": entry_skill_id,
+				"name": String(skill_entry.get("name", "")),
+				"school_id": entry_school_id,
+				"slot_type": String(skill_entry.get("slot_type", "")),
+				"unlock_level": int(skill_entry.get("unlock_level", 1)),
+				"is_unlocked": int(hero_summary.get("level", 1)) >= int(skill_entry.get("unlock_level", 1)),
+				"is_equipped": not equipped_slot.is_empty(),
+				"equipped_slot": equipped_slot,
+				"description": String(skill_entry.get("description", "")),
+				"icon_path": String(skill_entry.get("icon_path", "")),
+				"runes": rune_entries,
+			})
+
+	var passive_entries: Array[Dictionary] = []
+	for school_key_variant in SCHOOL_DISPLAY_NAMES.keys():
+		var entry_school_id: String = String(school_key_variant)
+		for passive_variant in ConfigDB.get_passive_skills_by_school(entry_school_id):
+			var passive_entry: Dictionary = passive_variant
+			var passive_id: String = String(passive_entry.get("id", ""))
+			passive_entries.append({
+				"id": passive_id,
+				"name": String(passive_entry.get("name", "")),
+				"school_id": String(passive_entry.get("school_id", entry_school_id)),
+				"unlock_level": int(passive_entry.get("unlock_level", 1)),
+				"is_unlocked": int(hero_summary.get("level", 1)) >= int(passive_entry.get("unlock_level", 1)),
+				"is_equipped": selected_passives.has(passive_id),
+				"description": String(passive_entry.get("description", "")),
+				"effect_payload": passive_entry.get("effect_payload", {}).duplicate(true),
+			})
+
+	var schools: Array[Dictionary] = []
+	for school_key_variant in SCHOOL_DISPLAY_NAMES.keys():
+		var school_key: String = String(school_key_variant)
+		schools.append({
+			"id": school_key,
+			"name": SCHOOL_DISPLAY_NAMES.get(school_key, school_key),
+			"is_selected": school_key == school_id,
+		})
+
+	return {
+		"hero_summary": hero_summary,
+		"schools": schools,
+		"selected_school_id": school_id,
+		"selected_school_name": SCHOOL_DISPLAY_NAMES.get(school_id, school_id),
+		"slot_entries": slot_entries,
+		"active_skills": active_skill_entries,
+		"passive_skills": passive_entries,
+		"selected_passives": selected_passives.duplicate(true),
+	}
+
+
+func get_combat_loadout_state() -> Dictionary:
+	_ensure_skill_progression_state()
+	var active_slots: Dictionary = skill_loadout_state.get("active_slots", {})
+	var passive_defs: Array[Dictionary] = []
+	for passive_id_variant in selected_passives:
+		var passive_id: String = String(passive_id_variant)
+		if passive_id.is_empty():
+			continue
+		var passive_data: Dictionary = ConfigDB.get_passive_skill(passive_id)
+		if passive_data.is_empty():
+			continue
+		passive_defs.append(passive_data.duplicate(true))
+	var active_defs := {}
+	for slot_type_variant in ACTIVE_SKILL_SLOT_ORDER:
+		var slot_type: String = String(slot_type_variant)
+		var skill_id: String = String(active_slots.get(slot_type, ""))
+		var skill_data: Dictionary = ConfigDB.get_active_skill(skill_id).duplicate(true)
+		if skill_data.is_empty():
+			active_defs[slot_type] = {}
+			continue
+		var rune_id: String = String(skill_rune_state.get(skill_id, ""))
+		var selected_rune: Dictionary = _get_rune_entry(skill_data, rune_id)
+		skill_data["selected_rune_id"] = rune_id
+		skill_data["selected_rune"] = selected_rune
+		active_defs[slot_type] = skill_data
+	return {
+		"school_id": get_current_school_id(),
+		"hero_summary": get_hero_progression_summary(),
+		"active_skills": active_defs,
+		"passives": passive_defs,
+	}
+
+
+func get_passive_combat_bonuses() -> Dictionary:
+	_ensure_skill_progression_state()
+	var totals: Dictionary = {}
+	for passive_id_variant in selected_passives:
+		var passive_id: String = String(passive_id_variant)
+		if passive_id.is_empty():
+			continue
+		var passive_data: Dictionary = ConfigDB.get_passive_skill(passive_id)
+		if passive_data.is_empty():
+			continue
+		if String(passive_data.get("effect_type", "")) != "stat_bonus":
+			continue
+		var payload: Dictionary = passive_data.get("effect_payload", {})
+		for stat_key_variant in payload.keys():
+			var stat_key: String = String(stat_key_variant)
+			totals[stat_key] = float(totals.get(stat_key, 0.0)) + float(payload.get(stat_key_variant, 0.0))
+	return totals
+
+
+func equip_active_skill(slot_type: String, skill_id: String) -> Dictionary:
+	if not ACTIVE_SKILL_SLOT_ORDER.has(slot_type):
+		return {"ok": false, "reason": "未知技能位"}
+	var slot_index: int = ACTIVE_SKILL_SLOT_ORDER.find(slot_type)
+	if slot_index >= get_unlocked_skill_slot_count():
+		return {"ok": false, "reason": "该技能位尚未解锁"}
+	var skill_data: Dictionary = ConfigDB.get_active_skill(skill_id)
+	if skill_data.is_empty():
+		return {"ok": false, "reason": "技能不存在"}
+	if String(skill_data.get("slot_type", "")) != slot_type:
+		return {"ok": false, "reason": "技能位类型不匹配"}
+	if int(skill_data.get("unlock_level", 1)) > int(hero_progression_state.get("level", 1)):
+		return {"ok": false, "reason": "等级不足"}
+
+	var school_id: String = String(skill_data.get("school_id", "yufeng"))
+	if get_current_school_id() != school_id:
+		skill_loadout_state = _build_default_skill_loadout_state(school_id)
+		selected_passives = _build_default_passives_for_school(school_id)
+		skill_rune_state.clear()
+	_ensure_skill_progression_state()
+	skill_loadout_state.get("active_slots", {})[slot_type] = skill_id
+	_sync_legacy_selected_core_skill()
+	_assign_default_rune_if_needed(skill_id)
+	EventBus.core_skill_changed.emit(selected_core_skill_id)
+	EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+	return {"ok": true, "reason": ""}
+
+
+func equip_skill_rune(skill_id: String, rune_id: String) -> Dictionary:
+	var skill_data: Dictionary = ConfigDB.get_active_skill(skill_id)
+	if skill_data.is_empty():
+		return {"ok": false, "reason": "技能不存在"}
+	if _find_equipped_active_slot(skill_id).is_empty():
+		return {"ok": false, "reason": "请先装配该技能"}
+	var rune_entry: Dictionary = _get_rune_entry(skill_data, rune_id)
+	if rune_entry.is_empty():
+		return {"ok": false, "reason": "符文不存在"}
+	if int(rune_entry.get("unlock_level", 999)) > int(hero_progression_state.get("level", 1)):
+		return {"ok": false, "reason": "符文尚未解锁"}
+	skill_rune_state[skill_id] = rune_id
+	EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+	return {"ok": true, "reason": ""}
+
+
+func equip_passive(slot_index: int, passive_id: String) -> Dictionary:
+	if slot_index < 0 or slot_index >= 3:
+		return {"ok": false, "reason": "被动位不存在"}
+	if slot_index >= get_unlocked_passive_slot_count():
+		return {"ok": false, "reason": "该被动位尚未解锁"}
+	var passive_data: Dictionary = ConfigDB.get_passive_skill(passive_id)
+	if passive_data.is_empty():
+		return {"ok": false, "reason": "被动不存在"}
+	if int(passive_data.get("unlock_level", 1)) > int(hero_progression_state.get("level", 1)):
+		return {"ok": false, "reason": "等级不足"}
+	var school_id: String = String(passive_data.get("school_id", "yufeng"))
+	if get_current_school_id() != school_id:
+		skill_loadout_state = _build_default_skill_loadout_state(school_id)
+		selected_passives = _build_default_passives_for_school(school_id)
+		skill_rune_state.clear()
+	_ensure_skill_progression_state()
+	selected_passives[slot_index] = passive_id
+	EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+	return {"ok": true, "reason": ""}
+
+
+func gain_hero_experience(amount: float, source: String = "combat") -> Dictionary:
+	var meta_bonuses: Dictionary = MetaProgressionSystem.get_meta_progression_bonuses()
+	var result: Dictionary = HeroProgressionSystem.gain_experience(
+		hero_progression_state,
+		amount,
+		float(meta_bonuses.get("hero_exp_gain_percent", 0.0))
+	)
+	if not bool(result.get("ok", false)):
+		return result
+	hero_progression_state = result.get("state", hero_progression_state)
+	var overflow_experience: float = float(result.get("overflow_experience", 0.0))
+	if overflow_experience > 0.0:
+		_grant_paragon_progress(overflow_experience)
+	_ensure_progression_unlocks(false)
+	var summary: Dictionary = get_hero_progression_summary()
+	EventBus.hero_level_changed.emit(summary)
+	EventBus.hero_experience_changed.emit(summary)
+	EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+	if int(result.get("gained_levels", 0)) > 0:
+		var unlock_events: Array = result.get("unlock_events", [])
+		var state_lines: Array[String] = [String(result.get("summary", "等级提升"))]
+		for unlock_variant in unlock_events:
+			state_lines.append(String(unlock_variant))
+		EventBus.combat_state_changed.emit(" | ".join(state_lines))
+	return {
+		"ok": true,
+		"reason": "",
+		"summary": String(result.get("summary", "")),
+		"source": source,
+		"gained_levels": int(result.get("gained_levels", 0)),
+		"unlock_events": result.get("unlock_events", []).duplicate(true),
+	}
+
+
+func estimate_legacy_level_from_node(node_id: String) -> int:
+	var node_data: Dictionary = ConfigDB.get_chapter_node(node_id)
+	var chapter_id: String = String(node_data.get("chapter_id", "chapter_1"))
+	match chapter_id:
+		"chapter_3":
+			return 43
+		"chapter_2":
+			return 28
+		_:
+			return 10
+
+
+func _build_default_skill_loadout_state(school_id: String) -> Dictionary:
+	var fallback_school_id: String = school_id if DEFAULT_SKILL_LOADOUTS.has(school_id) else "yufeng"
+	return {
+		"school_id": fallback_school_id,
+		"active_slots": DEFAULT_SKILL_LOADOUTS.get(fallback_school_id, DEFAULT_SKILL_LOADOUTS["yufeng"]).get("active_slots", {}).duplicate(true),
+	}
+
+
+func _build_default_passives_for_school(school_id: String) -> Array:
+	var fallback_school_id: String = school_id if DEFAULT_SKILL_LOADOUTS.has(school_id) else "yufeng"
+	return DEFAULT_SKILL_LOADOUTS.get(fallback_school_id, DEFAULT_SKILL_LOADOUTS["yufeng"]).get("passives", []).duplicate(true)
+
+
+func _ensure_skill_progression_state() -> void:
+	hero_progression_state = HeroProgressionSystem.sanitize_state(hero_progression_state)
+	if String(skill_loadout_state.get("school_id", "")).is_empty():
+		skill_loadout_state = _build_default_skill_loadout_state("yufeng")
+	var school_id: String = get_current_school_id()
+	if not DEFAULT_SKILL_LOADOUTS.has(school_id):
+		skill_loadout_state = _build_default_skill_loadout_state("yufeng")
+		school_id = "yufeng"
+	var active_slots: Dictionary = skill_loadout_state.get("active_slots", {})
+	var default_slots: Dictionary = DEFAULT_SKILL_LOADOUTS.get(school_id, DEFAULT_SKILL_LOADOUTS["yufeng"]).get("active_slots", {})
+	for slot_index in range(ACTIVE_SKILL_SLOT_ORDER.size()):
+		var slot_type: String = String(ACTIVE_SKILL_SLOT_ORDER[slot_index])
+		var active_skill_id: String = String(active_slots.get(slot_type, ""))
+		var active_skill_data: Dictionary = ConfigDB.get_active_skill(active_skill_id)
+		if slot_index >= get_unlocked_skill_slot_count():
+			active_slots[slot_type] = ""
+			continue
+		if active_skill_data.is_empty() or String(active_skill_data.get("school_id", "")) != school_id or String(active_skill_data.get("slot_type", "")) != slot_type:
+			active_slots[slot_type] = String(default_slots.get(slot_type, ""))
+	skill_loadout_state["active_slots"] = active_slots
+
+	while selected_passives.size() < 3:
+		selected_passives.append("")
+	var default_passives: Array = _build_default_passives_for_school(school_id)
+	for passive_index in range(3):
+		if passive_index >= get_unlocked_passive_slot_count():
+			selected_passives[passive_index] = ""
+			continue
+		var passive_id: String = String(selected_passives[passive_index])
+		var passive_data: Dictionary = ConfigDB.get_passive_skill(passive_id)
+		if passive_data.is_empty() or String(passive_data.get("school_id", "")) != school_id:
+			selected_passives[passive_index] = String(default_passives[passive_index])
+
+	var equipped_skill_ids: Array[String] = []
+	for slot_type_variant in ACTIVE_SKILL_SLOT_ORDER:
+		var equipped_skill_id: String = String(active_slots.get(String(slot_type_variant), ""))
+		if equipped_skill_id.is_empty():
+			continue
+		equipped_skill_ids.append(equipped_skill_id)
+		_assign_default_rune_if_needed(equipped_skill_id)
+	var rune_keys: Array = skill_rune_state.keys()
+	for rune_skill_id_variant in rune_keys:
+		var rune_skill_id: String = String(rune_skill_id_variant)
+		if not equipped_skill_ids.has(rune_skill_id):
+			skill_rune_state.erase(rune_skill_id)
+			continue
+		var equipped_skill: Dictionary = ConfigDB.get_active_skill(rune_skill_id)
+		var selected_rune_id: String = String(skill_rune_state.get(rune_skill_id, ""))
+		if selected_rune_id.is_empty():
+			continue
+		var selected_rune: Dictionary = _get_rune_entry(equipped_skill, selected_rune_id)
+		if selected_rune.is_empty() or int(selected_rune.get("unlock_level", 999)) > int(hero_progression_state.get("level", 1)):
+			skill_rune_state.erase(rune_skill_id)
+			_assign_default_rune_if_needed(rune_skill_id)
+
+	_sync_legacy_selected_core_skill()
+
+
+func _assign_default_rune_if_needed(skill_id: String) -> void:
+	if get_unlocked_rune_tier_count() <= 0:
+		return
+	if skill_rune_state.has(skill_id) and not String(skill_rune_state.get(skill_id, "")).is_empty():
+		return
+	var skill_data: Dictionary = ConfigDB.get_active_skill(skill_id)
+	if skill_data.is_empty():
+		return
+	for rune_variant in skill_data.get("runes", []):
+		var rune: Dictionary = rune_variant
+		if int(rune.get("unlock_level", 999)) <= int(hero_progression_state.get("level", 1)):
+			skill_rune_state[skill_id] = String(rune.get("id", ""))
+			return
+
+
+func _sync_legacy_selected_core_skill() -> void:
+	selected_core_skill_id = String(skill_loadout_state.get("active_slots", {}).get("core", "core_whirlwind"))
+
+
+func _find_equipped_active_slot(skill_id: String) -> String:
+	var active_slots: Dictionary = skill_loadout_state.get("active_slots", {})
+	for slot_type_variant in ACTIVE_SKILL_SLOT_ORDER:
+		var slot_type: String = String(slot_type_variant)
+		if String(active_slots.get(slot_type, "")) == skill_id:
+			return slot_type
+	return ""
+
+
+func _get_rune_entry(skill_data: Dictionary, rune_id: String) -> Dictionary:
+	for rune_variant in skill_data.get("runes", []):
+		var rune: Dictionary = rune_variant
+		if String(rune.get("id", "")) == rune_id:
+			return rune
+	return {}
+
+
+func _get_rune_name(skill_data: Dictionary, rune_id: String) -> String:
+	var rune_entry: Dictionary = _get_rune_entry(skill_data, rune_id)
+	return String(rune_entry.get("name", ""))
 
 
 func grant_rewards(reward_entries: Array) -> Array:
@@ -295,6 +756,7 @@ func get_build_advice_data() -> Dictionary:
 
 func get_progression_hub_summary() -> Dictionary:
 	_ensure_progression_unlocks(false)
+	var hero_summary: Dictionary = get_hero_progression_summary()
 	var upgradable_count: int = 0
 	for research_node_variant in MetaProgressionSystem.get_research_items("all"):
 		var research_node: Dictionary = research_node_variant
@@ -314,10 +776,12 @@ func get_progression_hub_summary() -> Dictionary:
 		season_status_text = "已轮回 %d 次" % int(season_summary.get("rebirth_count", 0))
 	return {
 		"title": "成长中心",
-		"research_summary": "武学参悟: 可提升 %d 项" % upgradable_count,
+		"hero_summary": String(hero_summary.get("status_text", "Lv.1")),
+		"research_summary": "参悟: 可提升 %d 项" % upgradable_count,
 		"paragon_summary": paragon_status_text,
 		"season_summary": season_status_text,
-		"summary_text": "武学参悟: 可提升 %d 项 | 宗师修为: %s | 重入江湖: %s" % [
+		"summary_text": "%s | 参悟: 可提升 %d 项 | 宗师修为: %s | 重入江湖: %s" % [
+			String(hero_summary.get("status_text", "Lv.1")),
 			upgradable_count,
 			paragon_status_text,
 			season_status_text,
@@ -359,6 +823,8 @@ func get_analysis_hub_summary() -> Dictionary:
 
 func get_main_hud_state() -> Dictionary:
 	var skill_data: Dictionary = get_selected_core_skill()
+	var hero_summary: Dictionary = get_hero_progression_summary()
+	var skill_screen_state: Dictionary = get_skill_screen_state()
 	var profile_id: String = String(skill_data.get("build_profile_id", ""))
 	var build_profile: Dictionary = BUILD_ARCHETYPE_PROFILES.get(profile_id, {})
 	var goal_data: Dictionary = DailyGoalSystem.get_daily_goal_data()
@@ -379,8 +845,12 @@ func get_main_hud_state() -> Dictionary:
 		]
 	return {
 		"player_header": {
-			"name": "无名侠客",
-			"archetype": "流派: %s" % String(build_profile.get("display_name", skill_data.get("name", "江湖弟子"))),
+			"name": "无名侠客 · Lv.%d" % int(hero_summary.get("level", 1)),
+			"archetype": "流派: %s | 符文层 %d | 被动位 %d" % [
+				String(SCHOOL_DISPLAY_NAMES.get(get_current_school_id(), build_profile.get("display_name", "江湖弟子"))),
+				int(hero_summary.get("unlocked_rune_tiers", 0)),
+				int(hero_summary.get("unlocked_passive_slots", 0)),
+			],
 			"resource_text": "香火钱 %d | 祠灰 %d | 灵核 %d | 真意残片 %d | 背包 %d" % [
 				MetaProgressionSystem.gold,
 				MetaProgressionSystem.scrap,
@@ -414,9 +884,13 @@ func get_main_hud_state() -> Dictionary:
 		"combat_bar": {
 			"core_skill_id": selected_core_skill_id,
 			"core_skill_name": String(skill_data.get("name", selected_core_skill_id)),
+			"active_slots": skill_screen_state.get("slot_entries", []).duplicate(true),
 			"set_summary_text": set_summary_text,
 			"codex_summary_text": "武学秘录 %d/3 已激活" % active_codex_count,
-			"focus_text": get_current_drop_focus(),
+			"focus_text": "%s | %s" % [
+				String(hero_summary.get("status_text", "Lv.1")),
+				get_current_drop_focus(),
+			],
 		},
 		"entry_badges": {
 			"inventory_count": get_inventory_count(),
@@ -582,12 +1056,16 @@ func refresh_build_state(emit_signals: bool = true) -> void:
 	gem_state = GemSystem.sanitize_state(gem_state)
 	paragon_state = ParagonSystem.sanitize_state(paragon_state)
 	season_state = SeasonSystem.sanitize_state(season_state)
+	_ensure_skill_progression_state()
 	_ensure_progression_unlocks(emit_signals)
 	set_summary = SetSystem.build_set_summary(equipped_items)
 	if emit_signals:
 		EventBus.set_bonus_changed.emit(set_summary)
 		EventBus.martial_codex_changed.emit(get_martial_codex_runtime_state())
 		EventBus.paragon_changed.emit(ParagonSystem.build_runtime_summary(paragon_state))
+		EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+		EventBus.hero_level_changed.emit(get_hero_progression_summary())
+		EventBus.hero_experience_changed.emit(get_hero_progression_summary())
 
 
 func get_meta_progression_bonuses() -> Dictionary:
@@ -1082,6 +1560,9 @@ func _format_item_name(item: Dictionary) -> String:
 
 func record_kill() -> void:
 	current_run_kills += 1
+	var node_data: Dictionary = ConfigDB.get_chapter_node(get_active_combat_node_id())
+	var chapter_order: int = int(ConfigDB.get_chapter(String(node_data.get("chapter_id", current_chapter_id))).get("order", 1))
+	gain_hero_experience(2.0 + float(chapter_order) * 1.5, "kill")
 	EventBus.resources_changed.emit()
 
 
@@ -1090,15 +1571,16 @@ func complete_node(node_id: String) -> void:
 	stable_node_id = node_id
 	var node_data: Dictionary = ConfigDB.get_chapter_node(node_id)
 	var chapter_data: Dictionary = ConfigDB.get_chapter(String(node_data.get("chapter_id", current_chapter_id)))
-	var paragon_base_experience: float = 6.0 + float(int(chapter_data.get("order", 1)) - 1) * 4.0
+	var chapter_order: int = int(chapter_data.get("order", 1))
+	var hero_base_experience: float = 22.0 + float(chapter_order - 1) * 28.0
 	match String(node_data.get("node_type", "normal")):
 		"elite":
-			paragon_base_experience += 4.0
+			hero_base_experience += 16.0
 		"boss":
-			paragon_base_experience += 10.0
+			hero_base_experience += 34.0
 		_:
 			pass
-	var paragon_result: Dictionary = _grant_paragon_progress(paragon_base_experience)
+	var hero_progress_result: Dictionary = gain_hero_experience(hero_base_experience, "node_clear")
 	var next_node_id: String = String(node_data.get("next_node_id", ""))
 	if next_node_id.is_empty():
 		var current_chapter: Dictionary = ConfigDB.get_chapter(current_chapter_id)
@@ -1111,8 +1593,8 @@ func complete_node(node_id: String) -> void:
 			current_node_id = ConfigDB.get_chapter_first_node(current_chapter_id)
 	else:
 		current_node_id = next_node_id
-	if bool(paragon_result.get("ok", false)):
-		EventBus.combat_state_changed.emit(String(paragon_result.get("summary", "宗师修为已增长")))
+	if bool(hero_progress_result.get("ok", false)) and not String(hero_progress_result.get("summary", "")).is_empty():
+		EventBus.combat_state_changed.emit(String(hero_progress_result.get("summary", "阅历已增长")))
 	EventBus.node_changed.emit(current_node_id)
 
 
@@ -1197,7 +1679,7 @@ func _build_progression_context() -> Dictionary:
 
 
 func _ensure_progression_unlocks(emit_signals: bool = true) -> void:
-	var unlock_result: Dictionary = ParagonSystem.ensure_unlocked(paragon_state, stable_node_id)
+	var unlock_result: Dictionary = ParagonSystem.ensure_unlocked(paragon_state, int(hero_progression_state.get("level", 1)))
 	paragon_state = unlock_result.get("state", paragon_state)
 	if bool(unlock_result.get("newly_unlocked", false)):
 		last_loot_summary = "%s\n%s" % [
@@ -1213,7 +1695,6 @@ func reset_for_public_demo() -> void:
 	current_chapter_id = "chapter_1"
 	current_node_id = ConfigDB.get_chapter_first_node(current_chapter_id)
 	stable_node_id = current_node_id
-	selected_core_skill_id = "core_whirlwind"
 	current_run_kills = 0
 	current_run_clears = 0
 	inventory.clear()
@@ -1221,7 +1702,7 @@ func reset_for_public_demo() -> void:
 		equipped_items[slot_id] = {}
 	MetaProgressionSystem.gm_reset_all_resources()
 	MetaProgressionSystem.research_levels = {}
-	auto_salvage_below_rarity = "rare"
+	auto_salvage_below_rarity = "common"
 	last_loot_summary = "暂无掉落"
 	last_loot_highlight = {}
 	martial_codex_state = MartialCodexSystem.create_default_state()
@@ -1235,6 +1716,10 @@ func reset_for_public_demo() -> void:
 	gem_state = GemSystem.create_default_state()
 	paragon_state = ParagonSystem.create_default_state()
 	season_state = SeasonSystem.create_default_state()
+	hero_progression_state = HeroProgressionSystem.create_default_state()
+	skill_loadout_state = _build_default_skill_loadout_state("yufeng")
+	selected_passives = _build_default_passives_for_school("yufeng")
+	skill_rune_state.clear()
 	pending_ui_focus = {}
 	LootCodexSystem.reset_runtime_state()
 	DailyGoalSystem.reset_runtime_state()
@@ -1248,6 +1733,8 @@ func reset_for_public_demo() -> void:
 
 func _grant_paragon_progress(base_amount: float) -> Dictionary:
 	_ensure_progression_unlocks(false)
+	if int(hero_progression_state.get("level", 1)) < HeroProgressionSystem.MAX_HERO_LEVEL:
+		return {"ok": false, "reason": "等级尚未达到宗师门槛", "state": paragon_state}
 	var meta_bonuses: Dictionary = get_meta_progression_bonuses()
 	var result: Dictionary = ParagonSystem.gain_experience(
 		paragon_state,
@@ -1272,7 +1759,7 @@ func _reset_for_rebirth() -> void:
 		equipped_items[slot_id] = {}
 	MetaProgressionSystem.gm_reset_all_resources()
 	MetaProgressionSystem.research_levels = {}
-	auto_salvage_below_rarity = "rare"
+	auto_salvage_below_rarity = "common"
 	last_loot_summary = "暂无掉落"
 	last_loot_highlight = {}
 	set_summary = {
@@ -1283,10 +1770,15 @@ func _reset_for_rebirth() -> void:
 	}
 	rift_state = RiftSystem.create_default_state()
 	gem_state = GemSystem.create_default_state()
+	hero_progression_state = HeroProgressionSystem.create_default_state()
+	skill_loadout_state = _build_default_skill_loadout_state("yufeng")
+	selected_passives = _build_default_passives_for_school("yufeng")
+	skill_rune_state.clear()
 
 
 func _emit_progression_state_changed() -> void:
 	EventBus.node_changed.emit(current_node_id)
+	EventBus.core_skill_changed.emit(selected_core_skill_id)
 	EventBus.resources_changed.emit()
 	EventBus.equipment_changed.emit()
 	EventBus.inventory_changed.emit()
@@ -1294,6 +1786,9 @@ func _emit_progression_state_changed() -> void:
 	EventBus.set_bonus_changed.emit(set_summary)
 	EventBus.martial_codex_changed.emit(get_martial_codex_runtime_state())
 	EventBus.paragon_changed.emit(ParagonSystem.build_runtime_summary(paragon_state))
+	EventBus.skill_loadout_changed.emit(get_skill_screen_state())
+	EventBus.hero_level_changed.emit(get_hero_progression_summary())
+	EventBus.hero_experience_changed.emit(get_hero_progression_summary())
 	EventBus.season_reborn.emit(SeasonSystem.build_runtime_summary(season_state, _build_progression_context()))
 
 

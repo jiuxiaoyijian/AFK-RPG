@@ -3,6 +3,7 @@ extends Control
 const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
 const NAV_ICON_PATHS := {
 	"inventory": "res://assets/generated/icons/nav_inventory.png",
+	"skills": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
 	"cube": "res://assets/generated/afk_rpg_formal/icons/drop_rare.png",
 	"research": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
 	"codex": "res://assets/generated/afk_rpg_formal/icons/system_yiwenlu.png",
@@ -11,6 +12,7 @@ const NAV_ICON_PATHS := {
 }
 
 @onready var inventory_button: Button = $Panel/InventoryButton
+@onready var skills_button: Button = $Panel/SkillsButton
 @onready var cube_button: Button = $Panel/CubeButton
 @onready var research_button: Button = $Panel/ResearchButton
 @onready var codex_button: Button = $Panel/CodexButton
@@ -24,6 +26,7 @@ var active_panel_id: String = ""
 
 func _ready() -> void:
 	inventory_button.pressed.connect(_request_panel.bind("inventory"))
+	skills_button.pressed.connect(_request_panel.bind("skills"))
 	cube_button.pressed.connect(_request_panel.bind("cube"))
 	research_button.pressed.connect(_request_panel.bind("research"))
 	codex_button.pressed.connect(_request_panel.bind("codex"))
@@ -49,18 +52,20 @@ func _ready() -> void:
 
 func _refresh(_payload: Variant = null) -> void:
 	inventory_button.text = "背包  I"
+	skills_button.text = "技能  K"
 	cube_button.text = "百炼坊  B"
 	research_button.text = "成长中心  U"
 	codex_button.text = "异闻录  O"
 	stats_button.text = "推演 / 秘境  P"
 	settings_button.text = "设置"
 	inventory_button.tooltip_text = "%d 件可管理装备" % GameManager.get_inventory_count()
+	skills_button.tooltip_text = _get_skills_button_summary()
 	cube_button.tooltip_text = "萃取、重铸与武学秘录"
 	research_button.tooltip_text = _get_research_button_summary()
 	codex_button.tooltip_text = _get_codex_button_summary()
 	stats_button.tooltip_text = _get_stats_button_summary()
 	settings_button.tooltip_text = "音量、存档、反馈与版本信息"
-	hint_label.text = "I 背包   B 百炼坊   U 成长中心   O 异闻录   P 推演/秘境   Esc 关闭"
+	hint_label.text = "I 背包   K 技能   B 百炼坊   U 成长中心   O 异闻录   P 推演/秘境   Esc 关闭"
 	_update_button_states()
 
 
@@ -83,6 +88,7 @@ func _request_panel(panel_id: String) -> void:
 
 func _update_button_states() -> void:
 	inventory_button.disabled = active_panel_id == "inventory"
+	skills_button.disabled = active_panel_id == "skills"
 	cube_button.disabled = active_panel_id == "cube"
 	research_button.disabled = active_panel_id == "research"
 	codex_button.disabled = active_panel_id == "codex"
@@ -94,6 +100,16 @@ func _update_button_states() -> void:
 func _get_research_button_summary() -> String:
 	var summary: Dictionary = GameManager.get_progression_hub_summary()
 	return String(summary.get("research_summary", "武学参悟"))
+
+
+func _get_skills_button_summary() -> String:
+	var state: Dictionary = GameManager.get_skill_screen_state()
+	var hero_summary: Dictionary = state.get("hero_summary", {})
+	return "Lv.%d | 四技能位 %d | 被动位 %d" % [
+		int(hero_summary.get("level", 1)),
+		int(hero_summary.get("unlocked_skill_slots", 2)),
+		int(hero_summary.get("unlocked_passive_slots", 0)),
+	]
 
 
 func _get_codex_button_summary() -> String:
@@ -115,6 +131,7 @@ func _get_stats_button_summary() -> String:
 
 func _apply_button_icons() -> void:
 	_apply_button_icon(inventory_button, "inventory")
+	_apply_button_icon(skills_button, "skills")
 	_apply_button_icon(cube_button, "cube")
 	_apply_button_icon(research_button, "research")
 	_apply_button_icon(codex_button, "codex")
@@ -163,12 +180,13 @@ func _apply_review_style() -> void:
 
 func _style_nav_buttons() -> void:
 	UI_STYLE.style_button(inventory_button, UI_STYLE.COLOR_BLUE, inventory_button.disabled)
+	UI_STYLE.style_button(skills_button, UI_STYLE.COLOR_GREEN, skills_button.disabled)
 	UI_STYLE.style_button(cube_button, UI_STYLE.COLOR_PEACH, cube_button.disabled)
 	UI_STYLE.style_button(research_button, UI_STYLE.COLOR_GOLD, research_button.disabled)
 	UI_STYLE.style_button(codex_button, UI_STYLE.COLOR_TEAL, codex_button.disabled)
 	UI_STYLE.style_button(stats_button, UI_STYLE.COLOR_PEACH, stats_button.disabled)
 	UI_STYLE.style_button(settings_button, UI_STYLE.COLOR_TEXT_DIM, settings_button.disabled)
-	for button in [inventory_button, cube_button, research_button, codex_button, stats_button, settings_button]:
+	for button in [inventory_button, skills_button, cube_button, research_button, codex_button, stats_button, settings_button]:
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.expand_icon = true

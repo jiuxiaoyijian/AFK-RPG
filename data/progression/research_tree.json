@@ -4,8 +4,8 @@
 			"id": "research_attack_training",
 			"sort_id": "01",
 			"tree_type": "combat",
-			"name": "战斗训练",
-			"description": "稳定提升基础攻击百分比，是所有道统都能吃到的通用增益。",
+			"name": "江湖见闻",
+			"description": "提高前中期阅历获取，让等级与技能解锁更顺滑。",
 			"max_level": 5,
 			"prerequisite_ids": [],
 			"costs": [
@@ -16,15 +16,15 @@
 				{"level": 5, "resource_id": "core", "amount": 14}
 			],
 			"stat_bonuses": [
-				{"stat_key": "attack_percent", "value_per_level": 0.03}
+				{"stat_key": "hero_exp_gain_percent", "value_per_level": 0.05}
 			]
 		},
 		{
 			"id": "research_core_mastery",
 			"sort_id": "02",
 			"tree_type": "combat",
-			"name": "道术精通",
-			"description": "提高道术伤害，让御风、血劫与五雷三路都有更明显的爆发成长。",
+			"name": "套路记谱",
+			"description": "提高掉落成色，让前期更容易看到可替换装备。",
 			"max_level": 4,
 			"prerequisite_ids": ["research_attack_training"],
 			"costs": [
@@ -34,7 +34,7 @@
 				{"level": 4, "resource_id": "legend_shard", "amount": 2}
 			],
 			"stat_bonuses": [
-				{"stat_key": "core_damage_percent", "value_per_level": 0.05}
+				{"stat_key": "drop_quality_bonus", "value_per_level": 0.03}
 			]
 		},
 		{
@@ -76,8 +76,8 @@
 			"id": "research_arcane_temper",
 			"sort_id": "05",
 			"tree_type": "combat",
-			"name": "奥术回路",
-			"description": "用真意残片压缩道术冷却，为后期道统提供更明显的循环提升。",
+			"name": "百炼工序",
+			"description": "提高分解与灵核效率，为洗练和工坊循环提供支撑。",
 			"max_level": 3,
 			"prerequisite_ids": ["research_core_mastery"],
 			"costs": [
@@ -86,7 +86,8 @@
 				{"level": 3, "resource_id": "legend_shard", "amount": 6}
 			],
 			"stat_bonuses": [
-				{"stat_key": "core_cooldown_reduction", "value_per_level": 0.04}
+				{"stat_key": "salvage_scrap_percent", "value_per_level": 0.08},
+				{"stat_key": "core_gain_percent", "value_per_level": 0.08}
 			]
 		},
 		{

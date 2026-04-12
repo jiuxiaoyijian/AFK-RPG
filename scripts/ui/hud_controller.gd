@@ -15,9 +15,10 @@ const ORB_TEXTURE_PATHS := {
 const SKILL_SLOT_FRAME_PATH := "res://assets/generated/afk_rpg_formal/ui/skill_slot_base.png"
 const SKILL_SLOT_ICON_PATHS := {
 	"basic": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
-	"codex": "res://assets/generated/afk_rpg_formal/icons/system_yiwenlu.png",
-	"focus": "res://assets/generated/afk_rpg_formal/icons/drop_rare.png",
-	"rift": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
+	"core": "res://assets/generated/afk_rpg_formal/icons/drop_rare.png",
+	"tactic": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
+	"burst": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
+	"locked": "res://assets/generated/afk_rpg_formal/icons/icon_orb_common.png",
 }
 const LOOT_ICON_PATHS := {
 	"legendary": "res://assets/generated/afk_rpg_formal/icons/drop_rare.png",
@@ -123,6 +124,9 @@ const ORB_BOTTOM_GAP := -2.0
 var current_state_text: String = "准备中"
 var current_hp: float = 0.0
 var current_hp_max: float = 0.0
+var current_resource: float = 0.0
+var current_resource_max: float = 100.0
+var current_slot_entries: Array = []
 var drop_toast_tween: Tween
 var drop_toast_base_position: Vector2 = Vector2.ZERO
 var combat_highlight_tween: Tween
@@ -138,6 +142,9 @@ func _ready() -> void:
 	EventBus.resources_changed.connect(_on_resources_changed)
 	EventBus.inventory_changed.connect(_on_inventory_changed)
 	EventBus.core_skill_changed.connect(_on_skill_changed)
+	EventBus.skill_loadout_changed.connect(_on_skill_loadout_changed)
+	EventBus.player_resource_changed.connect(_on_player_resource_changed)
+	EventBus.hero_level_changed.connect(_on_progression_changed)
 	EventBus.loot_summary_changed.connect(_on_loot_summary_changed)
 	EventBus.daily_goals_changed.connect(_on_daily_goals_changed)
 	EventBus.set_bonus_changed.connect(_on_build_relevant_state_changed)
@@ -149,7 +156,7 @@ func _ready() -> void:
 	_on_hp_changed(current_hp, current_hp_max)
 	_on_resources_changed()
 	_on_inventory_changed()
-	_on_skill_changed(GameManager.selected_core_skill_id)
+	_on_skill_loadout_changed(GameManager.get_skill_screen_state())
 	_on_daily_goals_changed()
 	_on_loot_summary_changed(GameManager.last_loot_summary)
 	call_deferred("_apply_hud_layout")
@@ -272,6 +279,23 @@ func _on_skill_changed(_skill_id: String) -> void:
 	_refresh_combat_bar()
 
 
+func _on_skill_loadout_changed(loadout: Dictionary) -> void:
+	current_slot_entries = loadout.get("slot_entries", []).duplicate(true)
+	_refresh_player_header()
+	_refresh_combat_bar()
+
+
+func _on_player_resource_changed(new_current_resource: float, new_max_resource: float) -> void:
+	current_resource = new_current_resource
+	current_resource_max = new_max_resource
+	_refresh_combat_bar()
+
+
+func _on_progression_changed(_summary: Dictionary) -> void:
+	_refresh_player_header()
+	_refresh_combat_bar()
+
+
 func _on_build_relevant_state_changed(_payload: Variant = null) -> void:
 	_refresh_combat_bar()
 
@@ -359,38 +383,33 @@ func _refresh_combat_bar() -> void:
 	else:
 		left_orb_value_label.text = "--"
 	left_orb_caption_label.text = "生命"
-	right_orb_value_label.text = _get_secondary_orb_value()
-	right_orb_caption_label.text = "斗势"
-	_update_skill_slots(String(summary.get("core_skill_id", GameManager.selected_core_skill_id)))
-	buff_a_label.text = _truncate_ui_text(String(summary.get("core_skill_name", "武学")), 10)
-	buff_b_label.text = _truncate_ui_text(String(summary.get("set_summary_text", "传承未激活")), 14)
-	buff_c_label.text = _truncate_ui_text(String(summary.get("codex_summary_text", "武学秘录 0/3 已激活")), 16)
+	right_orb_value_label.text = "%d/%d" % [int(round(current_resource)), int(round(current_resource_max))]
+	right_orb_caption_label.text = "真气"
+	_update_skill_slots(summary.get("active_slots", current_slot_entries))
+	buff_a_label.text = _truncate_ui_text(String(summary.get("core_skill_name", "核心技能")), 12)
+	buff_b_label.text = _truncate_ui_text(String(summary.get("focus_text", "技能循环运行中")), 16)
+	buff_c_label.text = _truncate_ui_text(String(summary.get("set_summary_text", "传承未激活")), 16)
 
 
-func _update_skill_slots(skill_id: String) -> void:
-	var icon_paths := [
-		SKILL_SLOT_ICON_PATHS["basic"],
-		String(CORE_SKILL_ICON_PATHS.get(skill_id, SKILL_SLOT_ICON_PATHS["basic"])),
-		SKILL_SLOT_ICON_PATHS["codex"],
-		SKILL_SLOT_ICON_PATHS["focus"],
-		SKILL_SLOT_ICON_PATHS["rift"],
-	]
-	var key_texts := ["普攻", "武学", "秘录", "机缘", "秘境"]
+func _update_skill_slots(slot_entries: Array) -> void:
 	for i in range(skill_icons.size()):
-		skill_icons[i].texture = _load_runtime_texture(icon_paths[i])
-		skill_key_labels[i].text = key_texts[i]
-
-
-func _get_secondary_orb_value() -> String:
-	if current_state_text.contains("失败"):
-		return "受挫"
-	if current_state_text.contains("结算") or current_state_text.contains("完成"):
-		return "凯旋"
-	if current_state_text.contains("下一波") or current_state_text.contains("准备"):
-		return "推进"
-	if current_state_text.contains("秘境"):
-		return "蓄势"
-	return "就绪"
+		if i >= slot_entries.size() or i >= 4:
+			skill_icons[i].visible = false
+			skill_frames[i].visible = false
+			skill_key_labels[i].visible = false
+			continue
+		var slot_entry: Dictionary = slot_entries[i]
+		var slot_type: String = String(slot_entry.get("slot_type", "basic"))
+		var is_unlocked: bool = bool(slot_entry.get("is_unlocked", false))
+		var icon_path: String = String(slot_entry.get("icon_path", ""))
+		if icon_path.is_empty():
+			icon_path = String(SKILL_SLOT_ICON_PATHS.get(slot_type, SKILL_SLOT_ICON_PATHS["locked"]))
+		skill_icons[i].texture = _load_runtime_texture(icon_path)
+		skill_icons[i].visible = true
+		skill_frames[i].visible = true
+		skill_key_labels[i].visible = true
+		skill_key_labels[i].text = String(slot_entry.get("slot_label", slot_type)) if is_unlocked else "未解锁"
+		skill_icons[i].modulate = Color(1, 1, 1, 1) if is_unlocked else Color(0.46, 0.48, 0.54, 0.9)
 
 
 func _build_hp_text() -> String:

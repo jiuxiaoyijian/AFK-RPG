@@ -107,16 +107,7 @@ func _physics_process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if EventBus.ui_blocking_input:
 		return
-	if event.is_action_pressed("ui_skill_1"):
-		GameManager.select_core_skill("core_whirlwind")
-		_restart_current_node()
-	elif event.is_action_pressed("ui_skill_2"):
-		GameManager.select_core_skill("core_deep_wound")
-		_restart_current_node()
-	elif event.is_action_pressed("ui_skill_3"):
-		GameManager.select_core_skill("core_chain_lightning")
-		_restart_current_node()
-	elif event.is_action_pressed("ui_restart_run"):
+	if event.is_action_pressed("ui_restart_run"):
 		_restart_current_node()
 
 
@@ -169,7 +160,7 @@ func _spawn_player() -> void:
 	player = PLAYER_SCENE.instantiate() as Node2D
 	combat_runner.add_child(player)
 	player.global_position = player_spawn.global_position
-	player.setup_from_skill(GameManager.get_selected_core_skill())
+	player.setup_from_build(GameManager.get_combat_loadout_state())
 	player.died.connect(_on_player_died)
 	player.reset_state()
 	if player.has_method("set_idle_anchor_x"):

@@ -1,0 +1,532 @@
+[
+  {
+    "id": "basic_yufeng_slash",
+    "name": "风行斩",
+    "school_id": "yufeng",
+    "school_name": "御风",
+    "slot_type": "basic",
+    "unlock_level": 1,
+    "resource_cost": 0,
+    "resource_generate": 12,
+    "cooldown": 0.56,
+    "ai_rule": "always",
+    "description": "以轻快短斩积攒真气，维持御风流的循环。",
+    "archetype_tags": ["whirlwind"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
+    "base_effect": {
+      "kind": "single",
+      "multiplier": 1.0
+    },
+    "runes": [
+      {
+        "id": "rune_yufeng_basic_edge",
+        "name": "薄刃",
+        "unlock_level": 16,
+        "description": "提高基础伤害。",
+        "modifiers": {"multiplier_bonus": 0.22}
+      },
+      {
+        "id": "rune_yufeng_basic_breath",
+        "name": "回息",
+        "unlock_level": 30,
+        "description": "提高真气回复。",
+        "modifiers": {"resource_generate_delta": 4}
+      },
+      {
+        "id": "rune_yufeng_basic_sweep",
+        "name": "掠阵",
+        "unlock_level": 50,
+        "description": "挥斩溅射周围敌人。",
+        "modifiers": {"splash_radius": 74.0}
+      }
+    ]
+  },
+  {
+    "id": "core_whirlwind",
+    "name": "御风回斩",
+    "school_id": "yufeng",
+    "school_name": "御风",
+    "slot_type": "core",
+    "unlock_level": 1,
+    "resource_cost": 22,
+    "resource_generate": 0,
+    "cooldown": 4.6,
+    "ai_rule": "resource_threshold",
+    "description": "卷起风刃回环清场，是御风的主输出技。",
+    "archetype_tags": ["whirlwind"],
+    "build_profile_id": "whirlwind",
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/school_yufengdao_highlight.png",
+    "base_effect": {
+      "kind": "aoe",
+      "multiplier": 1.22,
+      "radius": 122.0
+    },
+    "runes": [
+      {
+        "id": "rune_whirlwind_expanding",
+        "name": "长风",
+        "unlock_level": 16,
+        "description": "扩大回斩范围。",
+        "modifiers": {"radius_bonus": 34.0}
+      },
+      {
+        "id": "rune_whirlwind_sustained",
+        "name": "久战",
+        "unlock_level": 30,
+        "description": "降低真气消耗。",
+        "modifiers": {"resource_cost_delta": -6}
+      },
+      {
+        "id": "rune_whirlwind_bloodwind",
+        "name": "裂风",
+        "unlock_level": 50,
+        "description": "命中附带额外流血。",
+        "modifiers": {"bleed_dot_percent_bonus": 0.22}
+      }
+    ]
+  },
+  {
+    "id": "tactic_yufeng_step",
+    "name": "踏风诀",
+    "school_id": "yufeng",
+    "school_name": "御风",
+    "slot_type": "tactic",
+    "unlock_level": 4,
+    "resource_cost": 0,
+    "resource_generate": 0,
+    "cooldown": 8.0,
+    "ai_rule": "missing_buff",
+    "description": "短时提升攻速和行气效率，让循环更顺。",
+    "archetype_tags": ["whirlwind"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
+    "base_effect": {
+      "kind": "buff",
+      "buff_id": "windstep",
+      "duration": 4.5,
+      "attack_speed_percent": 0.18,
+      "move_speed_percent": 0.12
+    },
+    "runes": [
+      {
+        "id": "rune_yufeng_step_haste",
+        "name": "疾行",
+        "unlock_level": 16,
+        "description": "进一步提升攻速。",
+        "modifiers": {"attack_speed_percent_bonus": 0.10}
+      },
+      {
+        "id": "rune_yufeng_step_guard",
+        "name": "护息",
+        "unlock_level": 30,
+        "description": "提供额外防御。",
+        "modifiers": {"defense_flat_bonus": 10.0}
+      },
+      {
+        "id": "rune_yufeng_step_surge",
+        "name": "回锋",
+        "unlock_level": 50,
+        "description": "施放后返还真气。",
+        "modifiers": {"resource_gain_on_cast": 18}
+      }
+    ]
+  },
+  {
+    "id": "burst_yufeng_tempest",
+    "name": "天风绝阵",
+    "school_id": "yufeng",
+    "school_name": "御风",
+    "slot_type": "burst",
+    "unlock_level": 12,
+    "resource_cost": 42,
+    "resource_generate": 0,
+    "cooldown": 13.0,
+    "ai_rule": "elite_or_cluster",
+    "description": "在周身布下大范围风阵，适合清精英与敌群。",
+    "archetype_tags": ["whirlwind"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
+    "base_effect": {
+      "kind": "aoe",
+      "multiplier": 2.24,
+      "radius": 164.0
+    },
+    "runes": [
+      {
+        "id": "rune_yufeng_tempest_eye",
+        "name": "风眼",
+        "unlock_level": 16,
+        "description": "扩大风阵范围。",
+        "modifiers": {"radius_bonus": 40.0}
+      },
+      {
+        "id": "rune_yufeng_tempest_razor",
+        "name": "霜刃",
+        "unlock_level": 30,
+        "description": "提高爆发伤害。",
+        "modifiers": {"multiplier_bonus": 0.45}
+      },
+      {
+        "id": "rune_yufeng_tempest_cycle",
+        "name": "回环",
+        "unlock_level": 50,
+        "description": "命中返还部分真气。",
+        "modifiers": {"resource_refund_on_hit": 8}
+      }
+    ]
+  },
+  {
+    "id": "basic_xuejie_cut",
+    "name": "血劫刃",
+    "school_id": "xuejie",
+    "school_name": "血劫",
+    "slot_type": "basic",
+    "unlock_level": 1,
+    "resource_cost": 0,
+    "resource_generate": 12,
+    "cooldown": 0.62,
+    "ai_rule": "always",
+    "description": "短促追斩，为血劫流稳定积攒真气。",
+    "archetype_tags": ["bleed"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
+    "base_effect": {
+      "kind": "single",
+      "multiplier": 1.06,
+      "bleed_dot_percent": 0.08
+    },
+    "runes": [
+      {
+        "id": "rune_xuejie_basic_cut",
+        "name": "裂肤",
+        "unlock_level": 16,
+        "description": "基础挥斩附带更强流血。",
+        "modifiers": {"bleed_dot_percent_bonus": 0.12}
+      },
+      {
+        "id": "rune_xuejie_basic_thirst",
+        "name": "饮血",
+        "unlock_level": 30,
+        "description": "提高真气回复。",
+        "modifiers": {"resource_generate_delta": 4}
+      },
+      {
+        "id": "rune_xuejie_basic_press",
+        "name": "逼命",
+        "unlock_level": 50,
+        "description": "提高基础伤害。",
+        "modifiers": {"multiplier_bonus": 0.24}
+      }
+    ]
+  },
+  {
+    "id": "core_deep_wound",
+    "name": "血劫断命",
+    "school_id": "xuejie",
+    "school_name": "血劫",
+    "slot_type": "core",
+    "unlock_level": 1,
+    "resource_cost": 20,
+    "resource_generate": 0,
+    "cooldown": 4.9,
+    "ai_rule": "resource_threshold",
+    "description": "对最近目标施加重创，并压低断命线。",
+    "archetype_tags": ["bleed"],
+    "build_profile_id": "bleed",
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/school_xuejiedao_highlight.png",
+    "base_effect": {
+      "kind": "single",
+      "multiplier": 1.62,
+      "bleed_dot_percent": 0.24,
+      "execute_threshold_bonus": 0.05
+    },
+    "runes": [
+      {
+        "id": "rune_xuejie_wound_bleed",
+        "name": "溃口",
+        "unlock_level": 16,
+        "description": "提高流血收益。",
+        "modifiers": {"bleed_dot_percent_bonus": 0.24}
+      },
+      {
+        "id": "rune_xuejie_wound_drive",
+        "name": "逼线",
+        "unlock_level": 30,
+        "description": "进一步抬高处决线。",
+        "modifiers": {"execute_threshold_bonus": 0.05}
+      },
+      {
+        "id": "rune_xuejie_wound_lowcost",
+        "name": "敛势",
+        "unlock_level": 50,
+        "description": "降低真气消耗。",
+        "modifiers": {"resource_cost_delta": -5}
+      }
+    ]
+  },
+  {
+    "id": "tactic_xuejie_mark",
+    "name": "祭血印",
+    "school_id": "xuejie",
+    "school_name": "血劫",
+    "slot_type": "tactic",
+    "unlock_level": 4,
+    "resource_cost": 0,
+    "resource_generate": 0,
+    "cooldown": 8.6,
+    "ai_rule": "missing_buff",
+    "description": "短时提高攻击与流血倍率，方便切精英。",
+    "archetype_tags": ["bleed"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
+    "base_effect": {
+      "kind": "buff",
+      "buff_id": "bloodmark",
+      "duration": 5.0,
+      "attack_percent": 0.14,
+      "bleed_dot_percent": 0.20
+    },
+    "runes": [
+      {
+        "id": "rune_xuejie_mark_drive",
+        "name": "压命",
+        "unlock_level": 16,
+        "description": "额外抬高断命线。",
+        "modifiers": {"execute_threshold_bonus": 0.04}
+      },
+      {
+        "id": "rune_xuejie_mark_feral",
+        "name": "狂潮",
+        "unlock_level": 30,
+        "description": "提高攻击速度。",
+        "modifiers": {"attack_speed_percent_bonus": 0.10}
+      },
+      {
+        "id": "rune_xuejie_mark_fang",
+        "name": "回牙",
+        "unlock_level": 50,
+        "description": "施放后返还真气。",
+        "modifiers": {"resource_gain_on_cast": 14}
+      }
+    ]
+  },
+  {
+    "id": "burst_xuejie_execution",
+    "name": "血河绝令",
+    "school_id": "xuejie",
+    "school_name": "血劫",
+    "slot_type": "burst",
+    "unlock_level": 12,
+    "resource_cost": 40,
+    "resource_generate": 0,
+    "cooldown": 13.5,
+    "ai_rule": "elite_or_cluster",
+    "description": "斩出断命一击，对精英和残血目标尤其有效。",
+    "archetype_tags": ["bleed"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
+    "base_effect": {
+      "kind": "single",
+      "multiplier": 3.0,
+      "execute_threshold_bonus": 0.12,
+      "elite_multiplier": 1.25
+    },
+    "runes": [
+      {
+        "id": "rune_xuejie_execution_hunt",
+        "name": "追猎",
+        "unlock_level": 16,
+        "description": "提高对精英的额外伤害。",
+        "modifiers": {"elite_multiplier_bonus": 0.25}
+      },
+      {
+        "id": "rune_xuejie_execution_massacre",
+        "name": "屠线",
+        "unlock_level": 30,
+        "description": "提高技能伤害。",
+        "modifiers": {"multiplier_bonus": 0.52}
+      },
+      {
+        "id": "rune_xuejie_execution_return",
+        "name": "收锋",
+        "unlock_level": 50,
+        "description": "击杀返还真气。",
+        "modifiers": {"resource_refund_on_kill": 20}
+      }
+    ]
+  },
+  {
+    "id": "basic_wulei_spark",
+    "name": "引雷指",
+    "school_id": "wulei",
+    "school_name": "五雷",
+    "slot_type": "basic",
+    "unlock_level": 1,
+    "resource_cost": 0,
+    "resource_generate": 12,
+    "cooldown": 0.6,
+    "ai_rule": "always",
+    "description": "远程引雷，维持真气与连锁节奏。",
+    "archetype_tags": ["chain_lightning"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/drop_equipment.png",
+    "base_effect": {
+      "kind": "single",
+      "multiplier": 0.96,
+      "range_bonus": 96.0
+    },
+    "runes": [
+      {
+        "id": "rune_wulei_basic_arc",
+        "name": "余弧",
+        "unlock_level": 16,
+        "description": "攻击附带小范围溅射。",
+        "modifiers": {"splash_radius": 68.0}
+      },
+      {
+        "id": "rune_wulei_basic_charge",
+        "name": "蓄雷",
+        "unlock_level": 30,
+        "description": "提高真气回复。",
+        "modifiers": {"resource_generate_delta": 4}
+      },
+      {
+        "id": "rune_wulei_basic_focus",
+        "name": "贯脉",
+        "unlock_level": 50,
+        "description": "提高基础伤害。",
+        "modifiers": {"multiplier_bonus": 0.22}
+      }
+    ]
+  },
+  {
+    "id": "core_chain_lightning",
+    "name": "五雷连引",
+    "school_id": "wulei",
+    "school_name": "五雷",
+    "slot_type": "core",
+    "unlock_level": 1,
+    "resource_cost": 24,
+    "resource_generate": 0,
+    "cooldown": 5.2,
+    "ai_rule": "resource_threshold",
+    "description": "锁定近敌后连引多段雷脉，清散怪效率稳定。",
+    "archetype_tags": ["chain_lightning"],
+    "build_profile_id": "chain_lightning",
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/school_wuleidao_highlight.png",
+    "base_effect": {
+      "kind": "chain",
+      "multiplier": 1.36,
+      "chain_count": 3,
+      "falloff": 0.18,
+      "range_bonus": 120.0
+    },
+    "runes": [
+      {
+        "id": "rune_wulei_chain_count",
+        "name": "引潮",
+        "unlock_level": 16,
+        "description": "增加连锁段数。",
+        "modifiers": {"chain_count_bonus": 1}
+      },
+      {
+        "id": "rune_wulei_chain_lowcost",
+        "name": "省脉",
+        "unlock_level": 30,
+        "description": "降低真气消耗。",
+        "modifiers": {"resource_cost_delta": -6}
+      },
+      {
+        "id": "rune_wulei_chain_shock",
+        "name": "震落",
+        "unlock_level": 50,
+        "description": "提高连锁伤害。",
+        "modifiers": {"chain_damage_percent_bonus": 0.24}
+      }
+    ]
+  },
+  {
+    "id": "tactic_wulei_field",
+    "name": "静电场",
+    "school_id": "wulei",
+    "school_name": "五雷",
+    "slot_type": "tactic",
+    "unlock_level": 4,
+    "resource_cost": 0,
+    "resource_generate": 0,
+    "cooldown": 8.2,
+    "ai_rule": "enemy_cluster",
+    "description": "布下短时静电场，强化连锁与暴击。",
+    "archetype_tags": ["chain_lightning"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/system_wudao.png",
+    "base_effect": {
+      "kind": "buff",
+      "buff_id": "static_field",
+      "duration": 5.0,
+      "chain_count_bonus": 1,
+      "crit_rate": 0.06
+    },
+    "runes": [
+      {
+        "id": "rune_wulei_field_focus",
+        "name": "聚脉",
+        "unlock_level": 16,
+        "description": "提高连锁伤害。",
+        "modifiers": {"chain_damage_percent_bonus": 0.18}
+      },
+      {
+        "id": "rune_wulei_field_shield",
+        "name": "雷幕",
+        "unlock_level": 30,
+        "description": "提高防御。",
+        "modifiers": {"defense_flat_bonus": 10.0}
+      },
+      {
+        "id": "rune_wulei_field_charge",
+        "name": "返炁",
+        "unlock_level": 50,
+        "description": "施放后返还真气。",
+        "modifiers": {"resource_gain_on_cast": 16}
+      }
+    ]
+  },
+  {
+    "id": "burst_wulei_heavenfall",
+    "name": "天雷贯岳",
+    "school_id": "wulei",
+    "school_name": "五雷",
+    "slot_type": "burst",
+    "unlock_level": 12,
+    "resource_cost": 44,
+    "resource_generate": 0,
+    "cooldown": 13.2,
+    "ai_rule": "elite_or_cluster",
+    "description": "引落多段重雷，适合开场轰穿精英群。",
+    "archetype_tags": ["chain_lightning"],
+    "icon_path": "res://assets/generated/afk_rpg_formal/icons/system_jiyuantuiyan.png",
+    "base_effect": {
+      "kind": "chain",
+      "multiplier": 2.18,
+      "chain_count": 5,
+      "falloff": 0.08,
+      "range_bonus": 136.0
+    },
+    "runes": [
+      {
+        "id": "rune_wulei_heavenfall_more",
+        "name": "雷瀑",
+        "unlock_level": 16,
+        "description": "增加段数。",
+        "modifiers": {"chain_count_bonus": 2}
+      },
+      {
+        "id": "rune_wulei_heavenfall_fierce",
+        "name": "贯顶",
+        "unlock_level": 30,
+        "description": "提高爆发伤害。",
+        "modifiers": {"multiplier_bonus": 0.42}
+      },
+      {
+        "id": "rune_wulei_heavenfall_overflow",
+        "name": "余震",
+        "unlock_level": 50,
+        "description": "命中返还部分真气。",
+        "modifiers": {"resource_refund_on_hit": 6}
+      }
+    ]
+  }
+]

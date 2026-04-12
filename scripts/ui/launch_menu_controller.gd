@@ -59,7 +59,7 @@ func _refresh() -> void:
 	continue_button.disabled = not bool(summary.get("has_save", false))
 	reset_button.disabled = not bool(summary.get("has_save", false))
 	status_label.text = "选择一个档位开始试玩。"
-	guide_text.text = "[b]2 分钟上手[/b]\n1. 自动战斗会自己推进，但请先看右上角任务目标。\n2. [b]I[/b] 打开背包，优先更换高品质装备。\n3. [b]U[/b] 看成长中心，[b]P[/b] 看推演与秘境推荐。\n4. [b]F5[/b] 快速存档，[b]F8[/b] 快速读档。"
+	guide_text.text = "[b]2 分钟上手[/b]\n1. 自动战斗会自己推进，但请先看右上角任务目标。\n2. [b]K[/b] 打开技能，确认四技能位、符文和被动已经装配。\n3. [b]I[/b] 打开背包，优先更换高品质装备；[b]U[/b] 查看参悟与宗师修为。\n4. [b]F5[/b] 快速存档，[b]F8[/b] 快速读档。"
 	known_issues_text.text = "[b]试玩说明[/b]\n- 当前为公开试玩版，重点验证核心循环。\n- 建议使用桌面 Chrome 浏览器体验。\n- 若看到异常表现，请通过“反馈”按钮提交问题。"
 	_style_action_buttons()
 

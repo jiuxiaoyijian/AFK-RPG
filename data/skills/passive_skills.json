@@ -1,0 +1,109 @@
+[
+  {
+    "id": "passive_yufeng_zephyr",
+    "name": "轻身诀",
+    "school_id": "yufeng",
+    "unlock_level": 8,
+    "effect_type": "stat_bonus",
+    "description": "提高基础攻速与机动性。",
+    "effect_payload": {
+      "attack_speed_percent": 0.12,
+      "move_speed_percent": 0.10
+    }
+  },
+  {
+    "id": "passive_yufeng_guard",
+    "name": "藏锋息",
+    "school_id": "yufeng",
+    "unlock_level": 20,
+    "effect_type": "stat_bonus",
+    "description": "在连战中维持更稳的身法与生存。",
+    "effect_payload": {
+      "defense_flat": 8.0,
+      "hp_flat": 24.0
+    }
+  },
+  {
+    "id": "passive_yufeng_maelstrom",
+    "name": "风眼成阵",
+    "school_id": "yufeng",
+    "unlock_level": 40,
+    "effect_type": "stat_bonus",
+    "description": "强化御风主输出的范围与伤害。",
+    "effect_payload": {
+      "core_damage_percent": 0.18,
+      "whirlwind_radius_percent": 0.18
+    }
+  },
+  {
+    "id": "passive_xuejie_bloodrush",
+    "name": "血潮",
+    "school_id": "xuejie",
+    "unlock_level": 8,
+    "effect_type": "stat_bonus",
+    "description": "提高基础攻击与流血收益。",
+    "effect_payload": {
+      "attack_percent": 0.10,
+      "bleed_dot_percent": 0.18
+    }
+  },
+  {
+    "id": "passive_xuejie_killline",
+    "name": "逼命",
+    "school_id": "xuejie",
+    "unlock_level": 20,
+    "effect_type": "stat_bonus",
+    "description": "抬高断命线，缩短残血拉扯。",
+    "effect_payload": {
+      "execute_threshold": 0.06
+    }
+  },
+  {
+    "id": "passive_xuejie_frenzy",
+    "name": "狂祭",
+    "school_id": "xuejie",
+    "unlock_level": 40,
+    "effect_type": "stat_bonus",
+    "description": "强化暴击收益，让爆发更尖锐。",
+    "effect_payload": {
+      "crit_rate": 0.08,
+      "crit_damage": 0.20,
+      "core_damage_percent": 0.10
+    }
+  },
+  {
+    "id": "passive_wulei_conductive",
+    "name": "导脉",
+    "school_id": "wulei",
+    "unlock_level": 8,
+    "effect_type": "stat_bonus",
+    "description": "提高五雷连锁段数。",
+    "effect_payload": {
+      "chain_count_bonus": 1.0
+    }
+  },
+  {
+    "id": "passive_wulei_focus",
+    "name": "聚神",
+    "school_id": "wulei",
+    "unlock_level": 20,
+    "effect_type": "stat_bonus",
+    "description": "降低资源压力并加快释放节奏。",
+    "effect_payload": {
+      "resource_cost_reduction": 0.14,
+      "attack_speed_percent": 0.08
+    }
+  },
+  {
+    "id": "passive_wulei_stormheart",
+    "name": "雷心",
+    "school_id": "wulei",
+    "unlock_level": 40,
+    "effect_type": "stat_bonus",
+    "description": "强化连锁伤害与技能总伤。",
+    "effect_payload": {
+      "chain_damage_percent": 0.22,
+      "skill_damage_percent": 0.10
+    }
+  }
+]

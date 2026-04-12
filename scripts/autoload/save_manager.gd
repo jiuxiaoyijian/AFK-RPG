@@ -2,11 +2,12 @@ extends Node
 
 const ParagonSystem = preload("res://scripts/systems/paragon_system.gd")
 const SeasonSystem = preload("res://scripts/systems/season_system.gd")
+const HeroProgressionSystem = preload("res://scripts/systems/hero_progression_system.gd")
 
 const SAVE_SLOT_COUNT := 3
 const DEFAULT_SAVE_SLOT := 1
 const SAVE_PATH_TEMPLATE := "user://desktop_idle_save_%d.json"
-const CURRENT_SAVE_VERSION := 3
+const CURRENT_SAVE_VERSION := 4
 
 var active_save_slot: int = DEFAULT_SAVE_SLOT
 
@@ -39,6 +40,10 @@ func save_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 		"current_node_id": GameManager.current_node_id,
 		"stable_node_id": GameManager.stable_node_id,
 		"selected_core_skill_id": GameManager.selected_core_skill_id,
+		"hero_progression_state": GameManager.hero_progression_state,
+		"skill_loadout_state": GameManager.skill_loadout_state,
+		"selected_passives": GameManager.selected_passives,
+		"skill_rune_state": GameManager.skill_rune_state,
 		"current_run_kills": GameManager.current_run_kills,
 		"current_run_clears": GameManager.current_run_clears,
 		"inventory": GameManager.inventory,
@@ -82,21 +87,26 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 		return false
 	active_save_slot = slot
 
-	var saved_version: int = int(payload.get("save_version", 0))
+	var loaded_payload: Dictionary = payload
+	var saved_version: int = int(loaded_payload.get("save_version", 0))
 	if saved_version < CURRENT_SAVE_VERSION:
-		push_warning("SaveManager: 检测到旧版存档 (v%d < v%d)，执行清空重置" % [saved_version, CURRENT_SAVE_VERSION])
-		_wipe_save(slot)
-		return false
+		loaded_payload = _migrate_payload(loaded_payload, saved_version)
 
-	GameManager.current_chapter_id = String(payload.get("current_chapter_id", GameManager.current_chapter_id))
-	GameManager.current_node_id = String(payload.get("current_node_id", GameManager.current_node_id))
-	GameManager.stable_node_id = String(payload.get("stable_node_id", GameManager.stable_node_id))
-	GameManager.selected_core_skill_id = String(payload.get("selected_core_skill_id", GameManager.selected_core_skill_id))
-	GameManager.current_run_kills = int(payload.get("current_run_kills", GameManager.current_run_kills))
-	GameManager.current_run_clears = int(payload.get("current_run_clears", GameManager.current_run_clears))
-	GameManager.inventory = payload.get("inventory", GameManager.inventory)
+	GameManager.current_chapter_id = String(loaded_payload.get("current_chapter_id", GameManager.current_chapter_id))
+	GameManager.current_node_id = String(loaded_payload.get("current_node_id", GameManager.current_node_id))
+	GameManager.stable_node_id = String(loaded_payload.get("stable_node_id", GameManager.stable_node_id))
+	GameManager.selected_core_skill_id = String(loaded_payload.get("selected_core_skill_id", GameManager.selected_core_skill_id))
+	GameManager.hero_progression_state = loaded_payload.get("hero_progression_state", GameManager.hero_progression_state)
+	GameManager.skill_loadout_state = loaded_payload.get("skill_loadout_state", GameManager.skill_loadout_state)
+	var loaded_selected_passives: Variant = loaded_payload.get("selected_passives", GameManager.selected_passives)
+	if loaded_selected_passives is Array:
+		GameManager.selected_passives = loaded_selected_passives
+	GameManager.skill_rune_state = loaded_payload.get("skill_rune_state", GameManager.skill_rune_state)
+	GameManager.current_run_kills = int(loaded_payload.get("current_run_kills", GameManager.current_run_kills))
+	GameManager.current_run_clears = int(loaded_payload.get("current_run_clears", GameManager.current_run_clears))
+	GameManager.inventory = loaded_payload.get("inventory", GameManager.inventory)
 
-	var loaded_equip: Variant = payload.get("equipped_items", null)
+	var loaded_equip: Variant = loaded_payload.get("equipped_items", null)
 	if loaded_equip is Dictionary:
 		for slot_key in GameManager.EQUIPMENT_SLOT_ORDER:
 			if loaded_equip.has(slot_key):
@@ -104,20 +114,20 @@ func load_game(slot: int = DEFAULT_SAVE_SLOT) -> bool:
 			else:
 				GameManager.equipped_items[slot_key] = {}
 
-	MetaProgressionSystem.load_save_data(payload)
-	LootCodexSystem.load_save_data(payload)
-	DailyGoalSystem.load_save_data(payload)
-	StageEventSystem.load_save_data(payload)
-	GameManager.auto_salvage_below_rarity = String(payload.get("auto_salvage_below_rarity", GameManager.auto_salvage_below_rarity))
-	GameManager.last_loot_summary = String(payload.get("last_loot_summary", GameManager.last_loot_summary))
-	GameManager.last_loot_highlight = payload.get("last_loot_highlight", GameManager.last_loot_highlight)
-	GameManager.martial_codex_state = payload.get("martial_codex_state", GameManager.martial_codex_state)
-	GameManager.set_summary = payload.get("set_summary", GameManager.set_summary)
-	GameManager.rift_state = payload.get("rift_state", GameManager.rift_state)
-	GameManager.gem_state = payload.get("gem_state", GameManager.gem_state)
-	GameManager.paragon_state = payload.get("paragon_state", GameManager.paragon_state)
-	GameManager.season_state = payload.get("season_state", GameManager.season_state)
-	var saved_unix_time: int = int(payload.get("saved_unix_time", 0))
+	MetaProgressionSystem.load_save_data(loaded_payload)
+	LootCodexSystem.load_save_data(loaded_payload)
+	DailyGoalSystem.load_save_data(loaded_payload)
+	StageEventSystem.load_save_data(loaded_payload)
+	GameManager.auto_salvage_below_rarity = String(loaded_payload.get("auto_salvage_below_rarity", GameManager.auto_salvage_below_rarity))
+	GameManager.last_loot_summary = String(loaded_payload.get("last_loot_summary", GameManager.last_loot_summary))
+	GameManager.last_loot_highlight = loaded_payload.get("last_loot_highlight", GameManager.last_loot_highlight)
+	GameManager.martial_codex_state = loaded_payload.get("martial_codex_state", GameManager.martial_codex_state)
+	GameManager.set_summary = loaded_payload.get("set_summary", GameManager.set_summary)
+	GameManager.rift_state = loaded_payload.get("rift_state", GameManager.rift_state)
+	GameManager.gem_state = loaded_payload.get("gem_state", GameManager.gem_state)
+	GameManager.paragon_state = loaded_payload.get("paragon_state", GameManager.paragon_state)
+	GameManager.season_state = loaded_payload.get("season_state", GameManager.season_state)
+	var saved_unix_time: int = int(loaded_payload.get("saved_unix_time", 0))
 	GameManager.refresh_build_state(false)
 	_emit_loaded_state()
 	OfflineSystem.process_saved_timestamp(saved_unix_time)
@@ -186,6 +196,12 @@ func get_save_slot_summary(slot: int) -> Dictionary:
 		int(payload.get("gold", 0)),
 		inventory_entries.size(),
 	]
+	var hero_state: Dictionary = HeroProgressionSystem.sanitize_state(payload.get("hero_progression_state", {}))
+	summary["subtitle"] = "Lv.%d | 香火钱 %d | 背包 %d" % [
+		int(hero_state.get("level", 1)),
+		int(payload.get("gold", 0)),
+		inventory_entries.size(),
+	]
 	summary["saved_unix_time"] = int(payload.get("saved_unix_time", 0))
 	return summary
 
@@ -215,9 +231,85 @@ func _wipe_save(slot: int) -> void:
 	push_warning("SaveManager: 已删除档位 %d 的旧版存档" % slot)
 
 
+func _migrate_payload(payload: Dictionary, saved_version: int) -> Dictionary:
+	var migrated: Dictionary = payload.duplicate(true)
+	if saved_version < 4:
+		var legacy_core_skill_id: String = String(migrated.get("selected_core_skill_id", "core_whirlwind"))
+		var school_id: String = _map_school_from_core_skill(legacy_core_skill_id)
+		var hero_state: Dictionary = _build_migrated_hero_state(migrated)
+		var skill_state: Dictionary = GameManager._build_default_skill_loadout_state(school_id)
+		skill_state.get("active_slots", {})["core"] = legacy_core_skill_id
+		var refund_payload: Dictionary = _build_research_refund(migrated.get("research_levels", {}))
+		for resource_id_variant in refund_payload.keys():
+			var resource_id: String = String(resource_id_variant)
+			migrated[resource_id] = int(migrated.get(resource_id, 0)) + int(refund_payload.get(resource_id_variant, 0))
+		migrated["hero_progression_state"] = hero_state
+		migrated["skill_loadout_state"] = skill_state
+		migrated["selected_passives"] = GameManager._build_default_passives_for_school(school_id)
+		migrated["skill_rune_state"] = {}
+		migrated["research_levels"] = {}
+		migrated["save_version"] = CURRENT_SAVE_VERSION
+	return migrated
+
+
+func _build_migrated_hero_state(payload: Dictionary) -> Dictionary:
+	var paragon_payload: Dictionary = payload.get("paragon_state", {})
+	var paragon_level: int = int(paragon_payload.get("level", 0))
+	var level: int = 1
+	if paragon_level > 0 or bool(paragon_payload.get("is_unlocked", false)):
+		level = HeroProgressionSystem.MAX_HERO_LEVEL
+	else:
+		level = GameManager.estimate_legacy_level_from_node(String(payload.get("stable_node_id", payload.get("current_node_id", "ch1_n1"))))
+	var hero_state: Dictionary = HeroProgressionSystem.create_default_state()
+	hero_state["level"] = level
+	hero_state["experience"] = 0.0
+	return HeroProgressionSystem.sanitize_state(hero_state)
+
+
+func _build_research_refund(raw_levels: Variant) -> Dictionary:
+	var refund := {
+		"gold": 0,
+		"scrap": 0,
+		"core": 0,
+		"legend_shard": 0,
+	}
+	if not raw_levels is Dictionary:
+		return refund
+	var research_levels: Dictionary = raw_levels
+	for node_id_variant in research_levels.keys():
+		var node_id: String = String(node_id_variant)
+		var current_level: int = int(research_levels.get(node_id_variant, 0))
+		if current_level <= 0:
+			continue
+		var node_data: Dictionary = ConfigDB.get_research_node(node_id)
+		for target_level in range(1, current_level + 1):
+			for cost_variant in node_data.get("costs", []):
+				var cost_entry: Dictionary = cost_variant
+				if int(cost_entry.get("level", 0)) != target_level:
+					continue
+				var resource_id: String = String(cost_entry.get("resource_id", ""))
+				if refund.has(resource_id):
+					refund[resource_id] += int(cost_entry.get("amount", 0))
+				break
+	return refund
+
+
+func _map_school_from_core_skill(skill_id: String) -> String:
+	match skill_id:
+		"core_deep_wound":
+			return "xuejie"
+		"core_chain_lightning":
+			return "wulei"
+		_:
+			return "yufeng"
+
+
 func _emit_loaded_state() -> void:
 	EventBus.node_changed.emit(GameManager.current_node_id)
 	EventBus.core_skill_changed.emit(GameManager.selected_core_skill_id)
+	EventBus.skill_loadout_changed.emit(GameManager.get_skill_screen_state())
+	EventBus.hero_level_changed.emit(GameManager.get_hero_progression_summary())
+	EventBus.hero_experience_changed.emit(GameManager.get_hero_progression_summary())
 	EventBus.resources_changed.emit()
 	EventBus.equipment_changed.emit()
 	EventBus.loot_summary_changed.emit(GameManager.last_loot_summary)
