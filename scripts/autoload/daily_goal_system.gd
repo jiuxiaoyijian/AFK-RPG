@@ -54,15 +54,6 @@ func load_save_data(payload: Dictionary) -> void:
 	refresh_daily_goals_if_needed()
 
 
-func reset_runtime_state() -> void:
-	last_refresh_date = ""
-	primary_goal = {}
-	side_goals.clear()
-	last_recommendation_snapshot = {}
-	_refresh_internal_snapshots()
-	refresh_daily_goals_if_needed()
-
-
 func get_daily_goal_data() -> Dictionary:
 	return {
 		"last_refresh_date": last_refresh_date,
@@ -126,6 +117,8 @@ func record_progress(event_name: String, payload: Dictionary = {}) -> void:
 		refresh_daily_goals_if_needed()
 	if event_name == "battle_finished":
 		_apply_battle_progress(payload)
+	elif event_name == "enemy_kill":
+		_apply_enemy_kill_progress(payload)
 	elif event_name == "resource_gain":
 		_apply_resource_progress(payload)
 	elif event_name == "research_upgrade":
@@ -147,8 +140,8 @@ func _on_battle_finished(node_id: String, success: bool) -> void:
 	record_progress("battle_finished", {"node_id": node_id})
 
 
-func _on_enemy_killed(_enemy_id: String) -> void:
-	pass
+func _on_enemy_killed(enemy_id: String) -> void:
+	record_progress("enemy_kill", {"enemy_id": enemy_id})
 
 
 func _on_resources_changed() -> void:
@@ -418,7 +411,7 @@ func _build_loot_side_goal() -> Dictionary:
 		recommendation_label = String(recommendation.get("short_label", recommendation_label))
 	var primary_target_name: String = String(advice.get("primary_target_name", tracked_target_name))
 	var gap_summary: String = String(advice.get("gap_summary", "继续围绕当前道统刷装。"))
-	var gap_category_label: String = String(advice.get("gap_category_label", "道统"))
+	var gap_category_label: String = String(advice.get("gap_category_label", "传承"))
 	var gap_label: String = String(advice.get("gap_label", "当前缺口"))
 	var description: String = "围绕当前机缘追踪继续刷装，推动道统成型。"
 	if not primary_target_name.is_empty():
@@ -492,6 +485,24 @@ func _apply_goal_battle_progress(goal: Dictionary, node_id: String) -> Dictionar
 	if not ["push_node", "push_boss", "push_farm", "loot_farm"].has(String(goal.get("goal_type", ""))):
 		return goal
 	if String(goal.get("recommended_node_id", "")) != node_id:
+		return goal
+	goal["current_value"] = mini(int(goal.get("target_value", 1)), int(goal.get("current_value", 0)) + 1)
+	_update_goal_status(goal)
+	return goal
+
+
+func _apply_enemy_kill_progress(_payload: Dictionary) -> void:
+	primary_goal = _apply_goal_enemy_kill_progress(primary_goal)
+	for index in range(side_goals.size()):
+		side_goals[index] = _apply_goal_enemy_kill_progress(side_goals[index])
+
+
+func _apply_goal_enemy_kill_progress(goal: Dictionary) -> Dictionary:
+	if goal.is_empty():
+		return goal
+	if String(goal.get("status", TASK_STATUS_ACTIVE)) == TASK_STATUS_COMPLETED:
+		return goal
+	if String(goal.get("goal_type", "")) != "enemy_kill":
 		return goal
 	goal["current_value"] = mini(int(goal.get("target_value", 1)), int(goal.get("current_value", 0)) + 1)
 	_update_goal_status(goal)
@@ -723,7 +734,7 @@ func _get_high_value_farm_node(chapter_id: String) -> Dictionary:
 			best_node_id = node_id
 	return {
 		"node_id": best_node_id,
-		"label": ConfigDB.get_chapter_node_short_label(best_node_id),
+		"label": "%s / %s" % [String(chapter.get("name", chapter_id)), best_node_id],
 	}
 
 

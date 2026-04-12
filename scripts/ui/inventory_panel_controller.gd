@@ -515,8 +515,8 @@ func _apply_panel_texture_overlay(target_panel: Control, texture_path: String, t
 		target_panel.add_child(overlay)
 		target_panel.move_child(overlay, 0)
 	overlay.texture = RuntimeTextureLoader.load_texture(texture_path)
-	overlay.expand_mode = 1
-	overlay.stretch_mode = 6
+	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	overlay.modulate = tint
 
 

@@ -699,8 +699,17 @@ func take_damage(raw_damage: float, attacker_defense: float = 0.0) -> void:
 	hp_bar.value = current_hp
 	_update_health_marker()
 	_emit_hp_state()
+	_player_hit_flash()
 	if current_hp <= 0.0:
 		died.emit()
+
+
+func _player_hit_flash() -> void:
+	if portrait_visual == null:
+		return
+	portrait_visual.modulate = Color(1.0, 0.4, 0.4, 1.0)
+	var tween := create_tween()
+	tween.tween_property(portrait_visual, "modulate", Color.WHITE, 0.18)
 
 
 func reset_state() -> void:

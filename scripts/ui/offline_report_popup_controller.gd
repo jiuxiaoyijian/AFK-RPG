@@ -14,7 +14,6 @@ const CONTENT_SECTION_ICON_PATHS := {
 const BOSS_PORTRAIT_PATHS_BY_ID := {
 	"boss_iron_beast": "res://assets/generated/afk_rpg_formal/bosses/boss_fuci_shanjun_v2.png",
 	"boss_magma_overseer": "res://assets/generated/afk_rpg_formal/bosses/boss_jilu_jianyuan_v2.png",
-	"boss_silver_hook_elder": "res://assets/generated/afk_rpg_formal/bosses/boss_yingou_laoren_v1.png",
 }
 
 @onready var panel: Panel = $Panel
@@ -109,7 +108,7 @@ func _build_goal_section_text() -> String:
 	lines.append(String(DailyGoalSystem.get_primary_goal_summary()))
 	lines.append("最接近完成: %s" % String(DailyGoalSystem.get_nearest_side_goal_summary()))
 	lines.append("卡点判断: %s" % String(build_advice.get("stall_summary", "当前还能继续推进。")))
-	lines.append("道统缺口: %s" % String(build_advice.get("gap_summary", "继续补当前道统核心属性")))
+	lines.append("传承缺口: %s" % String(build_advice.get("gap_summary", "继续补当前传承核心属性")))
 	lines.append("下一件: %s" % String(build_advice.get("next_target_line", "下一件: 继续刷当前核心件")))
 	var unlock_preview_line: String = String(build_advice.get("unlock_preview_line", ""))
 	if not unlock_preview_line.is_empty():

@@ -3,7 +3,7 @@
     {
       "id": "chapter_1",
       "order": 1,
-      "name": "桃溪外渡",
+      "name": "青云山外",
       "recommended_power": 100,
       "unlock_rule": { "type": "default" },
       "node_ids": ["ch1_n1", "ch1_n2", "ch1_n3", "ch1_boss"],
@@ -13,7 +13,7 @@
     {
       "id": "chapter_2",
       "order": 2,
-      "name": "祠下灵田",
+      "name": "落雁谷",
       "recommended_power": 260,
       "unlock_rule": { "type": "clear_chapter", "chapter_id": "chapter_1" },
       "node_ids": ["ch2_n1", "ch2_n2", "ch2_n3", "ch2_n4", "ch2_boss"],

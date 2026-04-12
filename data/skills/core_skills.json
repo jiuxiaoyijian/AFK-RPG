@@ -1,7 +1,7 @@
 [
   {
     "id": "core_whirlwind",
-    "name": "御风道",
+    "name": "御风刀",
     "skill_type": "core",
     "weapon_tags": ["blade", "axe"],
     "archetype_tags": ["whirlwind"],
@@ -24,7 +24,7 @@
   },
   {
     "id": "core_deep_wound",
-    "name": "血劫道",
+    "name": "血劫手",
     "skill_type": "core",
     "weapon_tags": ["blade", "spear"],
     "archetype_tags": ["bleed"],
@@ -47,7 +47,7 @@
   },
   {
     "id": "core_chain_lightning",
-    "name": "五雷道",
+    "name": "五雷掌",
     "skill_type": "core",
     "weapon_tags": ["orb", "staff"],
     "archetype_tags": ["chain_lightning"],

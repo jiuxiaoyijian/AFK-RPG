@@ -3,44 +3,32 @@ extends Node
 const PLAYER_SCENE := preload("res://scenes/entities/player.tscn")
 const ENEMY_SCENE := preload("res://scenes/entities/enemy.tscn")
 const LOOT_DROP_VISUAL_SCENE := preload("res://scenes/effects/loot_drop_visual.tscn")
+const PARALLAX_LAYER_IDS: Array[String] = ["sky", "far", "mid", "near_back", "near_front"]
 const CHAPTER_BACKGROUND_COLORS := {
 	"chapter_1": Color(0.12, 0.11, 0.14, 1.0),
 	"chapter_2": Color(0.17, 0.2, 0.18, 1.0),
-	"chapter_3": Color(0.18, 0.16, 0.14, 1.0),
 }
 const CHAPTER_GROUND_COLORS := {
 	"chapter_1": Color(0.19, 0.18, 0.2, 1.0),
 	"chapter_2": Color(0.21, 0.23, 0.17, 1.0),
-	"chapter_3": Color(0.24, 0.20, 0.16, 1.0),
 }
-const SCREEN_CENTER := Vector2(640.0, 360.0)
-const SCREEN_SIZE := Vector2(1280.0, 720.0)
-const PARALLAX_LAYER_IDS := ["sky", "far", "mid", "near_back", "near_front"]
-const BACKGROUND_MODE_PARALLAX := "parallax_layers"
-const BACKGROUND_MODE_SINGLE_STRIP := "single_strip"
-const BACKGROUND_MODE_SINGLE_NATIVE := "single_native"
-const HERO_LEFT_BOUND := 332.0
-const HERO_RIGHT_BOUND := 472.0
-const RIGHT_SPAWN_X := 1368.0
-const FORWARD_SCROLL_SPEED := 96.0
+const HERO_LEFT_BOUND := 426.0
+const HERO_RIGHT_BOUND := 854.0
+const LEFT_SPAWN_X := 112.0
+const RIGHT_SPAWN_X := 1168.0
 
 @onready var background_fill: Polygon2D = $"../../WorldLayer/Background"
-@onready var backdrop_layer: Node2D = $"../../WorldLayer/BackdropLayer"
-@onready var backdrop_sprite_a: Sprite2D = $"../../WorldLayer/BackdropLayer/BackdropSpriteA"
-@onready var backdrop_sprite_b: Sprite2D = $"../../WorldLayer/BackdropLayer/BackdropSpriteB"
 @onready var ground_fill: Polygon2D = $"../../WorldLayer/Ground"
 @onready var sky_layer: Parallax2D = $"../../WorldLayer/SkyLayer"
 @onready var far_layer: Parallax2D = $"../../WorldLayer/FarLayer"
 @onready var mid_layer: Parallax2D = $"../../WorldLayer/MidLayer"
 @onready var near_back_layer: Parallax2D = $"../../WorldLayer/NearBackLayer"
 @onready var near_front_layer: Parallax2D = $"../../WorldLayer/NearFrontLayer"
-@onready var ground_band_sprite: Sprite2D = $"../../WorldLayer/GroundBand"
 @onready var sky_sprite: Sprite2D = $"../../WorldLayer/SkyLayer/SkySprite"
 @onready var far_sprite: Sprite2D = $"../../WorldLayer/FarLayer/FarSprite"
 @onready var mid_sprite: Sprite2D = $"../../WorldLayer/MidLayer/MidSprite"
 @onready var near_back_sprite: Sprite2D = $"../../WorldLayer/NearBackLayer/NearBackSprite"
 @onready var near_front_sprite: Sprite2D = $"../../WorldLayer/NearFrontLayer/NearFrontSprite"
-@onready var corner_overlay_layer: Node2D = $"../../CornerOverlayLayer"
 @onready var combat_runner: Node2D = $"../../WorldLayer/CombatRunner"
 @onready var collect_effects: Node2D = $"../../UILayer/CollectEffects"
 @onready var player_spawn: Marker2D = $"../../WorldLayer/CombatRunner/PlayerSpawn"
@@ -50,22 +38,21 @@ const FORWARD_SCROLL_SPEED := 96.0
 @onready var main_nav_bar: Control = $"../../UILayer/MainNavBar"
 @onready var loot_system: Node = $"../LootSystem"
 
+const BASE_SCROLL_SPEED := 20.0
+const VIEWPORT_WIDTH := 1280.0
+const VIEWPORT_HEIGHT := 720.0
+
 var player: Node2D
 var current_node_data: Dictionary = {}
 var current_wave_index: int = 0
 var wave_wait_timer: float = 0.0
 var finish_wait_timer: float = 0.0
-var node_time_left: float = 0.0
-var state_hint_timer: float = 0.0
 var battle_state: String = "loading"
-var pending_finish_action: String = ""
 var last_enemy_death_position: Vector2 = Vector2.ZERO
-var forward_scroll_distance: float = 0.0
 var parallax_layers: Dictionary = {}
 var parallax_sprites: Dictionary = {}
 var current_parallax_scene: Dictionary = {}
-var current_background_mode: String = BACKGROUND_MODE_PARALLAX
-var corner_overlay_sprites: Array[Sprite2D] = []
+var parallax_scroll_accumulator: float = 0.0
 
 
 func _ready() -> void:
@@ -77,9 +64,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_update_background_parallax(delta)
 	_process_loot_pickups()
-	_update_forward_progress(delta)
-	_update_background_parallax()
 	if player == null or not is_instance_valid(player):
 		return
 
@@ -91,13 +77,14 @@ func _physics_process(delta: float) -> void:
 		"node_success":
 			finish_wait_timer -= delta
 			if finish_wait_timer <= 0.0:
-				_resolve_finish_action()
+				GameManager.complete_node(String(current_node_data.get("id", "")))
+				_start_current_node()
 		"node_failed":
 			finish_wait_timer -= delta
 			if finish_wait_timer <= 0.0:
-				_resolve_finish_action()
+				GameManager.fallback_to_stable_node()
+				_start_current_node()
 		"combat", "moving":
-			_process_rift_timer(delta)
 			_update_player_targeting()
 			_check_wave_progress()
 		_:
@@ -107,7 +94,16 @@ func _physics_process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if EventBus.ui_blocking_input:
 		return
-	if event.is_action_pressed("ui_restart_run"):
+	if event.is_action_pressed("ui_skill_1"):
+		GameManager.select_core_skill("core_whirlwind")
+		_restart_current_node()
+	elif event.is_action_pressed("ui_skill_2"):
+		GameManager.select_core_skill("core_deep_wound")
+		_restart_current_node()
+	elif event.is_action_pressed("ui_skill_3"):
+		GameManager.select_core_skill("core_chain_lightning")
+		_restart_current_node()
+	elif event.is_action_pressed("ui_restart_run"):
 		_restart_current_node()
 
 
@@ -119,38 +115,24 @@ func _start_current_node() -> void:
 	if ConfigDB.chapter_nodes.is_empty():
 		return
 
-	var active_node_id: String = GameManager.get_active_combat_node_id()
-	current_node_data = ConfigDB.get_chapter_node(active_node_id)
+	current_node_data = ConfigDB.get_chapter_node(GameManager.current_node_id)
 	if current_node_data.is_empty():
 		return
 
 	_apply_chapter_visuals(
 		String(current_node_data.get("chapter_id", GameManager.current_chapter_id)),
-		String(current_node_data.get("id", active_node_id))
+		String(current_node_data.get("id", GameManager.current_node_id))
 	)
 	_clear_enemies()
 	_spawn_player()
 	last_enemy_death_position = Vector2(760.0, player_spawn.global_position.y)
 	current_wave_index = 0
 	battle_state = "waiting_next_wave"
-	pending_finish_action = ""
 	wave_wait_timer = 0.3
-	node_time_left = _get_current_time_limit()
-	state_hint_timer = 1.0
-	forward_scroll_distance = 0.0
 	player.target = null
 	player.should_move = false
-	if player.has_method("set_forward_run_in_place"):
-		player.set_forward_run_in_place(true)
 	EventBus.battle_started.emit(String(current_node_data.get("id", "")))
-	if GameManager.is_rift_active():
-		var active_run: Dictionary = GameManager.get_rift_runtime_summary().get("active_run", {})
-		EventBus.combat_state_changed.emit("试剑秘境 Lv.%d · %s" % [
-			int(active_run.get("level", 0)),
-			String(current_node_data.get("id", active_node_id)),
-		])
-	else:
-		EventBus.combat_state_changed.emit("进入节点 %s" % String(current_node_data.get("id", active_node_id)))
+	EventBus.combat_state_changed.emit("进入节点 %s" % String(current_node_data.get("id", "")))
 
 
 func _spawn_player() -> void:
@@ -160,7 +142,7 @@ func _spawn_player() -> void:
 	player = PLAYER_SCENE.instantiate() as Node2D
 	combat_runner.add_child(player)
 	player.global_position = player_spawn.global_position
-	player.setup_from_build(GameManager.get_combat_loadout_state())
+	player.setup_from_skill(GameManager.get_selected_core_skill())
 	player.died.connect(_on_player_died)
 	player.reset_state()
 	if player.has_method("set_idle_anchor_x"):
@@ -182,15 +164,10 @@ func _spawn_wave() -> void:
 
 	for i in count:
 		var enemy_id: String = String(enemy_ids[min(i, enemy_ids.size() - 1)])
-		var enemy_data: Dictionary = ConfigDB.get_enemy(enemy_id).duplicate(true)
-		if GameManager.is_rift_active():
-			var active_run: Dictionary = GameManager.get_rift_runtime_summary().get("active_run", {})
-			enemy_data["hp"] = float(enemy_data.get("hp", 10.0)) * float(active_run.get("enemy_hp_multiplier", 1.0))
-			enemy_data["attack"] = float(enemy_data.get("attack", 1.0)) * float(active_run.get("enemy_damage_multiplier", 1.0))
-			enemy_data["name"] = "秘境%s" % String(enemy_data.get("name", enemy_id))
+		var enemy_data: Dictionary = ConfigDB.get_enemy(enemy_id)
 		var enemy: Node2D = ENEMY_SCENE.instantiate() as Node2D
 		enemy_container.add_child(enemy)
-		var spawn_side: int = 1
+		var spawn_side: int = -1 if randi() % 2 == 0 else 1
 		enemy.global_position = _get_enemy_spawn_position(i, count, spawn_side)
 		enemy.setup_from_config(enemy_data)
 		if enemy.has_method("set_spawn_side"):
@@ -200,18 +177,8 @@ func _spawn_wave() -> void:
 
 	current_wave_index += 1
 	battle_state = "moving"
-	if player.has_method("set_forward_run_in_place"):
-		player.set_forward_run_in_place(false)
 	_emit_wave_highlight(enemy_ids)
-	if GameManager.is_rift_active():
-		var active_run: Dictionary = GameManager.get_rift_runtime_summary().get("active_run", {})
-		EventBus.combat_state_changed.emit("秘境 Lv.%d 第 %d 波 | 余时 %d 秒" % [
-			int(active_run.get("level", 0)),
-			current_wave_index,
-			int(ceil(node_time_left)),
-		])
-	else:
-		EventBus.combat_state_changed.emit("第 %d 波战斗中" % current_wave_index)
+	EventBus.combat_state_changed.emit("第 %d 波战斗中" % current_wave_index)
 
 
 func _update_player_targeting() -> void:
@@ -244,37 +211,18 @@ func _check_wave_progress() -> void:
 		wave_wait_timer = 1.2
 		player.target = null
 		player.should_move = false
-		if player.has_method("set_forward_run_in_place"):
-			player.set_forward_run_in_place(true)
 		EventBus.combat_state_changed.emit("波次清空，准备下一波")
 		return
 
-	var loot_context: Dictionary = {}
-	var was_rift_active: bool = GameManager.is_rift_active()
-	if was_rift_active:
-		var rift_result: Dictionary = GameManager.finish_rift_run(true)
-		loot_context["reward_multiplier"] = float(rift_result.get("reward_multiplier", 1.0))
-		loot_context["extra_summary_lines"] = _merge_string_arrays(
-			rift_result.get("summary_lines", []),
-			rift_result.get("reward_summary_lines", [])
-		)
-		loot_context["extra_dropped_items"] = rift_result.get("reward_items", [])
-	else:
-		var rewards: Array = current_node_data.get("first_clear_rewards", [])
-		MetaProgressionSystem.grant_rewards(rewards)
-		if String(current_node_data.get("node_type", "")) == "boss":
-			var key_result: Dictionary = GameManager.grant_boss_rift_key(current_node_data)
-			loot_context["extra_summary_lines"] = key_result.get("summary_lines", [])
+	var rewards: Array = current_node_data.get("first_clear_rewards", [])
+	MetaProgressionSystem.grant_rewards(rewards)
 	if loot_system and loot_system.has_method("process_node_loot"):
-		var loot_result: Dictionary = loot_system.process_node_loot(current_node_data, loot_context)
+		var loot_result: Dictionary = loot_system.process_node_loot(current_node_data)
 		_spawn_reward_drop_visuals(loot_result, last_enemy_death_position)
 	battle_state = "node_success"
 	finish_wait_timer = 2.0
-	pending_finish_action = "restart_current" if was_rift_active else "advance"
 	player.target = null
 	player.should_move = false
-	if player.has_method("set_forward_run_in_place"):
-		player.set_forward_run_in_place(true)
 	EventBus.battle_finished.emit(String(current_node_data.get("id", "")), true)
 	EventBus.combat_state_changed.emit("节点完成，结算奖励中")
 
@@ -288,19 +236,12 @@ func _on_enemy_died(enemy_id: String, world_position: Vector2, enemy_type: Strin
 
 
 func _on_player_died() -> void:
-	var was_rift_active: bool = GameManager.is_rift_active()
-	if was_rift_active:
-		var rift_result: Dictionary = GameManager.finish_rift_run(false)
-		GameManager.update_loot_summary(rift_result.get("summary_lines", ["试剑秘境失败"]))
 	battle_state = "node_failed"
 	finish_wait_timer = 2.0
-	pending_finish_action = "restart_current" if was_rift_active else "fallback"
 	player.target = null
 	player.should_move = false
-	if player.has_method("set_forward_run_in_place"):
-		player.set_forward_run_in_place(true)
 	EventBus.battle_finished.emit(String(current_node_data.get("id", "")), false)
-	EventBus.combat_state_changed.emit("试剑秘境失败，回到当前驻守节点" if was_rift_active else "挑战失败，回退到稳定节点")
+	EventBus.combat_state_changed.emit("挑战失败，回退到稳定节点")
 
 
 func _restart_current_node() -> void:
@@ -317,7 +258,7 @@ func _emit_wave_highlight(enemy_ids: Array) -> void:
 		return
 	var chapter_data: Dictionary = ConfigDB.get_chapter(String(current_node_data.get("chapter_id", GameManager.current_chapter_id)))
 	var enemy_name: String = String(enemy_data.get("name", primary_enemy_id))
-	var node_name: String = ConfigDB.get_chapter_node_name(String(current_node_data.get("id", GameManager.current_node_id)))
+	var node_name: String = String(current_node_data.get("id", GameManager.current_node_id))
 	var highlight_title: String = "精英来袭" if enemy_type == "elite" else "Boss 降临"
 	var highlight_subtitle: String = "%s · %s" % [String(chapter_data.get("name", GameManager.current_chapter_id)), node_name]
 	EventBus.combat_highlight_requested.emit({
@@ -332,11 +273,13 @@ func _emit_enemy_death_highlight(enemy_id: String, enemy_type: String) -> void:
 	if not ["elite", "boss"].has(enemy_type):
 		return
 	var enemy_data: Dictionary = ConfigDB.get_enemy(enemy_id)
+	var title: String = "强敌已除" if enemy_type == "elite" else "一战成名"
+	var detail: String = "从强者身上，总能学到些什么。" if enemy_type == "elite" else "江湖路远，这不过是起点。"
 	EventBus.combat_highlight_requested.emit({
 		"highlight_type": "%s_kill" % enemy_type,
-		"title": "精英击破" if enemy_type == "elite" else "Boss 击破",
+		"title": title,
 		"subtitle": String(enemy_data.get("name", enemy_id)),
-		"detail": "战线已被撕开，继续收下这一波高价值结算。",
+		"detail": detail,
 	})
 
 
@@ -345,392 +288,19 @@ func _clear_enemies() -> void:
 		child.queue_free()
 
 
-func _process_rift_timer(delta: float) -> void:
-	if not GameManager.is_rift_active():
-		return
-	node_time_left = maxf(0.0, node_time_left - delta)
-	state_hint_timer -= delta
-	if state_hint_timer <= 0.0 and battle_state in ["combat", "moving"]:
-		var active_run: Dictionary = GameManager.get_rift_runtime_summary().get("active_run", {})
-		EventBus.combat_state_changed.emit("秘境 Lv.%d | 余时 %d 秒" % [
-			int(active_run.get("level", 0)),
-			int(ceil(node_time_left)),
-		])
-		state_hint_timer = 1.0
-	if node_time_left <= 0.0:
-		_on_player_died()
-
-
-func _get_current_time_limit() -> float:
-	if GameManager.is_rift_active():
-		return float(GameManager.get_rift_runtime_summary().get("active_run", {}).get("time_limit", 75))
-	return 0.0
-
-
-func _resolve_finish_action() -> void:
-	match pending_finish_action:
-		"advance":
-			GameManager.complete_node(String(current_node_data.get("id", "")))
-		"fallback":
-			GameManager.fallback_to_stable_node()
-		_:
-			pass
-	_start_current_node()
-
-
-func _merge_string_arrays(primary: Array, secondary: Array) -> Array[String]:
-	var lines: Array[String] = []
-	for line_variant in primary:
-		var line: String = String(line_variant).strip_edges()
-		if line.is_empty():
-			continue
-		lines.append(line)
-	for line_variant in secondary:
-		var line: String = String(line_variant).strip_edges()
-		if line.is_empty():
-			continue
-		lines.append(line)
-	return lines
-
-
 func _apply_chapter_visuals(chapter_id: String, node_id: String = "") -> void:
 	background_fill.color = CHAPTER_BACKGROUND_COLORS.get(chapter_id, Color(0.1, 0.11, 0.16, 1.0))
 	ground_fill.color = CHAPTER_GROUND_COLORS.get(chapter_id, Color(0.16, 0.18, 0.24, 1.0))
-	background_fill.visible = true
-	ground_fill.visible = true
 	current_parallax_scene = _resolve_parallax_scene(chapter_id, node_id)
-	current_background_mode = String(current_parallax_scene.get("background_mode", BACKGROUND_MODE_PARALLAX))
-	_clear_single_backdrop()
-	_clear_parallax_layers()
-	_clear_ground_band()
-	_clear_corner_overlays()
 	if current_parallax_scene.is_empty():
-		current_background_mode = BACKGROUND_MODE_PARALLAX
+		_clear_parallax_layers()
 		return
-	if current_background_mode in [BACKGROUND_MODE_SINGLE_STRIP, BACKGROUND_MODE_SINGLE_NATIVE]:
-		_apply_single_native_scene(current_parallax_scene)
-	else:
-		_apply_parallax_scene(current_parallax_scene)
-	_update_background_parallax()
+	parallax_scroll_accumulator = 0.0
+	_apply_parallax_scene(current_parallax_scene)
 
 
 func _load_runtime_texture(resource_path: String) -> Texture2D:
 	return RuntimeTextureLoader.load_texture(resource_path)
-
-
-func _setup_parallax_runtime() -> void:
-	parallax_layers = {
-		"sky": sky_layer,
-		"far": far_layer,
-		"mid": mid_layer,
-		"near_back": near_back_layer,
-		"near_front": near_front_layer,
-	}
-	parallax_sprites = {
-		"sky": sky_sprite,
-		"far": far_sprite,
-		"mid": mid_sprite,
-		"near_back": near_back_sprite,
-		"near_front": near_front_sprite,
-	}
-	for layer_id in PARALLAX_LAYER_IDS:
-		var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
-		var sprite: Sprite2D = parallax_sprites.get(layer_id)
-		parallax_layer.position = Vector2.ZERO
-		parallax_layer.repeat_size = Vector2(3072.0, 720.0)
-		parallax_layer.scroll_scale = Vector2.ONE
-		parallax_layer.ignore_camera_scroll = true
-		parallax_layer.scroll_offset = Vector2.ZERO
-		sprite.position = Vector2.ZERO
-		sprite.centered = false
-	if backdrop_layer != null:
-		backdrop_layer.visible = false
-	if backdrop_sprite_a != null:
-		backdrop_sprite_a.centered = false
-		backdrop_sprite_a.position = Vector2.ZERO
-	if backdrop_sprite_b != null:
-		backdrop_sprite_b.centered = false
-		backdrop_sprite_b.position = Vector2.ZERO
-		backdrop_sprite_b.visible = false
-
-
-func _resolve_parallax_scene(chapter_id: String, node_id: String) -> Dictionary:
-	var scene_key: String = ConfigDB.get_parallax_scene_key(chapter_id, node_id)
-	if not scene_key.is_empty():
-		var configured_scene: Dictionary = ConfigDB.get_parallax_scene(scene_key).duplicate(true)
-		if not configured_scene.is_empty():
-			return configured_scene
-	return _build_legacy_fallback_scene()
-
-
-func _build_legacy_fallback_scene() -> Dictionary:
-	return {
-		"id": "runtime_legacy_fallback",
-		"repeat_size": [1280, 720],
-		"ground_y": 540,
-		"player_spawn_y": 500,
-		"scroll_speed_multipliers": {
-			"sky": 0.08,
-			"far": 0.18,
-			"mid": 0.42,
-			"near_back": 0.72,
-			"near_front": 1.0,
-		},
-		"parallax_distances": {
-			"sky": 8.0,
-			"far": 12.0,
-			"mid": 20.0,
-			"near_back": 28.0,
-			"near_front": 34.0,
-		},
-		"anchor_bias": {
-			"sky": 0.0,
-			"far": -12.0,
-			"mid": -8.0,
-			"near_back": -2.0,
-			"near_front": 0.0,
-		},
-		"layer_paths": {
-			"sky": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__far.png",
-			"far": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__far.png",
-			"mid": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__mid.png",
-			"near_back": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__near.png",
-			"near_front": "res://assets/generated/afk_rpg_formal/backgrounds/bg_validation_scroll__near.png",
-		},
-	}
-
-
-func _apply_parallax_scene(scene_def: Dictionary) -> void:
-	_apply_scene_lane_metrics(scene_def)
-	_apply_ground_band(scene_def)
-	var layer_paths: Dictionary = scene_def.get("layer_paths", {})
-	for layer_id in PARALLAX_LAYER_IDS:
-		var texture_path: String = String(layer_paths.get(layer_id, ""))
-		_apply_parallax_layer(layer_id, _load_runtime_texture(texture_path), scene_def)
-	_apply_corner_overlays(scene_def)
-
-
-func _apply_single_native_scene(scene_def: Dictionary) -> void:
-	_apply_scene_lane_metrics(scene_def)
-	var texture_path: String = String(scene_def.get("backdrop_path", ""))
-	var texture: Texture2D = _load_runtime_texture(texture_path)
-	if backdrop_layer == null or backdrop_sprite_a == null or backdrop_sprite_b == null or texture == null:
-		return
-	var position_values: Array = scene_def.get("backdrop_position", [0, 0])
-	var backdrop_position := Vector2.ZERO
-	if position_values.size() >= 2:
-		backdrop_position = Vector2(float(position_values[0]), float(position_values[1]))
-	backdrop_layer.visible = true
-	backdrop_sprite_a.texture = texture
-	backdrop_sprite_a.centered = false
-	backdrop_sprite_a.scale = Vector2.ONE
-	backdrop_sprite_a.modulate = Color.WHITE
-	backdrop_sprite_a.position = backdrop_position
-	backdrop_sprite_b.texture = null
-	backdrop_sprite_b.visible = false
-	background_fill.visible = false
-	ground_fill.visible = false
-
-
-func _apply_scene_lane_metrics(scene_def: Dictionary) -> void:
-	var ground_y: float = float(scene_def.get("ground_y", 540.0))
-	ground_fill.polygon = PackedVector2Array([
-		Vector2(0.0, ground_y),
-		Vector2(SCREEN_SIZE.x, ground_y),
-		Vector2(SCREEN_SIZE.x, SCREEN_SIZE.y),
-		Vector2(0.0, SCREEN_SIZE.y),
-	])
-	player_spawn.position.y = float(scene_def.get("player_spawn_y", 500.0))
-
-
-func _apply_parallax_layer(layer_id: String, texture: Texture2D, scene_def: Dictionary) -> void:
-	var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
-	var sprite: Sprite2D = parallax_sprites.get(layer_id)
-	if parallax_layer == null or sprite == null:
-		return
-	if texture == null:
-		sprite.texture = null
-		parallax_layer.scroll_offset = Vector2.ZERO
-		return
-	sprite.texture = texture
-	sprite.position = Vector2.ZERO
-	sprite.centered = false
-	sprite.scale = Vector2.ONE
-	sprite.modulate = _get_parallax_layer_modulate(layer_id)
-	parallax_layer.repeat_size = _resolve_repeat_size(scene_def, texture)
-	parallax_layer.scroll_offset = Vector2.ZERO
-
-
-func _resolve_repeat_size(scene_def: Dictionary, texture: Texture2D) -> Vector2:
-	var raw_repeat: Variant = scene_def.get("repeat_size", [texture.get_width(), texture.get_height()])
-	if raw_repeat is Array and raw_repeat.size() >= 2:
-		return Vector2(float(raw_repeat[0]), float(raw_repeat[1]))
-	return Vector2(float(texture.get_width()), float(texture.get_height()))
-
-
-func _get_parallax_layer_modulate(layer_id: String) -> Color:
-	match layer_id:
-		"sky":
-			return Color(0.98, 1.0, 1.0, 0.96)
-		"far":
-			return Color(0.92, 0.95, 1.0, 0.94)
-		"mid":
-			return Color(1.0, 1.0, 1.0, 1.0)
-		"near_back":
-			return Color(0.94, 0.90, 0.82, 0.96)
-		"near_front":
-			return Color(0.92, 0.88, 0.78, 0.98)
-		_:
-			return Color.WHITE
-
-
-func _clear_parallax_layers() -> void:
-	for layer_id in PARALLAX_LAYER_IDS:
-		var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
-		var sprite: Sprite2D = parallax_sprites.get(layer_id)
-		if sprite != null:
-			sprite.texture = null
-		if parallax_layer != null:
-			parallax_layer.scroll_offset = Vector2.ZERO
-
-
-func _clear_single_backdrop() -> void:
-	if backdrop_layer != null:
-		backdrop_layer.visible = false
-	if backdrop_sprite_a != null:
-		backdrop_sprite_a.texture = null
-		backdrop_sprite_a.position = Vector2.ZERO
-	if backdrop_sprite_b != null:
-		backdrop_sprite_b.texture = null
-		backdrop_sprite_b.position = Vector2.ZERO
-		backdrop_sprite_b.visible = false
-
-
-func _clear_ground_band() -> void:
-	if ground_band_sprite != null:
-		ground_band_sprite.texture = null
-
-
-func _apply_ground_band(scene_def: Dictionary) -> void:
-	if ground_band_sprite == null:
-		return
-	var texture_path: String = String(scene_def.get("ground_band_path", ""))
-	if texture_path.is_empty():
-		ground_band_sprite.texture = null
-		return
-	var texture: Texture2D = _load_runtime_texture(texture_path)
-	if texture == null:
-		ground_band_sprite.texture = null
-		return
-	ground_band_sprite.texture = texture
-	ground_band_sprite.centered = false
-	var position_values: Array = scene_def.get("ground_band_position", [0, 500])
-	if position_values.size() >= 2:
-		ground_band_sprite.position = Vector2(float(position_values[0]), float(position_values[1]))
-
-
-func _clear_corner_overlays() -> void:
-	for sprite in corner_overlay_sprites:
-		if is_instance_valid(sprite):
-			sprite.queue_free()
-	corner_overlay_sprites.clear()
-
-
-func _apply_corner_overlays(scene_def: Dictionary) -> void:
-	_clear_corner_overlays()
-	var overlay_entries: Array = scene_def.get("corner_overlays", [])
-	if corner_overlay_layer == null or overlay_entries.is_empty():
-		return
-	for entry_variant in overlay_entries:
-		var entry: Dictionary = entry_variant
-		var texture_path: String = String(entry.get("path", ""))
-		var texture: Texture2D = _load_runtime_texture(texture_path)
-		if texture == null:
-			continue
-		var sprite := Sprite2D.new()
-		sprite.texture = texture
-		sprite.centered = false
-		sprite.flip_h = bool(entry.get("flip_x", false))
-		var scale_value: float = float(entry.get("scale", 1.0))
-		sprite.scale = Vector2(scale_value, scale_value)
-		var alpha: float = clampf(float(entry.get("alpha", 255.0)) / 255.0, 0.0, 1.0)
-		sprite.modulate = Color(1.0, 1.0, 1.0, alpha)
-		var position_values: Array = entry.get("position", [])
-		if position_values.size() >= 2:
-			sprite.position = Vector2(float(position_values[0]), float(position_values[1]))
-		else:
-			var offset_values: Array = entry.get("offset", [0, 0])
-			sprite.position = Vector2(float(offset_values[0]), float(offset_values[1]))
-		corner_overlay_layer.add_child(sprite)
-		corner_overlay_sprites.append(sprite)
-
-
-func _update_background_parallax() -> void:
-	if current_parallax_scene.is_empty():
-		return
-	var travel_ratio: float = 0.5
-	if player != null and is_instance_valid(player):
-		travel_ratio = inverse_lerp(HERO_LEFT_BOUND, HERO_RIGHT_BOUND, player.global_position.x)
-	travel_ratio = clampf(travel_ratio, 0.0, 1.0)
-	var centered_ratio: float = (travel_ratio - 0.5) * 2.0
-	if current_background_mode in [BACKGROUND_MODE_SINGLE_STRIP, BACKGROUND_MODE_SINGLE_NATIVE]:
-		_update_single_native_background(centered_ratio)
-		return
-	for layer_id in PARALLAX_LAYER_IDS:
-		_update_background_parallax_to_layer(layer_id, centered_ratio)
-
-
-func _update_single_native_background(centered_ratio: float) -> void:
-	if backdrop_sprite_a == null or backdrop_sprite_a.texture == null:
-		return
-	var position_values: Array = current_parallax_scene.get("backdrop_position", [0, 0])
-	var base_position := Vector2.ZERO
-	if position_values.size() >= 2:
-		base_position = Vector2(float(position_values[0]), float(position_values[1]))
-	var native_size: Vector2 = _resolve_native_backdrop_size(current_parallax_scene, backdrop_sprite_a.texture)
-	var max_scroll: float = maxf(0.0, native_size.x - SCREEN_SIZE.x)
-	var scroll_range_x: float = minf(float(current_parallax_scene.get("scroll_range_x", 256.0)), max_scroll)
-	var centered_start: float = scroll_range_x * 0.5
-	var directional_shift: float = centered_ratio * float(current_parallax_scene.get("scroll_distance", 20.0))
-	var max_forward_shift: float = maxf(0.0, scroll_range_x - centered_start)
-	var forward_shift: float = clampf(forward_scroll_distance * 0.18, 0.0, max_forward_shift)
-	var crop_start: float = clampf(centered_start + forward_shift + directional_shift, 0.0, scroll_range_x)
-	backdrop_sprite_a.position = base_position + Vector2(-crop_start, 0.0)
-
-
-func _resolve_native_backdrop_size(scene_def: Dictionary, texture: Texture2D) -> Vector2:
-	var raw_native_size: Variant = scene_def.get("backdrop_native_size", [texture.get_width(), texture.get_height()])
-	if raw_native_size is Array and raw_native_size.size() >= 2:
-		return Vector2(float(raw_native_size[0]), float(raw_native_size[1]))
-	return Vector2(float(texture.get_width()), float(texture.get_height()))
-
-
-func _update_background_parallax_to_layer(layer_id: String, centered_ratio: float) -> void:
-	var parallax_layer: Parallax2D = parallax_layers.get(layer_id)
-	var sprite: Sprite2D = parallax_sprites.get(layer_id)
-	if parallax_layer == null or sprite == null or sprite.texture == null:
-		return
-	var repeat_width: float = maxf(1.0, parallax_layer.repeat_size.x)
-	var speed_multipliers: Dictionary = current_parallax_scene.get("scroll_speed_multipliers", {})
-	var parallax_distances: Dictionary = current_parallax_scene.get("parallax_distances", {})
-	var anchor_biases: Dictionary = current_parallax_scene.get("anchor_bias", {})
-	var directional_shift: float = centered_ratio * float(parallax_distances.get(layer_id, 0.0))
-	var travel_scroll: float = forward_scroll_distance * float(speed_multipliers.get(layer_id, 0.0))
-	var raw_scroll: float = -travel_scroll - directional_shift + float(anchor_biases.get(layer_id, 0.0))
-	var wrapped_scroll: float = fposmod(raw_scroll, repeat_width)
-	parallax_layer.scroll_offset = Vector2(wrapped_scroll, 0.0)
-
-
-func _update_forward_progress(delta: float) -> void:
-	if player == null or not is_instance_valid(player):
-		return
-	var should_scroll: bool = battle_state in ["waiting_next_wave", "node_success", "node_failed"]
-	if player.has_method("is_advancing_visual"):
-		should_scroll = should_scroll or bool(player.is_advancing_visual())
-	else:
-		should_scroll = should_scroll or bool(player.should_move)
-	if should_scroll:
-		forward_scroll_distance += FORWARD_SCROLL_SPEED * delta
 
 
 func _spawn_enemy_death_visuals(world_position: Vector2, enemy_type: String) -> void:
@@ -755,7 +325,7 @@ func _spawn_loot_visual_entries(visual_entries: Array, world_position: Vector2) 
 		var entry: Dictionary = entry_variant
 		var drop_visual: Node2D = LOOT_DROP_VISUAL_SCENE.instantiate() as Node2D
 		loot_container.add_child(drop_visual)
-		drop_visual.global_position = world_position + Vector2(float(index * 22 - visual_entries.size() * 10), 36.0)
+		drop_visual.global_position = world_position + Vector2(float(index * 14 - visual_entries.size() * 6), 12.0)
 		if drop_visual.has_method("set_collect_overlay_parent"):
 			drop_visual.set_collect_overlay_parent(collect_effects)
 		if drop_visual.has_method("setup"):
@@ -765,7 +335,7 @@ func _spawn_loot_visual_entries(visual_entries: Array, world_position: Vector2) 
 
 func _get_enemy_spawn_position(index: int, total: int, spawn_side: int) -> Vector2:
 	var spread_offset: float = (float(index) - floor(float(total) * 0.5)) * 58.0
-	var x_position: float = RIGHT_SPAWN_X + absf(spread_offset) * 0.35
+	var x_position: float = LEFT_SPAWN_X + absf(spread_offset) if spawn_side < 0 else RIGHT_SPAWN_X - absf(spread_offset)
 	return Vector2(x_position, player_spawn.global_position.y)
 
 
@@ -779,7 +349,7 @@ func _process_loot_pickups() -> void:
 			continue
 		var should_collect: bool = false
 		if child.can_active_pickup() and has_player:
-			should_collect = player_position.distance_to(child.global_position) <= 122.0
+			should_collect = player_position.distance_to(child.global_position) <= 86.0
 		if not should_collect and child.should_auto_pickup():
 			should_collect = true
 		if not should_collect:
@@ -798,3 +368,105 @@ func _get_pickup_target_position(target_id: String) -> Vector2:
 			if hud and hud.has_method("get_resource_collect_target"):
 				return hud.get_resource_collect_target()
 			return Vector2(240.0, 40.0)
+
+
+func _setup_parallax_runtime() -> void:
+	parallax_layers = {
+		"sky": sky_layer,
+		"far": far_layer,
+		"mid": mid_layer,
+		"near_back": near_back_layer,
+		"near_front": near_front_layer,
+	}
+	parallax_sprites = {
+		"sky": sky_sprite,
+		"far": far_sprite,
+		"mid": mid_sprite,
+		"near_back": near_back_sprite,
+		"near_front": near_front_sprite,
+	}
+	parallax_scroll_accumulator = 0.0
+	for layer_id in PARALLAX_LAYER_IDS:
+		var p_layer: Parallax2D = parallax_layers.get(layer_id)
+		var sprite: Sprite2D = parallax_sprites.get(layer_id)
+		if p_layer == null or sprite == null:
+			continue
+		p_layer.position = Vector2.ZERO
+		p_layer.scroll_scale = Vector2.ONE
+		p_layer.ignore_camera_scroll = true
+		p_layer.scroll_offset = Vector2.ZERO
+		sprite.scale = Vector2.ONE
+
+
+func _resolve_parallax_scene(chapter_id: String, node_id: String) -> Dictionary:
+	var scene_key: String = ConfigDB.get_parallax_scene_key(chapter_id, node_id)
+	if not scene_key.is_empty():
+		var configured_scene: Dictionary = ConfigDB.get_parallax_scene(scene_key).duplicate(true)
+		if not configured_scene.is_empty():
+			return configured_scene
+	return {
+		"scroll_speed_multipliers": {
+			"sky": 0.05, "far": 0.15, "mid": 0.35,
+			"near_back": 0.65, "near_front": 0.85
+		},
+		"layer_paths": {}
+	}
+
+
+func _apply_parallax_scene(scene_def: Dictionary) -> void:
+	var layer_paths: Dictionary = scene_def.get("layer_paths", {})
+	for layer_id in PARALLAX_LAYER_IDS:
+		var texture_path: String = String(layer_paths.get(layer_id, ""))
+		if texture_path.is_empty():
+			_apply_parallax_layer(layer_id, null)
+		else:
+			_apply_parallax_layer(layer_id, _load_runtime_texture(texture_path))
+
+
+func _apply_parallax_layer(layer_id: String, texture: Texture2D) -> void:
+	var p_layer: Parallax2D = parallax_layers.get(layer_id)
+	var sprite: Sprite2D = parallax_sprites.get(layer_id)
+	if p_layer == null or sprite == null:
+		return
+	if texture == null:
+		sprite.texture = null
+		sprite.scale = Vector2.ONE
+		p_layer.scroll_offset = Vector2.ZERO
+		return
+	sprite.texture = texture
+	sprite.centered = false
+	var tex_w := float(texture.get_width())
+	var tex_h := float(texture.get_height())
+	var scale_y := VIEWPORT_HEIGHT / maxf(1.0, tex_h)
+	sprite.scale = Vector2(scale_y, scale_y)
+	var scaled_w := tex_w * scale_y
+	p_layer.repeat_size = Vector2(scaled_w, VIEWPORT_HEIGHT)
+	p_layer.scroll_offset = Vector2.ZERO
+
+
+func _clear_parallax_layers() -> void:
+	parallax_scroll_accumulator = 0.0
+	for layer_id in PARALLAX_LAYER_IDS:
+		var p_layer: Parallax2D = parallax_layers.get(layer_id)
+		var sprite: Sprite2D = parallax_sprites.get(layer_id)
+		if sprite != null:
+			sprite.texture = null
+			sprite.scale = Vector2.ONE
+		if p_layer != null:
+			p_layer.scroll_offset = Vector2.ZERO
+
+
+func _update_background_parallax(delta: float) -> void:
+	if current_parallax_scene.is_empty():
+		return
+	parallax_scroll_accumulator += delta * BASE_SCROLL_SPEED
+	var speed_mults: Dictionary = current_parallax_scene.get("scroll_speed_multipliers", {})
+	for layer_id in PARALLAX_LAYER_IDS:
+		var p_layer: Parallax2D = parallax_layers.get(layer_id)
+		var sprite: Sprite2D = parallax_sprites.get(layer_id)
+		if p_layer == null or sprite == null or sprite.texture == null:
+			continue
+		var speed_mult: float = float(speed_mults.get(layer_id, 0.5))
+		var scroll_px: float = parallax_scroll_accumulator * speed_mult
+		var repeat_w: float = maxf(1.0, p_layer.repeat_size.x)
+		p_layer.scroll_offset = Vector2(-fmod(scroll_px, repeat_w), 0.0)
