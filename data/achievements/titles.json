@@ -1,0 +1,14 @@
+[
+  { "id": "title_novice", "name": "初入江湖", "description": "击杀 100 个敌人解锁", "required_achievement_id": "kill_100" },
+  { "id": "title_veteran", "name": "身经百战", "description": "击杀 1000 个敌人解锁", "required_achievement_id": "kill_1000" },
+  { "id": "title_invincible", "name": "万夫莫敌", "description": "击杀 10000 个敌人解锁", "required_achievement_id": "kill_10000" },
+  { "id": "title_inheritor", "name": "传承者", "description": "凑齐传承 6 件套解锁", "required_achievement_id": "collect_set_6" },
+  { "id": "title_legend_hunter", "name": "传奇猎人", "description": "获得 10 件传奇解锁", "required_achievement_id": "collect_legendary_10" },
+  { "id": "title_collector", "name": "百科全书", "description": "发现全部基础装备解锁", "required_achievement_id": "collect_all_base" },
+  { "id": "title_rift_conqueror", "name": "秘境征服者", "description": "秘境 50 层解锁", "required_achievement_id": "rift_50" },
+  { "id": "title_traveler", "name": "纵横四海", "description": "通关所有章节解锁", "required_achievement_id": "chapter_all" },
+  { "id": "title_reborn", "name": "轮回者", "description": "首次重入江湖解锁", "required_achievement_id": "rebirth_first" },
+  { "id": "title_eternal", "name": "生生不息", "description": "重入 5 次解锁", "required_achievement_id": "rebirth_5" },
+  { "id": "title_master", "name": "登峰造极", "description": "达到最高等级解锁", "required_achievement_id": "level_max" },
+  { "id": "title_rich", "name": "腰缠万贯", "description": "百万金币解锁", "required_achievement_id": "gold_million" }
+]

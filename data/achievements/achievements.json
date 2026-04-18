@@ -1,0 +1,17 @@
+[
+  { "id": "kill_100", "name": "初入江湖", "description": "累计击杀 100 个敌人", "category": "combat", "condition_type": "total_kills", "condition_target": 100, "reward_type": "title", "reward_value": "title_novice", "hidden": false },
+  { "id": "kill_1000", "name": "身经百战", "description": "累计击杀 1000 个敌人", "category": "combat", "condition_type": "total_kills", "condition_target": 1000, "reward_type": "title", "reward_value": "title_veteran", "hidden": false },
+  { "id": "kill_10000", "name": "万夫莫敌", "description": "累计击杀 10000 个敌人", "category": "combat", "condition_type": "total_kills", "condition_target": 10000, "reward_type": "title", "reward_value": "title_invincible", "hidden": false },
+  { "id": "boss_first", "name": "初斩强敌", "description": "首次击杀 Boss", "category": "combat", "condition_type": "boss_kill", "condition_target": 1, "reward_type": "gold", "reward_value": "500", "hidden": false },
+  { "id": "collect_set_6", "name": "传承者", "description": "凑齐任意传承 6 件套", "category": "collection", "condition_type": "set_6_complete", "condition_target": 1, "reward_type": "title", "reward_value": "title_inheritor", "hidden": false },
+  { "id": "collect_legendary_10", "name": "传奇猎人", "description": "累计获得 10 件传奇装备", "category": "collection", "condition_type": "total_legendaries", "condition_target": 10, "reward_type": "title", "reward_value": "title_legend_hunter", "hidden": false },
+  { "id": "collect_all_base", "name": "百科全书", "description": "发现所有基础装备类型", "category": "collection", "condition_type": "all_bases_discovered", "condition_target": 1, "reward_type": "title", "reward_value": "title_collector", "hidden": true },
+  { "id": "rift_10", "name": "秘境探索者", "description": "秘境通关 10 层", "category": "exploration", "condition_type": "rift_cleared", "condition_target": 10, "reward_type": "gold", "reward_value": "2000", "hidden": false },
+  { "id": "rift_50", "name": "秘境征服者", "description": "秘境通关 50 层", "category": "exploration", "condition_type": "rift_cleared", "condition_target": 50, "reward_type": "title", "reward_value": "title_rift_conqueror", "hidden": false },
+  { "id": "chapter_all", "name": "纵横四海", "description": "通关所有章节", "category": "exploration", "condition_type": "all_chapters", "condition_target": 1, "reward_type": "title", "reward_value": "title_traveler", "hidden": false },
+  { "id": "rebirth_first", "name": "轮回者", "description": "首次重入江湖", "category": "rebirth", "condition_type": "total_rebirths", "condition_target": 1, "reward_type": "title", "reward_value": "title_reborn", "hidden": false },
+  { "id": "rebirth_5", "name": "生生不息", "description": "重入江湖 5 次", "category": "rebirth", "condition_type": "total_rebirths", "condition_target": 5, "reward_type": "title", "reward_value": "title_eternal", "hidden": false },
+  { "id": "level_max", "name": "登峰造极", "description": "达到最高等级", "category": "milestone", "condition_type": "hero_level", "condition_target": 100, "reward_type": "title", "reward_value": "title_master", "hidden": false },
+  { "id": "daily_7", "name": "七日全勤", "description": "连续 7 天完成所有每日目标", "category": "milestone", "condition_type": "daily_streak", "condition_target": 7, "reward_type": "guaranteed_legendary", "reward_value": "1", "hidden": false },
+  { "id": "gold_million", "name": "腰缠万贯", "description": "累计获得 1000000 金币", "category": "milestone", "condition_type": "total_gold", "condition_target": 1000000, "reward_type": "title", "reward_value": "title_rich", "hidden": false }
+]

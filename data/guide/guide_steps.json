@@ -1,0 +1,14 @@
+[
+  { "id": "welcome", "type": "mandatory", "order": 1, "trigger_condition": "new_game", "highlight_target": "combat_area", "completion_condition": "wait_5s", "message": "欢迎来到江湖！你将在此开始修行之路。", "timeout_seconds": 5 },
+  { "id": "first_kill", "type": "mandatory", "order": 2, "trigger_condition": "welcome_done", "highlight_target": "loot_drop", "completion_condition": "kill_3", "message": "击败敌人获取修行资源！试着击杀 3 个敌人。", "timeout_seconds": 0 },
+  { "id": "open_inventory", "type": "mandatory", "order": 3, "trigger_condition": "kill_3_done", "highlight_target": "nav_inventory", "completion_condition": "panel_open_inventory", "message": "按 I 或点击背包按钮，查看你的战利品。", "timeout_seconds": 0 },
+  { "id": "equip_first", "type": "mandatory", "order": 4, "trigger_condition": "inventory_opened", "highlight_target": "best_item", "completion_condition": "equip_any", "message": "选择一件装备穿上它，提升你的战斗力。", "timeout_seconds": 0 },
+  { "id": "close_inventory", "type": "mandatory", "order": 5, "trigger_condition": "equip_done", "highlight_target": "close_button", "completion_condition": "panel_closed", "message": "好的，关闭背包继续修行。", "timeout_seconds": 0 },
+  { "id": "show_nav", "type": "mandatory", "order": 6, "trigger_condition": "inventory_closed", "highlight_target": "nav_bar", "completion_condition": "wait_3s", "message": "这是导航栏，通过它可以访问各种系统。", "timeout_seconds": 3 },
+  { "id": "guide_complete", "type": "mandatory", "order": 7, "trigger_condition": "show_nav_done", "highlight_target": "", "completion_condition": "auto", "message": "修行入门完成！祝你江湖路远，一路顺风。", "timeout_seconds": 0 },
+  { "id": "tip_legendary", "type": "soft_tip", "order": 10, "trigger_condition": "first_legendary_drop", "highlight_target": "", "completion_condition": "dismiss", "message": "传奇装备！打开背包看看它的传奇特效", "timeout_seconds": 0 },
+  { "id": "tip_boss", "type": "soft_tip", "order": 11, "trigger_condition": "first_boss_encounter", "highlight_target": "", "completion_condition": "dismiss", "message": "Boss 出现了！击败它可获保底传奇掉落", "timeout_seconds": 0 },
+  { "id": "tip_extract", "type": "soft_tip", "order": 12, "trigger_condition": "first_extractable", "highlight_target": "", "completion_condition": "dismiss", "message": "你可以在百炼坊(B)中萃取传奇特效", "timeout_seconds": 0 },
+  { "id": "tip_keystone", "type": "soft_tip", "order": 13, "trigger_condition": "first_keystone", "highlight_target": "", "completion_condition": "dismiss", "message": "你获得了秘境钥石！按 P 挑战秘境", "timeout_seconds": 0 },
+  { "id": "tip_daily", "type": "soft_tip", "order": 14, "trigger_condition": "first_daily_goal", "highlight_target": "", "completion_condition": "dismiss", "message": "每日修行任务在右上角", "timeout_seconds": 0 }
+]
