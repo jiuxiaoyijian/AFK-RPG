@@ -23,6 +23,11 @@ ConfigDB="*res://scripts/Autoload/ConfigDB.cs"
 GameManager="*res://scripts/Autoload/GameManager.cs"
 SaveManager="*res://scripts/Autoload/SaveManager.cs"
 DemoManager="*res://scripts/Autoload/DemoManager.cs"
+OfflineSystem="*res://scripts/Autoload/OfflineSystem.cs"
+DailyGoalSystem="*res://scripts/Autoload/DailyGoalSystem.cs"
+StageEventSystem="*res://scripts/Autoload/StageEventSystem.cs"
+MetaProgressionSystem="*res://scripts/Autoload/MetaProgressionSystem.cs"
+LootCodexSystem="*res://scripts/Autoload/LootCodexSystem.cs"
 
 [dotnet]
 

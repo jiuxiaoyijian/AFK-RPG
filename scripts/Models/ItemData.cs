@@ -60,6 +60,7 @@ public class AffixInstance
     public double Value { get; set; }
     public double MinRange { get; set; }
     public double MaxRange { get; set; }
+    public bool IsLegendary { get; set; }
 }
 
 public class ItemData

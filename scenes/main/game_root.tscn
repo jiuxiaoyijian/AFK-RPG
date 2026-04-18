@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://desktop_idle_root"]
+[gd_scene load_steps=22 format=3 uid="uid://desktop_idle_root"]
 
 [ext_resource type="Script" path="res://scripts/Systems/CombatSystem.cs" id="1_combat"]
 [ext_resource type="Script" path="res://scripts/Systems/LootSystem.cs" id="2_loot"]
@@ -7,6 +7,20 @@
 [ext_resource type="Script" path="res://scripts/UI/HudController.cs" id="5_hud"]
 [ext_resource type="Script" path="res://scripts/UI/MainNavBarController.cs" id="6_nav"]
 [ext_resource type="Script" path="res://scripts/UI/LaunchMenuController.cs" id="7_menu"]
+[ext_resource type="Script" path="res://scripts/Systems/SetSystem.cs" id="8_set"]
+[ext_resource type="Script" path="res://scripts/Systems/CubeSystem.cs" id="9_cube"]
+[ext_resource type="Script" path="res://scripts/Systems/MartialCodexSystem.cs" id="10_codex"]
+[ext_resource type="Script" path="res://scripts/Systems/RiftSystem.cs" id="11_rift"]
+[ext_resource type="Script" path="res://scripts/Systems/GemSystem.cs" id="12_gem"]
+[ext_resource type="Script" path="res://scripts/Systems/ParagonSystem.cs" id="13_paragon"]
+[ext_resource type="Script" path="res://scripts/Systems/SeasonSystem.cs" id="14_season"]
+[ext_resource type="Script" path="res://scripts/Systems/HeroProgressionSystem.cs" id="15_hero"]
+[ext_resource type="Script" path="res://scripts/UI/InventoryPanelController.cs" id="16_inv"]
+[ext_resource type="Script" path="res://scripts/UI/SkillPanelController.cs" id="17_skill"]
+[ext_resource type="Script" path="res://scripts/UI/CubePanelController.cs" id="18_cube_ui"]
+[ext_resource type="Script" path="res://scripts/UI/ResearchPanelController.cs" id="19_research"]
+[ext_resource type="Script" path="res://scripts/UI/CodexPanelController.cs" id="20_codex_ui"]
+[ext_resource type="Script" path="res://scripts/UI/DropStatsPanelController.cs" id="21_stats"]
 
 [node name="GameRoot" type="Node2D"]
 
@@ -70,6 +84,54 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.5)
 
+[node name="InventoryPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("16_inv")
+
+[node name="SkillPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("17_skill")
+
+[node name="CubePanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("18_cube_ui")
+
+[node name="ResearchPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("19_research")
+
+[node name="CodexPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("20_codex_ui")
+
+[node name="DropStatsPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("21_stats")
+
 [node name="LaunchMenu" type="Control" parent="UILayer"]
 layout_mode = 1
 anchors_preset = 15
@@ -89,3 +151,27 @@ script = ExtResource("2_loot")
 
 [node name="EquipmentGeneratorSystem" type="Node" parent="Systems"]
 script = ExtResource("3_equip_gen")
+
+[node name="SetSystem" type="Node" parent="Systems"]
+script = ExtResource("8_set")
+
+[node name="CubeSystem" type="Node" parent="Systems"]
+script = ExtResource("9_cube")
+
+[node name="MartialCodexSystem" type="Node" parent="Systems"]
+script = ExtResource("10_codex")
+
+[node name="RiftSystem" type="Node" parent="Systems"]
+script = ExtResource("11_rift")
+
+[node name="GemSystem" type="Node" parent="Systems"]
+script = ExtResource("12_gem")
+
+[node name="ParagonSystem" type="Node" parent="Systems"]
+script = ExtResource("13_paragon")
+
+[node name="SeasonSystem" type="Node" parent="Systems"]
+script = ExtResource("14_season")
+
+[node name="HeroProgressionSystem" type="Node" parent="Systems"]
+script = ExtResource("15_hero")
