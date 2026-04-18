@@ -18,16 +18,12 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-EventBus="*res://scripts/autoload/event_bus.gd"
-ConfigDB="*res://scripts/autoload/config_db.gd"
-MetaProgressionSystem="*res://scripts/autoload/meta_progression_system.gd"
-LootCodexSystem="*res://scripts/autoload/loot_codex_system.gd"
-GameManager="*res://scripts/autoload/game_manager.gd"
-DailyGoalSystem="*res://scripts/autoload/daily_goal_system.gd"
-StageEventSystem="*res://scripts/autoload/stage_event_system.gd"
-DemoManager="*res://scripts/autoload/demo_manager.gd"
-SaveManager="*res://scripts/autoload/save_manager.gd"
-OfflineSystem="*res://scripts/autoload/offline_system.gd"
+EventBus="*res://scripts/Autoload/EventBus.cs"
+ConfigDB="*res://scripts/Autoload/ConfigDB.cs"
+
+[dotnet]
+
+project/assembly_name="桌面挂机原型"
 
 [display]
 
