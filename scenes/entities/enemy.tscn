@@ -1,48 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://desktop_idle_enemy"]
+[gd_scene load_steps=2 format=3 uid="uid://enemy_actor"]
 
-[ext_resource type="Script" path="res://scripts/entities/enemy_actor.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/Entities/EnemyActor.cs" id="1_enemy"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_x2p1q"]
-size = Vector2(26, 38)
-
-[node name="Enemy" type="CharacterBody2D"]
+[node name="Enemy" type="Node2D"]
 script = ExtResource("1_enemy")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_x2p1q")
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(2, 2)
 
-[node name="BodyVisual" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-13, -19, 13, -19, 13, 19, -13, 19)
-color = Color(0.317647, 0.74902, 0.356863, 1)
+[node name="CollisionShape" type="Area2D" parent="."]
 
-[node name="PortraitVisual" type="Sprite2D" parent="."]
-position = Vector2(0, -4)
-scale = Vector2(0.09, 0.09)
-z_index = 1
+[node name="Shape" type="CollisionShape2D" parent="CollisionShape"]
+shape = SubResource("RectangleShape2D_enemy")
 
-[node name="HpBar" type="ProgressBar" parent="."]
-offset_left = -24.0
-offset_top = -38.0
-offset_right = 24.0
-offset_bottom = -30.0
-show_percentage = false
-max_value = 100.0
-value = 100.0
-
-[node name="StatusLabel" type="Label" parent="."]
-offset_left = -32.0
-offset_top = -56.0
-offset_right = 32.0
-offset_bottom = -42.0
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
-text = ""
-
-[node name="FeedbackLabel" type="Label" parent="."]
-offset_left = -40.0
-offset_top = -74.0
-offset_right = 40.0
-offset_bottom = -58.0
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = ""
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(32, 48)

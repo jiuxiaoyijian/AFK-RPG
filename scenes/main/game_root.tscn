@@ -1,4 +1,8 @@
-[gd_scene format=3 uid="uid://desktop_idle_root"]
+[gd_scene load_steps=4 format=3 uid="uid://desktop_idle_root"]
+
+[ext_resource type="Script" path="res://scripts/Systems/CombatSystem.cs" id="1_combat"]
+[ext_resource type="Script" path="res://scripts/Systems/LootSystem.cs" id="2_loot"]
+[ext_resource type="Script" path="res://scripts/Systems/EquipmentGeneratorSystem.cs" id="3_equip_gen"]
 
 [node name="GameRoot" type="Node2D"]
 
@@ -56,3 +60,12 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Systems" type="Node" parent="."]
+
+[node name="CombatSystem" type="Node" parent="Systems"]
+script = ExtResource("1_combat")
+
+[node name="LootSystem" type="Node" parent="Systems"]
+script = ExtResource("2_loot")
+
+[node name="EquipmentGeneratorSystem" type="Node" parent="Systems"]
+script = ExtResource("3_equip_gen")
