@@ -21,6 +21,8 @@ config/icon="res://icon.svg"
 EventBus="*res://scripts/Autoload/EventBus.cs"
 ConfigDB="*res://scripts/Autoload/ConfigDB.cs"
 GameManager="*res://scripts/Autoload/GameManager.cs"
+SaveManager="*res://scripts/Autoload/SaveManager.cs"
+DemoManager="*res://scripts/Autoload/DemoManager.cs"
 
 [dotnet]
 

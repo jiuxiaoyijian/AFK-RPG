@@ -40,6 +40,40 @@ public partial class GameManager : Node
     // ── Computed ──
     public double Dps { get; private set; }
     public double CombatPower { get; private set; }
+    public string HeroStyle => string.IsNullOrEmpty(SchoolId) ? "无门无派" : SchoolId;
+    public string CurrentChapterName
+    {
+        get
+        {
+            var db = GetNodeOrNull<ConfigDB>("/root/ConfigDB");
+            if (db != null && db.Chapters.TryGetValue(CurrentChapterId, out var ch))
+                return ch.Name;
+            return CurrentChapterId;
+        }
+    }
+    public int CurrentNodeIndex
+    {
+        get
+        {
+            var db = GetNodeOrNull<ConfigDB>("/root/ConfigDB");
+            if (db != null && db.Chapters.TryGetValue(CurrentChapterId, out var ch))
+            {
+                int idx = System.Array.IndexOf(ch.NodeIds, CurrentNodeId);
+                return idx >= 0 ? idx : 0;
+            }
+            return 0;
+        }
+    }
+    public int TotalNodes
+    {
+        get
+        {
+            var db = GetNodeOrNull<ConfigDB>("/root/ConfigDB");
+            if (db != null && db.Chapters.TryGetValue(CurrentChapterId, out var ch))
+                return ch.NodeIds.Length;
+            return 1;
+        }
+    }
 
     public override void _Ready()
     {
