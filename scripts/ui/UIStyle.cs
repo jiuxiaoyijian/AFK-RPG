@@ -4,7 +4,8 @@ namespace DesktopIdle.UI;
 
 /// <summary>
 /// Global UI style constants: colors, font sizes, StyleBox factories.
-/// All UI controllers reference this for consistent look & feel.
+/// All UI controllers reference this for consistent look &amp; feel.
+/// 详细规范见 文档/02_交互与原型/UI控件与视觉规范.md
 /// </summary>
 public static class UIStyle
 {
@@ -17,10 +18,19 @@ public static class UIStyle
     public static readonly Color Ancient = new(0.8f, 0.65f, 0f);
     public static readonly Color Primal = new(0.9f, 0.15f, 0.15f);
 
-    // ── UI Base Colors ──
-    public static readonly Color BgDark = new(0.08f, 0.08f, 0.10f);
-    public static readonly Color BgPanel = new(0.12f, 0.12f, 0.15f, 0.95f);
-    public static readonly Color BgHeader = new(0.15f, 0.14f, 0.18f);
+    // ── Greyscale Ladder (规范 §2.1) ──
+    public static readonly Color Bg0 = new(0.05f, 0.05f, 0.07f);
+    public static readonly Color Bg1 = new(0.08f, 0.08f, 0.10f);
+    public static readonly Color Bg2 = new(0.12f, 0.12f, 0.15f, 0.95f);
+    public static readonly Color Bg3 = new(0.15f, 0.14f, 0.18f);
+    public static readonly Color Bg4 = new(0.20f, 0.19f, 0.22f);
+    public static readonly Color Bg5 = new(0.28f, 0.27f, 0.30f);
+
+    // 别名（向后兼容）
+    public static readonly Color BgDark = Bg1;
+    public static readonly Color BgPanel = Bg2;
+    public static readonly Color BgHeader = Bg3;
+
     public static readonly Color Border = new(0.35f, 0.33f, 0.30f);
     public static readonly Color BorderHighlight = new(0.55f, 0.50f, 0.40f);
     public static readonly Color TextPrimary = new(0.92f, 0.90f, 0.85f);
@@ -48,10 +58,34 @@ public static class UIStyle
     public const int FontSmall = 11;
     public const int FontTiny = 9;
 
-    // ── Spacing ──
+    // ── Spacing (4px grid, 规范 §2.3) ──
+    public const int Spacing4 = 4;
+    public const int Spacing8 = 8;
+    public const int Spacing12 = 12;
+    public const int Spacing16 = 16;
+    public const int Spacing24 = 24;
+    public const int Spacing32 = 32;
+
+    // 旧常量（保留向后兼容）
     public const int PadOuter = 18;
     public const int PadInner = 10;
     public const int PadTight = 4;
+
+    // ── Key Sizes (规范 §2.4) ──
+    public const int HeaderHeight = 40;
+    public const int FooterHeight = 52;
+    public const int NavBarHeight = 52;
+    public const int ButtonHeight = 32;
+    public const int ItemCellSize = 64;
+
+    // ── Standard Panel Widths ──
+    public const int PanelWidthCompact = 440;
+    public const int PanelWidthStandard = 720;
+    public const int PanelWidthWide = 960;
+
+    // ═══════════════════════════════════════════
+    // StyleBox factories
+    // ═══════════════════════════════════════════
 
     public static StyleBoxFlat MakePanelBox(Color? bg = null, Color? border = null, int borderWidth = 1, int cornerRadius = 4)
     {
@@ -85,6 +119,67 @@ public static class UIStyle
         box.ContentMarginRight = 8;
         box.ContentMarginTop = 4;
         box.ContentMarginBottom = 4;
+        return box;
+    }
+
+    /// <summary>
+    /// Hover 状态：底色提亮 15%
+    /// </summary>
+    public static StyleBoxFlat MakeHoverBox(Color accent)
+        => MakeButtonBox(accent.Lightened(0.15f));
+
+    /// <summary>
+    /// Pressed 状态：底色变暗 15%
+    /// </summary>
+    public static StyleBoxFlat MakePressedBox(Color accent)
+        => MakeButtonBox(accent.Darkened(0.15f));
+
+    /// <summary>
+    /// Disabled 状态：去饱和 + 透明度
+    /// </summary>
+    public static StyleBoxFlat MakeDisabledBox(Color accent)
+    {
+        var disabled = new Color(accent.R, accent.G, accent.B, 0.35f);
+        return MakeButtonBox(disabled);
+    }
+
+    /// <summary>
+    /// 一次性给按钮挂上 normal / hover / pressed / disabled 四态样式。
+    /// 替代各处重复的 MakeButtonBox 调用。
+    /// </summary>
+    public static void ApplyStateButton(Button btn, Color accent, int fontSize = FontBody)
+    {
+        btn.AddThemeStyleboxOverride("normal", MakeButtonBox(accent));
+        btn.AddThemeStyleboxOverride("hover", MakeHoverBox(accent));
+        btn.AddThemeStyleboxOverride("pressed", MakePressedBox(accent));
+        btn.AddThemeStyleboxOverride("disabled", MakeDisabledBox(accent));
+        btn.AddThemeFontSizeOverride("font_size", fontSize);
+        btn.AddThemeColorOverride("font_color", TextPrimary);
+        btn.AddThemeColorOverride("font_disabled_color", TextMuted);
+    }
+
+    /// <summary>
+    /// 灰度阶梯背景盒
+    /// </summary>
+    public static StyleBoxFlat MakeBg(int level, int borderWidth = 0, int cornerRadius = 4)
+    {
+        var color = level switch
+        {
+            0 => Bg0, 1 => Bg1, 2 => Bg2, 3 => Bg3, 4 => Bg4, 5 => Bg5, _ => Bg2,
+        };
+        return MakePanelBox(color, Border, borderWidth, cornerRadius);
+    }
+
+    /// <summary>
+    /// 选中态边框（2px Accent，背景 Bg4）
+    /// </summary>
+    public static StyleBoxFlat MakeSelectedBox()
+    {
+        var box = MakePanelBox(Bg4, Accent, 2, 4);
+        box.ContentMarginLeft = 0;
+        box.ContentMarginRight = 0;
+        box.ContentMarginTop = 0;
+        box.ContentMarginBottom = 0;
         return box;
     }
 }

@@ -34,7 +34,7 @@ public partial class MainNavBarController : Control
         OffsetTop = -52;
         CallDeferred(Control.MethodName.SetSize, new Vector2(1280, 52));
 
-        _overlayManager = GetNodeOrNull<UIOverlayManager>("../../UIOverlayManager");
+        _overlayManager = GetNodeOrNull<UIOverlayManager>("../UIOverlayManager");
 
         var bg = new Panel();
         bg.SetAnchorsPreset(LayoutPreset.FullRect);

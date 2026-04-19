@@ -1,11 +1,14 @@
 using Godot;
 using DesktopIdle.Autoload;
+using DesktopIdle.Models;
+using DesktopIdle.UI.Components;
 
 namespace DesktopIdle.UI;
 
 /// <summary>
-/// Main menu shown at game start.
-/// Displays game title, version, 3 save slots, and New/Continue/Delete/Settings buttons.
+/// 启动菜单：标题 / 槽位列表 / 操作按钮 / 设置 / 版本号。
+/// 重构要点：槽位选中视觉反馈、按钮 enabled/disabled 状态机、ConfirmDialog 删除。
+/// 见 文档/02_交互与原型/UI控件与视觉规范.md
 /// </summary>
 public partial class LaunchMenuController : Control
 {
@@ -15,7 +18,14 @@ public partial class LaunchMenuController : Control
 
     private VBoxContainer _slotContainer = null!;
     private Label _versionLabel = null!;
+    private Label _hintLabel = null!;
 
+    private IconButton _newBtn = null!;
+    private IconButton _continueBtn = null!;
+    private IconButton _deleteBtn = null!;
+    private IconButton _settingsBtn = null!;
+
+    private readonly System.Collections.Generic.Dictionary<int, SlotCard> _slotCards = new();
     private int _selectedSlot = SaveManager.DefaultSaveSlot;
 
     public override void _Ready()
@@ -27,118 +37,187 @@ public partial class LaunchMenuController : Control
         SetAnchorsPreset(LayoutPreset.FullRect);
         BuildUI();
         RefreshSlots();
+        UpdateButtonStates();
     }
 
     private void BuildUI()
     {
-        var bg = new ColorRect();
-        bg.Color = UIStyle.BgDark;
+        var bg = new ColorRect
+        {
+            Color = UIStyle.Bg0,
+            MouseFilter = MouseFilterEnum.Stop,
+        };
         bg.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(bg);
 
-        var center = new VBoxContainer();
-        center.SetAnchorsPreset(LayoutPreset.Center);
-        center.Position = new Vector2(440, 120);
-        center.Size = new Vector2(400, 480);
-        center.AddThemeConstantOverride("separation", 12);
-        AddChild(center);
+        var card = new PanelContainer
+        {
+            CustomMinimumSize = new Vector2(480, 0),
+        };
+        card.SetAnchorsPreset(LayoutPreset.Center);
+        card.GrowHorizontal = GrowDirection.Both;
+        card.GrowVertical = GrowDirection.Both;
+        card.OffsetLeft = -240;
+        card.OffsetRight = 240;
+        var cardStyle = UIStyle.MakePanelBox(UIStyle.Bg2, UIStyle.BorderHighlight, 1, 8);
+        cardStyle.ContentMarginLeft = UIStyle.Spacing24;
+        cardStyle.ContentMarginRight = UIStyle.Spacing24;
+        cardStyle.ContentMarginTop = UIStyle.Spacing24;
+        cardStyle.ContentMarginBottom = UIStyle.Spacing24;
+        card.AddThemeStyleboxOverride("panel", cardStyle);
+        AddChild(card);
 
-        var title = new Label { Text = DemoManager.GameTitle };
+        var center = new VBoxContainer();
+        center.AddThemeConstantOverride("separation", UIStyle.Spacing16);
+        card.AddChild(center);
+
+        var title = new Label
+        {
+            Text = DemoManager.GameTitle,
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
         title.AddThemeFontSizeOverride("font_size", 32);
         title.AddThemeColorOverride("font_color", UIStyle.Accent);
-        title.HorizontalAlignment = HorizontalAlignment.Center;
         center.AddChild(title);
 
-        var subtitle = new Label { Text = "横版挂机 · 武侠RPG" };
+        var subtitle = new Label
+        {
+            Text = "横版挂机 · 武侠 RPG",
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
         subtitle.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
         subtitle.AddThemeColorOverride("font_color", UIStyle.TextSecondary);
-        subtitle.HorizontalAlignment = HorizontalAlignment.Center;
         center.AddChild(subtitle);
 
-        center.AddChild(new HSeparator());
+        var divider = new ColorRect
+        {
+            Color = UIStyle.Border,
+            CustomMinimumSize = new Vector2(0, 1),
+        };
+        center.AddChild(divider);
 
-        var slotsLabel = new Label { Text = "── 存档槽位 ──" };
-        slotsLabel.AddThemeFontSizeOverride("font_size", UIStyle.FontHeader);
-        slotsLabel.AddThemeColorOverride("font_color", UIStyle.TextPrimary);
-        slotsLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        center.AddChild(slotsLabel);
+        center.AddChild(new SectionHeader("存档槽位", "点击选中"));
 
         _slotContainer = new VBoxContainer();
-        _slotContainer.AddThemeConstantOverride("separation", 8);
+        _slotContainer.AddThemeConstantOverride("separation", UIStyle.Spacing8);
         center.AddChild(_slotContainer);
 
-        center.AddChild(new HSeparator());
+        _hintLabel = new Label
+        {
+            Text = "",
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        _hintLabel.AddThemeFontSizeOverride("font_size", UIStyle.FontSmall);
+        _hintLabel.AddThemeColorOverride("font_color", UIStyle.TextMuted);
+        center.AddChild(_hintLabel);
+
+        var divider2 = new ColorRect
+        {
+            Color = UIStyle.Border,
+            CustomMinimumSize = new Vector2(0, 1),
+        };
+        center.AddChild(divider2);
 
         var btnRow = new HBoxContainer();
         btnRow.Alignment = BoxContainer.AlignmentMode.Center;
-        btnRow.AddThemeConstantOverride("separation", 12);
+        btnRow.AddThemeConstantOverride("separation", UIStyle.Spacing12);
         center.AddChild(btnRow);
 
-        var newBtn = MakeMenuButton("新开始", UIStyle.Success);
-        newBtn.Pressed += OnNewGame;
-        btnRow.AddChild(newBtn);
+        _newBtn = new IconButton("新开始", IconButton.ButtonVariant.Primary)
+        {
+            CustomMinimumSize = new Vector2(120, 40),
+        };
+        _newBtn.Pressed += OnNewGame;
+        btnRow.AddChild(_newBtn);
 
-        var continueBtn = MakeMenuButton("继续", UIStyle.Accent);
-        continueBtn.Pressed += OnContinue;
-        btnRow.AddChild(continueBtn);
+        _continueBtn = new IconButton("继续", IconButton.ButtonVariant.Primary)
+        {
+            CustomMinimumSize = new Vector2(120, 40),
+        };
+        _continueBtn.Pressed += OnContinue;
+        btnRow.AddChild(_continueBtn);
 
-        var deleteBtn = MakeMenuButton("删除", UIStyle.Danger);
-        deleteBtn.Pressed += OnDeleteSlot;
-        btnRow.AddChild(deleteBtn);
+        _deleteBtn = new IconButton("删除", IconButton.ButtonVariant.Danger)
+        {
+            CustomMinimumSize = new Vector2(120, 40),
+        };
+        _deleteBtn.Pressed += OnDeleteSlot;
+        btnRow.AddChild(_deleteBtn);
 
-        var settingsBtn = MakeMenuButton("设置", UIStyle.NavSettings);
-        settingsBtn.Pressed += OnSettings;
-        center.AddChild(settingsBtn);
+        _settingsBtn = new IconButton("设  置", IconButton.ButtonVariant.Secondary)
+        {
+            CustomMinimumSize = new Vector2(0, 36),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        _settingsBtn.Pressed += OnSettings;
+        center.AddChild(_settingsBtn);
 
-        _versionLabel = new Label { Text = _demoManager.GetDisplayVersion() };
+        _versionLabel = new Label
+        {
+            Text = _demoManager.GetDisplayVersion(),
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
         _versionLabel.AddThemeFontSizeOverride("font_size", UIStyle.FontTiny);
         _versionLabel.AddThemeColorOverride("font_color", UIStyle.TextMuted);
-        _versionLabel.HorizontalAlignment = HorizontalAlignment.Right;
         _versionLabel.SetAnchorsPreset(LayoutPreset.BottomRight);
-        _versionLabel.Position = new Vector2(1200, 696);
+        _versionLabel.GrowHorizontal = GrowDirection.Begin;
+        _versionLabel.GrowVertical = GrowDirection.Begin;
+        _versionLabel.OffsetLeft = -240;
+        _versionLabel.OffsetTop = -28;
         AddChild(_versionLabel);
     }
 
     private void RefreshSlots()
     {
-        foreach (var child in _slotContainer.GetChildren())
-            child.QueueFree();
+        foreach (var child in _slotContainer.GetChildren()) child.QueueFree();
+        _slotCards.Clear();
 
         for (int i = 1; i <= SaveManager.SaveSlotCount; i++)
         {
             var slotIdx = i;
             var payload = _saveManager.PeekSlot(i);
-            var btn = new Button();
-            btn.CustomMinimumSize = new Vector2(360, 48);
-            btn.FocusMode = FocusModeEnum.None;
-
-            if (payload != null)
-            {
-                var ts = Time.GetDatetimeStringFromUnixTime(payload.SaveTimestamp);
-                btn.Text = $"[{i}] Lv.{payload.HeroLevel} {payload.HeroName} | {ts}";
-                btn.AddThemeStyleboxOverride("normal", UIStyle.MakeButtonBox(UIStyle.NavInventory));
-            }
-            else
-            {
-                btn.Text = $"[{i}] — 空 —";
-                btn.AddThemeStyleboxOverride("normal", UIStyle.MakeButtonBox(UIStyle.TextMuted));
-            }
-            btn.AddThemeStyleboxOverride("hover", UIStyle.MakeButtonBox(UIStyle.Accent.Darkened(0.2f)));
-            btn.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
-            btn.AddThemeColorOverride("font_color", UIStyle.TextPrimary);
-
-            btn.Pressed += () => SelectSlot(slotIdx);
-            _slotContainer.AddChild(btn);
+            var card = new SlotCard(i, payload, slotIdx == _selectedSlot);
+            card.SlotPressed += SelectSlot;
+            _slotContainer.AddChild(card);
+            _slotCards[i] = card;
         }
     }
 
     private void SelectSlot(int slot)
     {
         _selectedSlot = slot;
-        GD.Print($"[LaunchMenu] selected slot {slot}");
+        foreach (var (idx, card) in _slotCards)
+            card.SetSelected(idx == slot);
+        UpdateButtonStates();
+    }
+
+    private void UpdateButtonStates()
+    {
+        bool hasSlot = _saveManager.SlotExists(_selectedSlot);
+        _continueBtn.Disabled = !hasSlot;
+        _deleteBtn.Disabled = !hasSlot;
+        _newBtn.Disabled = false;
+
+        _hintLabel.Text = hasSlot
+            ? $"已选中槽位 {_selectedSlot}：可继续 / 新开始（覆盖）/ 删除"
+            : $"已选中槽位 {_selectedSlot}：空槽，可新开始";
     }
 
     private void OnNewGame()
+    {
+        if (_saveManager.SlotExists(_selectedSlot))
+        {
+            ConfirmDialog.Show(this,
+                "覆盖存档",
+                $"槽位 {_selectedSlot} 已有存档，新开始将覆盖原有进度，确认？",
+                () => DoNewGame(),
+                danger: true);
+            return;
+        }
+        DoNewGame();
+    }
+
+    private void DoNewGame()
     {
         _saveManager.DeleteSlot(_selectedSlot);
         _saveManager.ActiveSlot = _selectedSlot;
@@ -149,8 +228,7 @@ public partial class LaunchMenuController : Control
     {
         if (!_saveManager.SlotExists(_selectedSlot))
         {
-            GD.Print("[LaunchMenu] no save in selected slot, starting new");
-            StartGame();
+            GD.Print("[LaunchMenu] no save in selected slot");
             return;
         }
         _saveManager.Load(_selectedSlot);
@@ -159,8 +237,17 @@ public partial class LaunchMenuController : Control
 
     private void OnDeleteSlot()
     {
-        _saveManager.DeleteSlot(_selectedSlot);
-        RefreshSlots();
+        if (!_saveManager.SlotExists(_selectedSlot)) return;
+        ConfirmDialog.Show(this,
+            "删除存档",
+            $"确认删除槽位 {_selectedSlot} 的存档？此操作不可撤回。",
+            () =>
+            {
+                _saveManager.DeleteSlot(_selectedSlot);
+                RefreshSlots();
+                UpdateButtonStates();
+            },
+            danger: true);
     }
 
     private void OnSettings()
@@ -172,22 +259,111 @@ public partial class LaunchMenuController : Control
     {
         GetTree().Paused = false;
         Visible = false;
-        GD.Print("[LaunchMenu] game started");
+        GD.Print($"[LaunchMenu] game started, slot {_selectedSlot}");
     }
 
-    private static Button MakeMenuButton(string text, Color accent)
+    /// <summary>
+    /// 单个存档槽位卡片：标题 + 概要 + 选中边框反馈。
+    /// </summary>
+    private partial class SlotCard : PanelContainer
     {
-        var btn = new Button
+        [Signal] public delegate void SlotPressedEventHandler(int slot);
+
+        private readonly int _slot;
+        private readonly SavePayload? _payload;
+        private bool _selected;
+        private Button _hitArea = null!;
+
+        public SlotCard(int slot, SavePayload? payload, bool selected)
         {
-            Text = text,
-            CustomMinimumSize = new Vector2(110, 40),
-            FocusMode = FocusModeEnum.None,
-        };
-        btn.AddThemeStyleboxOverride("normal", UIStyle.MakeButtonBox(accent));
-        btn.AddThemeStyleboxOverride("hover", UIStyle.MakeButtonBox(accent.Lightened(0.15f)));
-        btn.AddThemeStyleboxOverride("pressed", UIStyle.MakeButtonBox(accent.Darkened(0.15f)));
-        btn.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
-        btn.AddThemeColorOverride("font_color", UIStyle.TextPrimary);
-        return btn;
+            _slot = slot;
+            _payload = payload;
+            _selected = selected;
+        }
+
+        public override void _Ready()
+        {
+            CustomMinimumSize = new Vector2(0, 56);
+            Build();
+            ApplyStyle();
+        }
+
+        private void Build()
+        {
+            var hbox = new HBoxContainer();
+            hbox.AddThemeConstantOverride("separation", UIStyle.Spacing12);
+            AddChild(hbox);
+
+            var idxLabel = new Label
+            {
+                Text = $"#{_slot}",
+                CustomMinimumSize = new Vector2(40, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            idxLabel.AddThemeFontSizeOverride("font_size", UIStyle.FontHeader);
+            idxLabel.AddThemeColorOverride("font_color", _selected ? UIStyle.Accent : UIStyle.TextSecondary);
+            hbox.AddChild(idxLabel);
+
+            var info = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            info.AddThemeConstantOverride("separation", UIStyle.Spacing4);
+            hbox.AddChild(info);
+
+            if (_payload != null)
+            {
+                var nameLine = new Label
+                {
+                    Text = $"Lv.{_payload.HeroLevel}  {_payload.HeroName}",
+                };
+                nameLine.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
+                nameLine.AddThemeColorOverride("font_color", UIStyle.TextPrimary);
+                info.AddChild(nameLine);
+
+                var ts = Time.GetDatetimeStringFromUnixTime(_payload.SaveTimestamp);
+                var tsLine = new Label { Text = $"上次保存：{ts}" };
+                tsLine.AddThemeFontSizeOverride("font_size", UIStyle.FontSmall);
+                tsLine.AddThemeColorOverride("font_color", UIStyle.TextMuted);
+                info.AddChild(tsLine);
+            }
+            else
+            {
+                var emptyLine = new Label { Text = "—— 空 ——" };
+                emptyLine.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
+                emptyLine.AddThemeColorOverride("font_color", UIStyle.TextMuted);
+                info.AddChild(emptyLine);
+
+                var hint = new Label { Text = "点击选中后开始新存档" };
+                hint.AddThemeFontSizeOverride("font_size", UIStyle.FontSmall);
+                hint.AddThemeColorOverride("font_color", UIStyle.TextMuted);
+                info.AddChild(hint);
+            }
+
+            _hitArea = new Button
+            {
+                Flat = true,
+                FocusMode = FocusModeEnum.None,
+                MouseFilter = MouseFilterEnum.Stop,
+            };
+            _hitArea.SetAnchorsPreset(LayoutPreset.FullRect);
+            _hitArea.Pressed += () => EmitSignal(SignalName.SlotPressed, _slot);
+            AddChild(_hitArea);
+        }
+
+        public void SetSelected(bool selected)
+        {
+            _selected = selected;
+            ApplyStyle();
+        }
+
+        private void ApplyStyle()
+        {
+            var border = _selected ? UIStyle.Accent : UIStyle.Border;
+            var bg = _selected ? UIStyle.Bg3 : UIStyle.Bg1;
+            var style = UIStyle.MakePanelBox(bg, border, _selected ? 2 : 1, 6);
+            style.ContentMarginLeft = UIStyle.Spacing12;
+            style.ContentMarginRight = UIStyle.Spacing12;
+            style.ContentMarginTop = UIStyle.Spacing8;
+            style.ContentMarginBottom = UIStyle.Spacing8;
+            AddThemeStyleboxOverride("panel", style);
+        }
     }
 }

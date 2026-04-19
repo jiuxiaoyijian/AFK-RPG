@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://desktop_idle_root"]
+[gd_scene load_steps=28 format=3 uid="uid://desktop_idle_root"]
 
 [ext_resource type="Script" path="res://scripts/Systems/CombatSystem.cs" id="1_combat"]
 [ext_resource type="Script" path="res://scripts/Systems/LootSystem.cs" id="2_loot"]
@@ -21,6 +21,12 @@
 [ext_resource type="Script" path="res://scripts/UI/ResearchPanelController.cs" id="19_research"]
 [ext_resource type="Script" path="res://scripts/UI/CodexPanelController.cs" id="20_codex_ui"]
 [ext_resource type="Script" path="res://scripts/UI/DropStatsPanelController.cs" id="21_stats"]
+[ext_resource type="Script" path="res://scripts/UI/SettingsPanelController.cs" id="22_settings"]
+[ext_resource type="Script" path="res://scripts/Systems/AchievementSystem.cs" id="23_ach_sys"]
+[ext_resource type="Script" path="res://scripts/UI/AchievementPanelController.cs" id="24_ach_ui"]
+[ext_resource type="Script" path="res://scripts/UI/ChapterSelectPanel.cs" id="25_chapter"]
+[ext_resource type="Script" path="res://scripts/UI/OfflineReportPopupController.cs" id="26_offline"]
+[ext_resource type="Script" path="res://scripts/UI/GmPanelController.cs" id="27_gm"]
 
 [node name="GameRoot" type="Node2D"]
 
@@ -62,17 +68,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5_hud")
-
-[node name="MainNavBar" type="Control" parent="UILayer"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -52.0
-grow_horizontal = 2
-grow_vertical = 0
-script = ExtResource("6_nav")
 
 [node name="UIDimmer" type="ColorRect" parent="UILayer"]
 visible = false
@@ -132,6 +127,57 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("21_stats")
 
+[node name="SettingsPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("22_settings")
+
+[node name="AchievementPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("24_ach_ui")
+
+[node name="ChapterSelectPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("25_chapter")
+
+[node name="GmPanel" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("27_gm")
+
+[node name="OfflineReportPopup" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("26_offline")
+
+[node name="MainNavBar" type="Control" parent="UILayer"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -52.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("6_nav")
+
 [node name="LaunchMenu" type="Control" parent="UILayer"]
 layout_mode = 1
 anchors_preset = 15
@@ -175,3 +221,6 @@ script = ExtResource("14_season")
 
 [node name="HeroProgressionSystem" type="Node" parent="Systems"]
 script = ExtResource("15_hero")
+
+[node name="AchievementSystem" type="Node" parent="Systems"]
+script = ExtResource("23_ach_sys")

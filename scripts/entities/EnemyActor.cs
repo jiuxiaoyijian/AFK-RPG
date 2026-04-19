@@ -26,8 +26,39 @@ public partial class EnemyActor : Node2D
     {
         CurrentHp = MaxHp;
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-        if (_sprite?.SpriteFrames?.HasAnimation("idle") == true)
-            _sprite.Play("idle");
+        if (_sprite != null)
+            _sprite.SpriteFrames = BuildPlaceholderFrames();
+        _sprite?.Play("idle");
+    }
+
+    private SpriteFrames BuildPlaceholderFrames()
+    {
+        Color fill = NodeType switch
+        {
+            "boss" => new Color(0.8f, 0.25f, 0.25f),
+            "elite" => new Color(0.6f, 0.27f, 0.8f),
+            _ => new Color(0.53f, 0.53f, 0.53f),
+        };
+
+        int w = NodeType == "boss" ? 48 : 32;
+        int h = NodeType == "boss" ? 64 : 48;
+
+        var tex = MakeSolidTexture(w, h, fill);
+
+        var frames = new SpriteFrames();
+        frames.RemoveAnimation("default");
+        frames.AddAnimation("idle");
+        frames.SetAnimationSpeed("idle", 1);
+        frames.SetAnimationLoop("idle", true);
+        frames.AddFrame("idle", tex);
+        return frames;
+    }
+
+    private static ImageTexture MakeSolidTexture(int w, int h, Color color)
+    {
+        var img = Image.CreateEmpty(w, h, false, Image.Format.Rgba8);
+        img.Fill(color);
+        return ImageTexture.CreateFromImage(img);
     }
 
     public override void _PhysicsProcess(double delta)

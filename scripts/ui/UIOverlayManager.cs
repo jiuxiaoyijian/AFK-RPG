@@ -27,6 +27,23 @@ public partial class UIOverlayManager : Node
         { "ui_research", "research" },
         { "ui_codex", "codex" },
         { "ui_drop_stats", "drop_stats" },
+        { "ui_achievement", "achievement" },
+        { "ui_chapters", "chapters" },
+        { "ui_gm_panel", "gm" },
+    };
+
+    private static readonly Dictionary<string, string> PanelNodeMap = new()
+    {
+        { "InventoryPanel", "inventory" },
+        { "SkillPanel", "skills" },
+        { "CubePanel", "cube" },
+        { "ResearchPanel", "research" },
+        { "CodexPanel", "codex" },
+        { "DropStatsPanel", "drop_stats" },
+        { "SettingsPanel", "settings" },
+        { "AchievementPanel", "achievement" },
+        { "ChapterSelectPanel", "chapters" },
+        { "GmPanel", "gm" },
     };
 
     public override void _Ready()
@@ -37,12 +54,38 @@ public partial class UIOverlayManager : Node
         bus.UiCloseAllRequested += CloseAll;
         bus.StageEventTriggered += OnStageEvent;
         bus.OfflineReportReady += OnBlockingEvent;
+
+        CallDeferred(MethodName.AutoRegister);
+    }
+
+    private void AutoRegister()
+    {
+        var parent = GetParent();
+        if (parent == null) return;
+
+        foreach (var (nodeName, panelId) in PanelNodeMap)
+        {
+            var panel = parent.GetNodeOrNull<Control>(nodeName);
+            if (panel != null)
+                RegisterPanel(panelId, panel);
+        }
+
+        var dimmer = parent.GetNodeOrNull<Control>("UIDimmer");
+        if (dimmer != null)
+            RegisterDimmer(dimmer);
     }
 
     public void RegisterDimmer(Control dimmer)
     {
         _dimmer = dimmer;
         _dimmer.Visible = false;
+        _dimmer.GuiInput += OnDimmerInput;
+    }
+
+    private void OnDimmerInput(InputEvent ev)
+    {
+        if (ev is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+            CloseAll();
     }
 
     public void RegisterPanel(string panelId, Control panel)
@@ -94,11 +137,13 @@ public partial class UIOverlayManager : Node
 
     public void CloseAll()
     {
-        if (ActivePanelId != null)
-            HidePanel(ActivePanelId);
-
+        var prev = ActivePanelId;
         ActivePanelId = null;
         CurrentState = UIState.Idle;
+
+        if (prev != null)
+            HidePanel(prev);
+
         SetDimmer(false);
     }
 
@@ -130,10 +175,16 @@ public partial class UIOverlayManager : Node
             _dimmer.Visible = visible;
     }
 
-    private void OnPanelRequested(string panelId) => RequestPanel(panelId);
+    private void OnPanelRequested(string panelId)
+    {
+        if (ActivePanelId != panelId)
+            RequestPanel(panelId);
+    }
+
     private void OnPanelClosed(string panelId)
     {
-        if (ActivePanelId == panelId) CloseAll();
+        if (ActivePanelId == panelId)
+            CloseAll();
     }
 
     private void OnStageEvent(string eventType, string payload)

@@ -13,7 +13,7 @@ config_version=5
 config/name="桌面挂机原型"
 config/description="Steam 桌面挂机横版自动战斗原型"
 run/main_scene="res://scenes/main/game_root.tscn"
-config/features=PackedStringArray("4.6", "GL Compatibility")
+config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -29,15 +29,15 @@ StageEventSystem="*res://scripts/Autoload/StageEventSystem.cs"
 MetaProgressionSystem="*res://scripts/Autoload/MetaProgressionSystem.cs"
 LootCodexSystem="*res://scripts/Autoload/LootCodexSystem.cs"
 
-[dotnet]
-
-project/assembly_name="桌面挂机原型"
-
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+
+[dotnet]
+
+project/assembly_name="桌面挂机原型"
 
 [gui]
 
@@ -117,7 +117,18 @@ ui_quick_load={
 }
 ui_gm_panel={
 "deadzone": 0.5,
-"events": []
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194343,"physical_keycode":4194343,"key_label":4194343,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+ui_achievement={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":89,"physical_keycode":89,"key_label":89,"unicode":121,"location":0,"echo":false,"script":null)
+]
+}
+ui_chapters={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":74,"physical_keycode":74,"key_label":74,"unicode":106,"location":0,"echo":false,"script":null)
+]
 }
 
 [rendering]

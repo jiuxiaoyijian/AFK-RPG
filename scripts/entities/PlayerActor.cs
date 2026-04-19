@@ -17,12 +17,40 @@ public partial class PlayerActor : Node2D
     private AnimatedSprite2D? _sprite;
     private Node2D? _target;
 
+    private const string AssetDir = "res://assets/generated/afk_rpg_formal/characters/";
+
     public override void _Ready()
     {
         CurrentHp = MaxHp;
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-        if (_sprite?.SpriteFrames?.HasAnimation("idle") == true)
-            _sprite.Play("idle");
+        if (_sprite != null)
+            _sprite.SpriteFrames = BuildSpriteFrames();
+        _sprite?.Play("idle");
+    }
+
+    private static SpriteFrames BuildSpriteFrames()
+    {
+        var frames = new SpriteFrames();
+        frames.RemoveAnimation("default");
+
+        frames.AddAnimation("idle");
+        frames.SetAnimationSpeed("idle", 4);
+        frames.SetAnimationLoop("idle", true);
+        frames.AddFrame("idle", GD.Load<Texture2D>(AssetDir + "hero_idle_v2.png"));
+
+        frames.AddAnimation("walk");
+        frames.SetAnimationSpeed("walk", 8);
+        frames.SetAnimationLoop("walk", true);
+        for (int i = 1; i <= 6; i++)
+            frames.AddFrame("walk", GD.Load<Texture2D>(AssetDir + $"hero_move_anim_{i:D2}.png"));
+
+        frames.AddAnimation("attack");
+        frames.SetAnimationSpeed("attack", 10);
+        frames.SetAnimationLoop("attack", true);
+        for (int i = 1; i <= 4; i++)
+            frames.AddFrame("attack", GD.Load<Texture2D>(AssetDir + $"hero_attack_anim_{i:D2}.png"));
+
+        return frames;
     }
 
     public override void _PhysicsProcess(double delta)

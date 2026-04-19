@@ -1,5 +1,6 @@
 using Godot;
 using DesktopIdle.Autoload;
+using DesktopIdle.UI.Components;
 
 namespace DesktopIdle.UI;
 
@@ -22,61 +23,69 @@ public partial class SettingsPanelController : Control
         _saveManager = GetNode<SaveManager>("/root/SaveManager");
         _demoManager = GetNode<DemoManager>("/root/DemoManager");
 
-        SetAnchorsPreset(LayoutPreset.Center);
-        Size = new Vector2(440, 400);
-        Position = new Vector2(420, 160);
+        SetAnchorsPreset(LayoutPreset.FullRect);
+        MouseFilter = MouseFilterEnum.Ignore;
 
         BuildUI();
     }
 
     private void BuildUI()
     {
-        var bg = new Panel();
-        bg.SetAnchorsPreset(LayoutPreset.FullRect);
-        bg.AddThemeStyleboxOverride("panel", UIStyle.MakePanelBox(UIStyle.BgPanel, UIStyle.BorderHighlight, 2, 8));
-        AddChild(bg);
+        var chrome = new PanelChrome
+        {
+            PanelId = "settings",
+            Title = "设 置",
+            Subtitle = "音量 / 存档 / 调试",
+            AccentColor = UIStyle.NavSettings,
+            PanelWidth = UIStyle.PanelWidthCompact,
+            PanelHeight = 440,
+            ShowFooter = true,
+        };
+        AddChild(chrome);
 
-        var vbox = new VBoxContainer();
-        vbox.SetAnchorsPreset(LayoutPreset.FullRect);
-        vbox.Position = new Vector2(20, 20);
-        vbox.Size = new Vector2(400, 360);
-        vbox.AddThemeConstantOverride("separation", 10);
-        AddChild(vbox);
+        var content = new VBoxContainer();
+        content.AddThemeConstantOverride("separation", UIStyle.Spacing12);
+        content.SizeFlagsVertical = SizeFlags.ExpandFill;
+        chrome.Body.AddChild(content);
 
-        var title = new Label { Text = "设 置" };
-        title.AddThemeFontSizeOverride("font_size", UIStyle.FontTitle);
-        title.AddThemeColorOverride("font_color", UIStyle.Accent);
-        title.HorizontalAlignment = HorizontalAlignment.Center;
-        vbox.AddChild(title);
+        content.AddChild(new SectionHeader("音量"));
 
-        vbox.AddChild(new HSeparator());
+        _masterSlider = AddVolumeRow(content, "主音量", "Master");
+        _bgmSlider = AddVolumeRow(content, "背景音乐", "BGM");
+        _sfxSlider = AddVolumeRow(content, "音效", "SFX");
 
-        _masterSlider = AddVolumeRow(vbox, "主音量", "Master");
-        _bgmSlider = AddVolumeRow(vbox, "背景音乐", "BGM");
-        _sfxSlider = AddVolumeRow(vbox, "音效", "SFX");
-
-        vbox.AddChild(new HSeparator());
+        content.AddChild(new SectionHeader("存档", "F5 / F8 快捷键"));
 
         var saveLoadRow = new HBoxContainer();
-        saveLoadRow.Alignment = BoxContainer.AlignmentMode.Center;
-        saveLoadRow.AddThemeConstantOverride("separation", 12);
-        vbox.AddChild(saveLoadRow);
+        saveLoadRow.AddThemeConstantOverride("separation", UIStyle.Spacing12);
+        content.AddChild(saveLoadRow);
 
-        var saveBtn = MakeButton("存档 (F5)", UIStyle.Success);
+        var saveBtn = new IconButton("存档 (F5)", IconButton.ButtonVariant.Primary)
+        {
+            CustomMinimumSize = new Vector2(140, UIStyle.ButtonHeight),
+        };
         saveBtn.Pressed += () => _saveManager.Save(_saveManager.ActiveSlot);
         saveLoadRow.AddChild(saveBtn);
 
-        var loadBtn = MakeButton("读档 (F8)", UIStyle.NavInventory);
+        var loadBtn = new IconButton("读档 (F8)", IconButton.ButtonVariant.Secondary)
+        {
+            CustomMinimumSize = new Vector2(140, UIStyle.ButtonHeight),
+        };
         loadBtn.Pressed += () => _saveManager.Load(_saveManager.ActiveSlot);
         saveLoadRow.AddChild(loadBtn);
 
-        vbox.AddChild(new HSeparator());
+        content.AddChild(new SectionHeader("调试"));
 
         var debugRow = new HBoxContainer();
-        debugRow.AddThemeConstantOverride("separation", 8);
-        vbox.AddChild(debugRow);
+        debugRow.AddThemeConstantOverride("separation", UIStyle.Spacing8);
+        content.AddChild(debugRow);
 
-        var debugLabel = new Label { Text = "调试模式" };
+        var debugLabel = new Label
+        {
+            Text = "调试模式",
+            CustomMinimumSize = new Vector2(150, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
         debugLabel.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
         debugLabel.AddThemeColorOverride("font_color", UIStyle.TextSecondary);
         debugRow.AddChild(debugLabel);
@@ -85,22 +94,30 @@ public partial class SettingsPanelController : Control
         _debugCheck.Toggled += OnDebugToggled;
         debugRow.AddChild(_debugCheck);
 
-        var closeBtn = MakeButton("关闭", UIStyle.NavSettings);
+        var closeBtn = new IconButton("关闭", IconButton.ButtonVariant.Secondary)
+        {
+            CustomMinimumSize = new Vector2(110, UIStyle.ButtonHeight),
+        };
         closeBtn.Pressed += () =>
         {
             var bus = GetNode<EventBus>("/root/EventBus");
             bus.EmitSignal(EventBus.SignalName.UiPanelClosed, "settings");
         };
-        vbox.AddChild(closeBtn);
+        chrome.Footer.AddChild(closeBtn);
     }
 
-    private HSlider AddVolumeRow(VBoxContainer parent, string label, string busName)
+    private static HSlider AddVolumeRow(VBoxContainer parent, string label, string busName)
     {
         var row = new HBoxContainer();
-        row.AddThemeConstantOverride("separation", 8);
+        row.AddThemeConstantOverride("separation", UIStyle.Spacing12);
         parent.AddChild(row);
 
-        var lbl = new Label { Text = label, CustomMinimumSize = new Vector2(100, 0) };
+        var lbl = new Label
+        {
+            Text = label,
+            CustomMinimumSize = new Vector2(100, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
         lbl.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
         lbl.AddThemeColorOverride("font_color", UIStyle.TextPrimary);
         row.AddChild(lbl);
@@ -110,7 +127,8 @@ public partial class SettingsPanelController : Control
             MinValue = 0,
             MaxValue = 100,
             Value = 80,
-            CustomMinimumSize = new Vector2(200, 20),
+            CustomMinimumSize = new Vector2(180, 22),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
             Step = 1,
         };
 
@@ -129,7 +147,13 @@ public partial class SettingsPanelController : Control
         };
         row.AddChild(slider);
 
-        var valLabel = new Label { Text = "80%" };
+        var valLabel = new Label
+        {
+            Text = $"{(int)slider.Value}%",
+            CustomMinimumSize = new Vector2(48, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
         valLabel.AddThemeFontSizeOverride("font_size", UIStyle.FontSmall);
         valLabel.AddThemeColorOverride("font_color", UIStyle.TextSecondary);
         row.AddChild(valLabel);
@@ -143,20 +167,5 @@ public partial class SettingsPanelController : Control
     {
         _demoManager.IsDebugMode = pressed;
         _demoManager.SaveConfig();
-    }
-
-    private static Button MakeButton(string text, Color accent)
-    {
-        var btn = new Button
-        {
-            Text = text,
-            CustomMinimumSize = new Vector2(120, 36),
-            FocusMode = FocusModeEnum.None,
-        };
-        btn.AddThemeStyleboxOverride("normal", UIStyle.MakeButtonBox(accent));
-        btn.AddThemeStyleboxOverride("hover", UIStyle.MakeButtonBox(accent.Lightened(0.15f)));
-        btn.AddThemeFontSizeOverride("font_size", UIStyle.FontBody);
-        btn.AddThemeColorOverride("font_color", UIStyle.TextPrimary);
-        return btn;
     }
 }
