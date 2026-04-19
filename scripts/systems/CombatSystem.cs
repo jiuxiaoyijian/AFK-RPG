@@ -12,8 +12,10 @@ public partial class CombatSystem : Node
 {
     private enum BattleState { Loading, Spawning, Fighting, WaveComplete, NodeComplete, PlayerDead }
 
-    private static readonly PackedScene PlayerScene = GD.Load<PackedScene>("res://scenes/entities/player.tscn");
-    private static readonly PackedScene EnemyScene = GD.Load<PackedScene>("res://scenes/entities/enemy.tscn");
+    private static PackedScene? _playerScene;
+    private static PackedScene? _enemyScene;
+    private static PackedScene PlayerScene => _playerScene ??= GD.Load<PackedScene>("res://scenes/entities/player.tscn");
+    private static PackedScene EnemyScene => _enemyScene ??= GD.Load<PackedScene>("res://scenes/entities/enemy.tscn");
 
     private const float WaveDelay = 1.5f;
     private const float NodeCompleteDelay = 2.0f;

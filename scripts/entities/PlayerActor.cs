@@ -21,7 +21,8 @@ public partial class PlayerActor : Node2D
     {
         CurrentHp = MaxHp;
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-        _sprite?.Play("idle");
+        if (_sprite?.SpriteFrames?.HasAnimation("idle") == true)
+            _sprite.Play("idle");
     }
 
     public override void _PhysicsProcess(double delta)
@@ -37,7 +38,8 @@ public partial class PlayerActor : Node2D
             {
                 var dir = (_target.Position - Position).Normalized();
                 Position += dir * (float)(MoveSpeed * delta);
-                _sprite?.Play("walk");
+                if (_sprite?.SpriteFrames?.HasAnimation("walk") == true)
+                    _sprite.Play("walk");
                 IsAttacking = false;
             }
             else
@@ -49,12 +51,14 @@ public partial class PlayerActor : Node2D
                     _attackTimer = 0;
                     PerformAttack();
                 }
-                _sprite?.Play("attack");
+                if (_sprite?.SpriteFrames?.HasAnimation("attack") == true)
+                    _sprite.Play("attack");
             }
         }
         else
         {
-            _sprite?.Play("idle");
+            if (_sprite?.SpriteFrames?.HasAnimation("idle") == true)
+                _sprite.Play("idle");
             IsAttacking = false;
         }
     }
@@ -89,7 +93,8 @@ public partial class PlayerActor : Node2D
 
     private void Die()
     {
-        _sprite?.Play("idle");
+        if (_sprite?.SpriteFrames?.HasAnimation("idle") == true)
+            _sprite.Play("idle");
         var bus = GetNode<EventBus>("/root/EventBus");
         bus.EmitSignal(EventBus.SignalName.PlayerDied);
     }

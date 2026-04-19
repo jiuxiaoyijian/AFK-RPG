@@ -37,24 +37,31 @@ public partial class SetSystem : Node
         var doc = db.LoadRawJson("res://data/sets/set_defs.json");
         if (doc == null) return;
 
-        foreach (var prop in doc.RootElement.EnumerateObject())
+        var root = doc.RootElement;
+        var setArray = root.TryGetProperty("set_defs", out var sd) ? sd : root;
+
+        foreach (var el in setArray.EnumerateArray())
         {
-            var el = prop.Value;
+            string id = el.TryGetProperty("id", out var idProp) ? idProp.GetString() ?? "" : "";
             var bonuses = new List<SetBonus>();
             if (el.TryGetProperty("bonuses", out var bArr))
             {
                 foreach (var b in bArr.EnumerateArray())
                     bonuses.Add(new SetBonus(
                         b.GetProperty("pieces").GetInt32(),
-                        b.GetProperty("effect_key").GetString() ?? "",
-                        b.GetProperty("effect_value").GetDouble()));
+                        b.TryGetProperty("effect_key", out var ek) ? ek.GetString() ?? ""
+                            : b.TryGetProperty("stat_key", out var sk) ? sk.GetString() ?? "" : "",
+                        b.TryGetProperty("effect_value", out var ev) ? ev.GetDouble()
+                            : b.TryGetProperty("value", out var v) ? v.GetDouble() : 0));
             }
-            _setDefs[prop.Name] = new SetDef(
-                prop.Name,
-                el.GetProperty("name").GetString() ?? prop.Name,
+            _setDefs[id] = new SetDef(
+                id,
+                el.TryGetProperty("name", out var nm) ? nm.GetString() ?? id : id,
                 el.TryGetProperty("piece_base_ids", out var pids)
                     ? pids.EnumerateArray().Select(x => x.GetString() ?? "").ToArray()
-                    : [],
+                    : el.TryGetProperty("piece_slots", out var ps)
+                        ? ps.EnumerateArray().Select(x => x.GetString() ?? "").ToArray()
+                        : [],
                 bonuses);
         }
     }

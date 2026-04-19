@@ -31,16 +31,45 @@ public partial class CubeSystem : Node
         var doc = db.LoadRawJson("res://data/equipment/cube_recipes.json");
         if (doc == null) return;
 
-        foreach (var el in doc.RootElement.EnumerateArray())
+        var root = doc.RootElement;
+        var arr = root.ValueKind == System.Text.Json.JsonValueKind.Array
+            ? root
+            : root.TryGetProperty("cube_recipes", out var cr) ? cr : root;
+
+        foreach (var el in arr.EnumerateArray())
         {
-            var actionStr = el.GetProperty("action").GetString() ?? "Extract";
-            System.Enum.TryParse<CubeAction>(actionStr, true, out var action);
-            _recipes.Add(new RecipeDef(
-                el.GetProperty("id").GetString() ?? "",
-                action,
-                el.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "",
-                el.TryGetProperty("gold_cost", out var g) ? g.GetInt32() : 0,
-                el.TryGetProperty("scrap_cost", out var s) ? s.GetInt32() : 0));
+            string id = el.TryGetProperty("id", out var idp) ? idp.GetString() ?? "" : "";
+            string actionStr = el.TryGetProperty("action", out var act) ? act.GetString() ?? ""
+                : el.TryGetProperty("result", out var res) ? res.GetString() ?? "" : "Extract";
+
+            var action = id switch
+            {
+                "extract" => CubeAction.Extract,
+                "upgrade_rare" => CubeAction.ForgeSteel,
+                "reforge" => CubeAction.Reforge,
+                "convert_set" => CubeAction.Convert,
+                "refine_affix" => CubeAction.Temper,
+                _ => System.Enum.TryParse<CubeAction>(actionStr, true, out var parsed) ? parsed : CubeAction.Extract,
+            };
+
+            string desc = el.TryGetProperty("description", out var d) ? d.GetString() ?? ""
+                : el.TryGetProperty("name", out var nm) ? nm.GetString() ?? "" : "";
+
+            int goldCost = 0, scrapCost = 0;
+            if (el.TryGetProperty("gold_cost", out var g)) goldCost = g.GetInt32();
+            if (el.TryGetProperty("scrap_cost", out var s)) scrapCost = s.GetInt32();
+            if (el.TryGetProperty("costs", out var costs))
+            {
+                foreach (var c in costs.EnumerateArray())
+                {
+                    string rid = c.TryGetProperty("resource_id", out var r) ? r.GetString() ?? "" : "";
+                    int amt = c.TryGetProperty("amount", out var a) ? a.GetInt32() : 0;
+                    if (rid == "gold") goldCost += amt;
+                    else scrapCost += amt;
+                }
+            }
+
+            _recipes.Add(new RecipeDef(id, action, desc, goldCost, scrapCost));
         }
     }
 

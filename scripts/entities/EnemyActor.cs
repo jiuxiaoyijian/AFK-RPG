@@ -26,7 +26,8 @@ public partial class EnemyActor : Node2D
     {
         CurrentHp = MaxHp;
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-        _sprite?.Play("idle");
+        if (_sprite?.SpriteFrames?.HasAnimation("idle") == true)
+            _sprite.Play("idle");
     }
 
     public override void _PhysicsProcess(double delta)

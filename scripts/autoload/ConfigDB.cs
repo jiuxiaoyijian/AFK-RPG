@@ -121,20 +121,35 @@ public partial class ConfigDB : Node
         {
             var text = ReadJsonFile($"res://data/skills/{fileName}");
             using var doc = JsonDocument.Parse(text);
+            if (doc.RootElement.ValueKind != System.Text.Json.JsonValueKind.Array)
+                continue;
+
             foreach (var elem in doc.RootElement.EnumerateArray())
             {
+                string skillType = elem.TryGetProperty("skill_type", out var st) ? st.GetString() ?? ""
+                    : elem.TryGetProperty("slot_type", out var slt) ? slt.GetString() ?? ""
+                    : elem.TryGetProperty("effect_type", out var et) ? et.GetString() ?? ""
+                    : "unknown";
+
+                double cooldown = elem.TryGetProperty("cooldown", out var cd) ? cd.GetDouble() : 0;
+                int energyCost = elem.TryGetProperty("energy_cost", out var ec) ? ec.GetInt32()
+                    : elem.TryGetProperty("resource_cost", out var rc) ? rc.GetInt32() : 0;
+                double baseMultiplier = elem.TryGetProperty("base_multiplier", out var bm) ? bm.GetDouble() : 1.0;
+                string iconId = elem.TryGetProperty("icon_id", out var ic) ? ic.GetString() ?? ""
+                    : elem.TryGetProperty("icon_path", out var ip) ? ip.GetString() ?? "" : "";
+
                 var skill = new Models.SkillDef
                 {
                     Id = elem.GetProperty("id").GetString()!,
                     Name = elem.GetProperty("name").GetString()!,
-                    SkillType = elem.GetProperty("skill_type").GetString()!,
-                    Description = elem.GetProperty("description").GetString() ?? "",
+                    SkillType = skillType,
+                    Description = elem.TryGetProperty("description", out var desc) ? desc.GetString() ?? "" : "",
                     UnlockLevel = elem.TryGetProperty("unlock_level", out var ul) ? ul.GetInt32() : 1,
                     MaxLevel = elem.TryGetProperty("max_level", out var ml) ? ml.GetInt32() : 20,
-                    Cooldown = elem.TryGetProperty("cooldown", out var cd) ? cd.GetDouble() : 0,
-                    EnergyCost = elem.TryGetProperty("energy_cost", out var ec) ? ec.GetInt32() : 0,
-                    BaseMultiplier = elem.TryGetProperty("base_multiplier", out var bm) ? bm.GetDouble() : 1.0,
-                    IconId = elem.TryGetProperty("icon_id", out var ic) ? ic.GetString() ?? "" : "",
+                    Cooldown = cooldown,
+                    EnergyCost = energyCost,
+                    BaseMultiplier = baseMultiplier,
+                    IconId = iconId,
                 };
                 result.Add(skill);
             }

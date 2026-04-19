@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://player_actor"]
+[gd_scene load_steps=3 format=3 uid="uid://player_actor"]
 
 [ext_resource type="Script" path="res://scripts/Entities/PlayerActor.cs" id="1_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(32, 48)
 
 [node name="Player" type="Node2D"]
 script = ExtResource("1_player")
@@ -12,6 +15,3 @@ scale = Vector2(2, 2)
 
 [node name="Shape" type="CollisionShape2D" parent="CollisionShape"]
 shape = SubResource("RectangleShape2D_player")
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(32, 48)
